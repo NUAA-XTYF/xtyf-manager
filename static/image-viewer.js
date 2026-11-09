@@ -48,7 +48,7 @@ window.ImageViewer = (() => {
     dialog.innerHTML = `<div class="xt-iv-shell">
       <header class="xt-iv-bar">
         <div class="xt-iv-title"><span class="xt-iv-name" data-iv-name></span><span class="xt-iv-dimensions" data-iv-dimensions></span></div>
-        <button class="xt-iv-close" type="button" data-iv-action="close" title="关闭（Esc）" aria-label="关闭">×</button>
+        <button class="xt-iv-close" type="button" data-iv-action="close" title="关闭（Esc）" aria-label="关闭"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 5L19 19M19 5L5 19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
       </header>
       <div class="xt-iv-stage" data-iv-stage><img data-iv-image alt="" draggable="false" hidden></div>
       <footer class="xt-iv-toolbar" aria-label="图片操作">
