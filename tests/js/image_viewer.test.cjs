@@ -12,6 +12,8 @@ function harness(fetchResponse) {
   const stageEvents = {};
   const created = [], revoked = [], anchors = [];
   const stage = {
+    clientWidth:800, clientHeight:600,
+    getBoundingClientRect(){return {left:0,top:0,width:this.clientWidth,height:this.clientHeight};},
     addEventListener(type, handler) {stageEvents[type] = handler;},
     setPointerCapture() {},
   };
@@ -21,8 +23,8 @@ function harness(fetchResponse) {
     get src() {return this._src;},
     removeAttribute(name) { if (name === "src") this._src = ""; },
   };
-  const name = {textContent:""}, status = {textContent:""}, zoom = {textContent:""};
-  const nodes = {"[data-iv-image]":picture,"[data-iv-name]":name,"[data-iv-status]":status,"[data-iv-zoom]":zoom,"[data-iv-stage]":stage};
+  const name = {textContent:""}, dimensions = {textContent:""}, status = {textContent:""}, zoom = {textContent:""};
+  const nodes = {"[data-iv-image]":picture,"[data-iv-name]":name,"[data-iv-dimensions]":dimensions,"[data-iv-status]":status,"[data-iv-zoom]":zoom,"[data-iv-stage]":stage};
   const dialog = {
     open: false,
     setAttribute() {},
@@ -70,7 +72,7 @@ function harness(fetchResponse) {
     fetch:async (url, options) => {fetchCalls.push({url,options});return fetchResponse;}, console, Uint8Array, Error};
   ctx.window=ctx;
   vm.createContext(ctx); vm.runInContext(src, ctx);
-  return {api:ctx.ImageViewer,ctx,handlers,dialog,dialogEvents,stageEvents,picture,name,status,zoom,fetchCalls,created,revoked,anchors};
+  return {api:ctx.ImageViewer,ctx,handlers,dialog,dialogEvents,stageEvents,stage,picture,name,dimensions,status,zoom,fetchCalls,created,revoked,anchors};
 }
 const imageBlob = new Blob([Uint8Array.from([137,80,78,71,13,10,26,10,0,0,0,0])], {type:"application/octet-stream"});
 const response = blob => ({ok:true, headers:{get(key){return key === "Content-Length" ? String(blob.size) : "application/octet-stream";}}, blob:async()=>blob});
@@ -209,4 +211,58 @@ test("failed direct-image previews can download the original without interceptio
   assert.equal(h.anchors[0].downloadStarted,true);
   assert.equal(h.fetchCalls.length,1,"download must not open another preview request");
   assert.equal(h.status.textContent,"已发起下载");
+});
+
+
+const press = (h, operation) => h.dialogEvents.click({
+  target:{closest:()=>({dataset:{ivAction:operation}})}, preventDefault(){}
+});
+
+test("fit uses natural pixel dimensions; 1:1 is distinct and rotation survives fitting", async () => {
+  const h=harness(response(imageBlob));
+  h.picture.naturalWidth=4000;
+  h.picture.naturalHeight=3000;
+  await h.api.open("/large.png","large.png");
+  assert.equal(h.zoom.textContent,"19%");
+  assert.equal(h.dimensions.textContent,"4000 × 3000");
+  assert.equal(h.status.hidden,true,"no permanent help/status row on successful load");
+  press(h,"rotate");
+  assert.equal(h.zoom.textContent,"14%");
+  assert.ok(h.picture.style.transform.includes("rotate(90deg)"));
+  press(h,"actual");
+  assert.equal(h.zoom.textContent,"100%");
+  press(h,"fit");
+  assert.equal(h.zoom.textContent,"14%");
+  assert.ok(h.picture.style.transform.includes("rotate(90deg)"),"fit must preserve rotation");
+});
+
+test("fit recalculates when viewport changes, while manual zoom remains manual", async () => {
+  const h=harness(response(imageBlob));
+  h.picture.naturalWidth=4000; h.picture.naturalHeight=3000;
+  await h.api.open("/large.png");
+  assert.equal(h.zoom.textContent,"19%");
+  h.stage.clientWidth=400;
+  h.stage.clientHeight=600;
+  // The fit action uses the current stage geometry, even without a ResizeObserver.
+  press(h,"fit");
+  assert.equal(h.zoom.textContent,"9%");
+  press(h,"actual");
+  assert.equal(h.zoom.textContent,"100%");
+});
+
+test("wheel zoom follows pointer and two touch pointers support pinch zoom", async () => {
+  const h=harness(response(imageBlob));
+  h.picture.naturalWidth=4000;h.picture.naturalHeight=3000;
+  await h.api.open("/large.png");
+  let blocked=false;
+  h.stageEvents.wheel({deltaY:-1,clientX:500,clientY:200,preventDefault(){blocked=true;}});
+  assert.equal(blocked,true);
+  assert.ok(h.picture.style.transform.includes("translate(calc(-50% + -"),"pointer zoom shifts image around cursor");
+  const before=parseInt(h.zoom.textContent,10);
+  h.stageEvents.pointerdown({pointerId:1,pointerType:"touch",clientX:300,clientY:300});
+  h.stageEvents.pointerdown({pointerId:2,pointerType:"touch",clientX:500,clientY:300});
+  h.stageEvents.pointermove({pointerId:2,pointerType:"touch",clientX:550,clientY:300});
+  assert.ok(parseInt(h.zoom.textContent,10)>before);
+  h.stageEvents.pointerup({pointerId:2});
+  h.stageEvents.pointerup({pointerId:1});
 });

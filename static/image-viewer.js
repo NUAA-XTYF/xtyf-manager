@@ -7,8 +7,11 @@ window.ImageViewer = (() => {
   const MAX_BYTES = 100 * 1024 * 1024;
   const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
   const filename = value => String(value || "图片").replace(/[\\/\x00-\x1f]/g, "_").slice(0, 180) || "图片";
-  let dialog, picture, caption, status, scale = 1, rotation = 0, offsetX = 0, offsetY = 0;
-  let imageBlob, objectUrl, currentURL, controller, generation = 0, returnFocus, pointer;
+  let dialog, picture, caption, dimensions, status, stage;
+  let scale = 1, rotation = 0, offsetX = 0, offsetY = 0, zoomMode = "fit";
+  let imageBlob, objectUrl, currentURL, controller, generation = 0, returnFocus;
+  const pointers = new Map();
+  let pinchDistance = 0, pinchCenter = null;
 
   function localURL(value) {
     try {
@@ -43,23 +46,31 @@ window.ImageViewer = (() => {
     dialog.className = "xt-image-viewer";
     dialog.setAttribute("aria-label", "图片查看器");
     dialog.innerHTML = `<div class="xt-iv-shell">
-      <header class="xt-iv-bar"><span class="xt-iv-name" data-iv-name></span>
-        <div class="xt-iv-tools" aria-label="图片操作">
+      <header class="xt-iv-bar">
+        <div class="xt-iv-title"><span class="xt-iv-name" data-iv-name></span><span class="xt-iv-dimensions" data-iv-dimensions></span></div>
+        <button class="xt-iv-close" type="button" data-iv-action="close" title="关闭（Esc）" aria-label="关闭"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 5L19 19M19 5L5 19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+      </header>
+      <div class="xt-iv-stage" data-iv-stage><img data-iv-image alt="" draggable="false" hidden></div>
+      <footer class="xt-iv-toolbar" aria-label="图片操作">
+        <div class="xt-iv-group xt-iv-zoom-tools">
           <button type="button" data-iv-action="out" title="缩小（-）" aria-label="缩小">−</button>
-          <span class="xt-iv-zoom" data-iv-zoom>100%</span>
+          <output class="xt-iv-zoom" data-iv-zoom aria-label="当前缩放比例">100%</output>
           <button type="button" data-iv-action="in" title="放大（+）" aria-label="放大">+</button>
-          <button type="button" data-iv-action="fit" title="还原大小（0）">适应</button>
+          <button type="button" data-iv-action="fit" title="适应窗口（0）">适应</button>
+          <button type="button" data-iv-action="actual" title="原始尺寸（1）">1:1</button>
+        </div>
+        <div class="xt-iv-group xt-iv-other-tools">
           <button type="button" data-iv-action="rotate" title="顺时针旋转 90°（R）">旋转</button>
           <button type="button" data-iv-action="copy">复制</button>
           <button type="button" data-iv-action="download">下载</button>
-          <button type="button" data-iv-action="close" title="关闭（Esc）" aria-label="关闭">×</button>
-        </div></header>
-      <div class="xt-iv-stage" data-iv-stage><img data-iv-image alt="" draggable="false" hidden></div>
-      <p class="xt-iv-status" data-iv-status role="status" aria-live="polite"></p>
+        </div>
+      </footer>
+      <p class="xt-iv-status" data-iv-status role="status" aria-live="polite" hidden></p>
     </div>`;
     document.body.append(dialog);
     picture = dialog.querySelector("[data-iv-image]");
     caption = dialog.querySelector("[data-iv-name]");
+    dimensions = dialog.querySelector("[data-iv-dimensions]");
     status = dialog.querySelector("[data-iv-status]");
     dialog.addEventListener("click", event => {
       const button = event.target.closest("[data-iv-action]");
@@ -76,39 +87,126 @@ window.ImageViewer = (() => {
       event.stopPropagation();
       if (event.key === "Escape") { event.preventDefault(); close(); return; }
       if (event.ctrlKey || event.metaKey || event.altKey || event.target.matches("input,textarea")) return;
-      const key = {"+":"in", "=":"in", "-":"out", "_":"out", "0":"fit", "r":"rotate", "R":"rotate"}[event.key];
+      const key = {"+":"in", "=":"in", "-":"out", "_":"out", "0":"fit","1":"actual", "r":"rotate", "R":"rotate"}[event.key];
       if (key) { event.preventDefault(); action(key); }
     });
-    const stage = dialog.querySelector("[data-iv-stage]");
+
+    stage = dialog.querySelector("[data-iv-stage]");
     stage.addEventListener("wheel", event => {
-      if (!imageBlob) return;
-      event.preventDefault(); action(event.deltaY < 0 ? "in" : "out");
+      if (!imageBlob || picture.hidden) return;
+      event.preventDefault();
+      zoomTo(scale * (event.deltaY < 0 ? 1.25 : .8), event.clientX, event.clientY);
     }, {passive:false});
+    stage.addEventListener("dblclick", event => {
+      if (!imageBlob || picture.hidden) return;
+      event.preventDefault();
+      if (zoomMode === "fit") zoomTo(1, event.clientX, event.clientY);
+      else fitImage();
+    });
     stage.addEventListener("pointerdown", event => {
-      if (!imageBlob || event.button !== 0) return;
-      pointer = {id:event.pointerId, x:event.clientX, y:event.clientY};
+      if (!imageBlob || picture.hidden || (event.pointerType === "mouse" && event.button !== 0)) return;
+      pointers.set(event.pointerId, {x:event.clientX,y:event.clientY});
       stage.setPointerCapture?.(event.pointerId);
+      if (pointers.size === 2) {
+        const [a,b] = Array.from(pointers.values());
+        pinchDistance = Math.hypot(b.x-a.x,b.y-a.y);
+        pinchCenter = {x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+      }
     });
     stage.addEventListener("pointermove", event => {
-      if (!pointer || pointer.id !== event.pointerId) return;
-      offsetX += event.clientX - pointer.x; offsetY += event.clientY - pointer.y;
-      pointer.x = event.clientX; pointer.y = event.clientY; draw();
+      const previous = pointers.get(event.pointerId);
+      if (!previous) return;
+      pointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
+      if (pointers.size === 1) {
+        offsetX += event.clientX-previous.x; offsetY += event.clientY-previous.y;
+        constrainOffset(); draw();
+      } else if (pointers.size === 2) {
+        const [a,b] = Array.from(pointers.values());
+        const distance = Math.hypot(b.x-a.x,b.y-a.y);
+        const center = {x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+        if (pinchDistance > 0 && pinchCenter) {
+          zoomTo(scale*distance/pinchDistance, center.x, center.y);
+          offsetX += center.x-pinchCenter.x; offsetY += center.y-pinchCenter.y;
+          constrainOffset(); draw();
+        }
+        pinchDistance=distance; pinchCenter=center;
+      }
     });
-    for (const type of ["pointerup", "pointercancel", "lostpointercapture"]) stage.addEventListener(type, () => { pointer = null; });
+    for (const type of ["pointerup","pointercancel","lostpointercapture"]) {
+      stage.addEventListener(type, event => {
+        pointers.delete(event.pointerId);
+        pinchDistance=0; pinchCenter=null;
+      });
+    }
+    const onResize=()=>{
+      if (!imageBlob || picture.hidden) return;
+      if (zoomMode === "fit") fitImage();
+      else { constrainOffset(); draw(); }
+    };
+    window.addEventListener?.("resize",onResize);
+    if (typeof ResizeObserver !== "undefined") new ResizeObserver(onResize).observe(stage);
     return dialog;
+  }
+
+  function stageBox() {
+    const rect=stage.getBoundingClientRect?.() || {};
+    return {width:rect.width || stage.clientWidth || window.innerWidth || 0,
+      height:rect.height || stage.clientHeight || window.innerHeight || 0,
+      left:rect.left || 0, top:rect.top || 0};
+  }
+  function rotatedSize() {
+    const swapped=rotation%180!==0;
+    return {width:swapped ? picture.naturalHeight : picture.naturalWidth,
+      height:swapped ? picture.naturalWidth : picture.naturalHeight};
+  }
+  function fitScale() {
+    const box=stageBox(), size=rotatedSize();
+    if (!size.width || !size.height || !box.width || !box.height) return 1;
+    return Math.min(1,Math.max(1,box.width-24)/size.width,Math.max(1,box.height-24)/size.height);
+  }
+  function constrainOffset() {
+    const box=stageBox(),size=rotatedSize();
+    if (!box.width || !box.height || !size.width || !size.height) return;
+    const limitX=Math.max(0,(size.width*scale-box.width)/2);
+    const limitY=Math.max(0,(size.height*scale-box.height)/2);
+    offsetX=clamp(offsetX,-limitX,limitX);
+    offsetY=clamp(offsetY,-limitY,limitY);
   }
   function draw() {
     if (!picture) return;
-    picture.style.transform = `translate(${offsetX}px, ${offsetY}px) rotate(${rotation}deg) scale(${scale})`;
-    dialog.querySelector("[data-iv-zoom]").textContent = `${Math.round(scale * 100)}%`;
+    picture.style.transform="translate(calc(-50% + "+offsetX+"px), calc(-50% + "+offsetY+"px)) rotate("+rotation+"deg) scale("+scale+")";
+    dialog.querySelector("[data-iv-zoom]").textContent=Math.round(scale*100)+"%";
+    dialog.querySelector('[data-iv-action="fit"]')?.setAttribute?.("aria-pressed",String(zoomMode==="fit"));
+    dialog.querySelector('[data-iv-action="actual"]')?.setAttribute?.("aria-pressed",String(zoomMode==="actual"));
   }
-  function setStatus(text) { if (status) status.textContent = text; }
+  function fitImage() {
+    zoomMode="fit"; scale=fitScale(); offsetX=offsetY=0; draw();
+  }
+  function actualImage() {
+    zoomMode="actual"; scale=1; offsetX=offsetY=0; constrainOffset(); draw();
+  }
+  function zoomTo(next,x,y) {
+    if (!imageBlob || picture.hidden) return;
+    const box=stageBox();
+    const anchorX=Number.isFinite(x)?x-box.left-box.width/2:0;
+    const anchorY=Number.isFinite(y)?y-box.top-box.height/2:0;
+    const nextScale=clamp(next,.0001,8),ratio=nextScale/scale;
+    offsetX=anchorX-(anchorX-offsetX)*ratio;
+    offsetY=anchorY-(anchorY-offsetY)*ratio;
+    scale=nextScale; zoomMode="manual";
+    constrainOffset(); draw();
+  }
+  function setStatus(text) {
+    if (status) {status.textContent=text; status.hidden=!text;}
+  }
   function cleanup() {
     ++generation;
     controller?.abort(); controller = null;
     if (objectUrl) URL.revokeObjectURL(objectUrl);
-    objectUrl = null; imageBlob = null; currentURL = null; pointer = null;
+    objectUrl = null; imageBlob = null; currentURL = null; pointers.clear(); pinchDistance=0; pinchCenter=null;
     if (picture) { picture.removeAttribute("src"); picture.hidden = true; }
+    if (dimensions) dimensions.textContent="";
+    setStatus("");
     const focus = returnFocus; returnFocus = null;
     if (focus?.isConnected) focus.focus({preventScroll:true});
   }
@@ -145,7 +243,8 @@ window.ImageViewer = (() => {
     caption.textContent = filename(name);
     setStatus("正在加载图片…");
     picture.hidden = true;
-    scale = 1; rotation = 0; offsetX = offsetY = 0; draw();
+    scale=1; rotation=0; offsetX=offsetY=0; zoomMode="fit";
+    dimensions.textContent=""; draw();
     if (!dialog.open) dialog.showModal();
     const sequence = ++generation;
     controller = new AbortController();
@@ -158,7 +257,7 @@ window.ImageViewer = (() => {
       if (sequence !== generation || !dialog.open) return;
       const src = URL.createObjectURL(blob);
       objectUrl = src; imageBlob = blob;
-      picture.onload = () => { if (sequence === generation) { picture.hidden = false; setStatus("滚轮缩放 · 拖动移动 · Esc 关闭"); } };
+      picture.onload = () => { if (sequence === generation) { picture.hidden=false; dimensions.textContent=picture.naturalWidth+" × "+picture.naturalHeight; fitImage(); setStatus(""); } };
       picture.onerror = () => { if (sequence === generation) { picture.hidden = true; setStatus("图片解码失败或浏览器不支持此格式"); imageBlob = null; } };
       picture.src = src;
     } catch (error) {
@@ -195,12 +294,18 @@ window.ImageViewer = (() => {
     if (operation === "close") { close(); return; }
     if (operation === "download") { download(); return; }
     if (!imageBlob) return;
-    if (operation === "in") scale = clamp(Math.round(scale * 125) / 100, .1, 8);
-    if (operation === "out") scale = clamp(Math.round(scale * 80) / 100, .1, 8);
-    if (operation === "fit") { scale = 1; rotation = 0; offsetX = offsetY = 0; }
-    if (operation === "rotate") rotation = (rotation + 90) % 360;
+    if (picture.hidden) return;
+    if (operation === "in") { zoomTo(scale*1.25); return; }
+    if (operation === "out") { zoomTo(scale*.8); return; }
+    if (operation === "fit") { fitImage(); return; }
+    if (operation === "actual") { actualImage(); return; }
+    if (operation === "rotate") {
+      rotation=(rotation+90)%360;
+      if (zoomMode==="fit") fitImage();
+      else { constrainOffset(); draw(); }
+      return;
+    }
     if (operation === "copy") { void copy(); return; }
-    draw();
   }
   document.addEventListener("click", event => {
     // The packaged clients keep their existing native attachment transport.
