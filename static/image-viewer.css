@@ -8,7 +8,8 @@
 .xt-iv-dimensions{flex:none;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
 .xt-image-viewer button{font:inherit;border-radius:var(--radius-control,10px);color:var(--text);cursor:pointer;box-sizing:border-box;transition:background-color .15s,border-color .15s,color .15s}
 .xt-image-viewer button:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
-.xt-iv-close{flex:none;width:36px;height:36px;border:1px solid transparent;background:transparent;font-size:25px!important;line-height:1}
+.xt-iv-close{flex:none;display:grid;place-items:center;width:36px;height:36px;padding:0;border:1px solid transparent;background:transparent;line-height:1}
+.xt-iv-close svg{display:block;width:20px;height:20px;pointer-events:none}
 .xt-iv-close:hover{background:var(--surface-hover)}
 .xt-iv-stage{position:relative;flex:1;min-height:0;overflow:hidden;touch-action:none;user-select:none;cursor:grab}
 .xt-iv-stage:active{cursor:grabbing}
