@@ -228,12 +228,12 @@ test("fit uses natural pixel dimensions; 1:1 is distinct and rotation survives f
   assert.equal(h.status.hidden,true,"no permanent help/status row on successful load");
   press(h,"rotate");
   assert.equal(h.zoom.textContent,"14%");
-  assert.match(h.picture.style.transform,/rotate\\(90deg\\)/);
+  assert.ok(h.picture.style.transform.includes("rotate(90deg)"));
   press(h,"actual");
   assert.equal(h.zoom.textContent,"100%");
   press(h,"fit");
   assert.equal(h.zoom.textContent,"14%");
-  assert.match(h.picture.style.transform,/rotate\\(90deg\\)/,"fit must preserve rotation");
+  assert.ok(h.picture.style.transform.includes("rotate(90deg)"),"fit must preserve rotation");
 });
 
 test("fit recalculates when viewport changes, while manual zoom remains manual", async () => {
@@ -257,7 +257,7 @@ test("wheel zoom follows pointer and two touch pointers support pinch zoom", asy
   let blocked=false;
   h.stageEvents.wheel({deltaY:-1,clientX:500,clientY:200,preventDefault(){blocked=true;}});
   assert.equal(blocked,true);
-  assert.match(h.picture.style.transform,/translate\\(calc\\(-50% \\+ -/,"pointer zoom shifts image around cursor");
+  assert.ok(h.picture.style.transform.includes("translate(calc(-50% + -"),"pointer zoom shifts image around cursor");
   const before=parseInt(h.zoom.textContent,10);
   h.stageEvents.pointerdown({pointerId:1,pointerType:"touch",clientX:300,clientY:300});
   h.stageEvents.pointerdown({pointerId:2,pointerType:"touch",clientX:500,clientY:300});
