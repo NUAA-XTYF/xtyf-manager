@@ -141,3 +141,24 @@ test("exceptional states breathe at distinct strengths while routine tasks stay 
   assert.match(css, /@media\s*\(prefers-reduced-motion:reduce\)[\s\S]*?animation:none/);
   assert.doesNotMatch(css, /:is\(\.task-tone-completed|:is\(\.task-tone-in-progress|:is\(\.task-tone-dependency/);
 });
+
+test("dashboard quick filters agree with the four overview metric definitions", () => {
+  const {get} = fixture();
+  const state = get("state"), matches = get("taskMatches");
+  const cases = [
+    task({id:1,status:"进行中",days_left:0,owner_id:1}),
+    task({id:2,status:"未开始",days_left:7,owner_id:2,participant_ids:[1]}),
+    task({id:3,status:"阻塞",days_left:-2,owner_id:2}),
+    task({id:4,status:"已完成",days_left:-2,owner_id:1}),
+    task({id:5,status:"未开始",days_left:8,owner_id:2}),
+  ];
+  for (const [focus, expected] of [
+    ["mine",[1,2]],
+    ["ongoing",[1]],
+    ["due7",[1,2]],
+    ["overdue",[3]],
+  ]) {
+    state.filters={project:"",status:"",q:"",mine:false,focus};
+    assert.deepEqual(cases.filter(matches).map(item=>item.id),expected,focus);
+  }
+});
