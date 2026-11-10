@@ -173,6 +173,26 @@ async function ready(page) { await page.locator('#task-create-panel[open][aria-b
     }
     checks.push('dashboard daily block below work hints on right at 1280/1606; no overflow at seven widths');
 
+    // Dashboard preview uses the existing edit modal; overview links retain scope.
+    await page.goto(base+'/');
+    await page.waitForFunction(id => state.tasks.some(task => task.id===id),parentA.id);
+    await page.locator(`[data-dashboard-task="${parentA.id}"]`).click();
+    await page.locator('#modal [data-dashboard-edit]').click();
+    await page.locator('#modal #task-form [name=title]').fill('首页直接编辑任务');
+    await page.locator('#modal #task-form button[type=submit]').click();
+    await page.waitForFunction(id => state.tasks.some(task => task.id===id&&task.title==='首页直接编辑任务'),parentA.id);
+    assert.equal(await page.locator(`[data-dashboard-task="${parentA.id}"] .ws-task-row-title`).innerText(),'首页直接编辑任务');
+    const hrefs=await page.locator('#dashboard-stats a.ws-dashboard-stat').evaluateAll(links => links.map(link => new URL(link.href).searchParams.get('focus')));
+    assert.deepEqual(hrefs,['mine','ongoing','due7','overdue']);
+    await page.locator('#dashboard-stats a[href*="focus=due7"]').click();
+    await page.waitForURL('**/tasks?type=vehicle&focus=due7');
+    await page.locator('#task-focus-summary').filter({hasText:'7 天内到期'}).waitFor();
+    assert.equal(await page.locator('#task-focus-summary').isVisible(),true);
+    await page.locator('#task-focus-summary a').click();
+    await page.waitForURL('**/tasks?type=vehicle');
+    assert.equal(await page.locator('#task-focus-summary').isVisible(),false);
+    checks.push('dashboard preview reuses task edit and refreshes its card; stat links preserve and clear scope');
+
     // Personal work comes first; each group retains composite urgency ranking.
     // Daily cards load independently; wait for the task/account snapshot as well.
     await page.waitForFunction(() => Boolean(state.me?.id));
