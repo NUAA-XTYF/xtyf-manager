@@ -95,7 +95,7 @@ def _single_content(db, job, member, epoch, base_url):
     if not task or task['deleted_at'] or task['status'] in ('已完成', '已取消') or not roles:
         return None, '任务已结束或指派已撤销'
     url = base_url + (f'/tasks?task={item_id}' if kind == 'vehicle' else f'/tasks?type=daily&project={item_id}')
-    text = (f'任务：{task["title"]}\n类型：{"造车任务" if kind == "vehicle" else "日常任务"}\n'
+    text = (f'任务：{task["title"]}\n类型：{"项目任务" if kind == "vehicle" else "日常任务"}\n'
             f'职责：{"、".join(roles)}\n指派人：{payload.get("actor", "")}\n'
             f'计划：{task["start_date"] or "未设置"} 至 {task["due_date"] or "未设置"}\n{url}\n'
             '可在账户设置中关闭指派汇总邮件。')

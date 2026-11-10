@@ -80,7 +80,7 @@ fn verify_key(pem: &str, payload: &[u8], signature: &[u8]) -> Result<(), String>
 pub fn parse_release(bytes: &[u8]) -> Result<Option<(Release, String)>, String> {
     #[cfg(debug_assertions)]
     if crate::smoke_directory().is_some() {
-        if let Some(path)=std::env::var_os("XTYF_UI_TEST_PUBLIC_KEY") {
+        if let Some(path)=std::env::var_os("AURORA_UI_TEST_PUBLIC_KEY") {
             let key=fs::read_to_string(path).map_err(|e|e.to_string())?;
             return parse_release_with_key(bytes,&key);
         }

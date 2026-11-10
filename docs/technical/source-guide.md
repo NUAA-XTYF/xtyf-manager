@@ -15,7 +15,7 @@
 | `modules/task_delete.py` / `task_revisions.py` | 逻辑删除、字段修订与撤销 |
 | `modules/task_migrations.py` / `task_catalogs.py` | 版本化迁移、两套组别字典及成员关联 |
 | `modules/member_profiles.py` | 个人资料与管理员完整编辑、可恢复成员删除 |
-| `static/task-timeline.js` / `static/task-board.js` | 专业组时间轴、严格日期校验、稳定车组坐标及其他任务视图 |
+| `static/task-timeline.js` / `static/task-board.js` | 专业组时间轴、严格日期校验、稳定项目坐标及其他任务视图 |
 | `static/theme-init.js` / `theme.js` / `themes.css` / `apple.css` | 八套主题、跟随系统首屏、账户持久化及共享组件 |
 | `modules/workspace_settings.py` / `static/countdown.js` | 外观迁移、单个首页目标配置与北京时间倒计时 |
 | `modules/task_dates.py` / `static/task-date-defaults.js` | 主前置截止日前两天建议、日期来源与显式重置 |

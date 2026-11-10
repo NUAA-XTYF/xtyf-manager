@@ -15,7 +15,7 @@ permissions:
   actions: write
 
 concurrency:
-  group: xtyf-prepare-release
+  group: aurora-prepare-release
   cancel-in-progress: false
 
 jobs:

@@ -147,7 +147,7 @@ def prepare_certificates(directory: Path, address: ipaddress.IPv4Address):
             raise ValueError("The local CA needs renewal. Use a new --cert-dir and trust its root-ca.cer.")
     else:
         ca_key = rsa.generate_private_key(public_exponent=65537, key_size=3072)
-        name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "XTYF Local Development CA")])
+        name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "AURORA Local Development CA")])
         ca = (
             x509.CertificateBuilder()
             .subject_name(name).issuer_name(name).public_key(ca_key.public_key())

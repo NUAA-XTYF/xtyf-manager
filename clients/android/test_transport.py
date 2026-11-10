@@ -17,13 +17,13 @@ def main():
     java = args.jdk / ('bin/java' + suffix) if args.jdk else shutil.which('java')
     if not javac or not java:
         parser.error('A JDK is required; provide --jdk')
-    with tempfile.TemporaryDirectory(prefix='xtyf-android-http-') as temporary:
+    with tempfile.TemporaryDirectory(prefix='aurora-android-http-') as temporary:
         subprocess.run([str(javac), '-encoding', 'UTF-8', '-d', temporary,
-                        str(ROOT / 'clients/android/src/online/skywalker/manager/NativeHttpClient.java'),
-                        str(ROOT / 'clients/android/src/online/skywalker/manager/WebsitePolicy.java'),
-                        str(ROOT / 'clients/android/src/online/skywalker/manager/PdfSave.java'),
+                        str(ROOT / 'clients/android/src/com/example/aurora/NativeHttpClient.java'),
+                        str(ROOT / 'clients/android/src/com/example/aurora/WebsitePolicy.java'),
+                        str(ROOT / 'clients/android/src/com/example/aurora/PdfSave.java'),
                         str(ROOT / 'clients/android/tests/NativeHttpClientTest.java')], check=True)
-        subprocess.run([str(java), '-cp', temporary, 'online.skywalker.manager.NativeHttpClientTest'], check=True, timeout=30)
+        subprocess.run([str(java), '-cp', temporary, 'com.example.aurora.NativeHttpClientTest'], check=True, timeout=30)
 
 
 if __name__ == '__main__':

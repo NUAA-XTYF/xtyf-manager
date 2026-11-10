@@ -17,7 +17,7 @@ permissions:
 
 # Publishing is serial across new commits, so the next Beta tag is never claimed twice.
 concurrency:
-  group: xtyf-client-publish-main
+  group: aurora-client-publish-main
   cancel-in-progress: false
 
 jobs:
@@ -85,12 +85,12 @@ jobs:
           python-version: '3.13'
       - name: Reproduce version metadata for checksum collector
         env:
-          XTYF_VERSION: ${{needs.resolve.outputs.version}}
-          XTYF_CODE: ${{needs.resolve.outputs.code}}
+          AURORA_VERSION: ${{needs.resolve.outputs.version}}
+          AURORA_CODE: ${{needs.resolve.outputs.code}}
         run: python clients/versioning_ci.py apply
       - uses: actions/download-artifact@v4
         with:
-          pattern: xtyf-client-*
+          pattern: aurora-client-*
           path: dist/github-artifacts
           merge-multiple: false
       - name: Validate all seven packages, manifest and digests
@@ -131,7 +131,7 @@ jobs:
           if [[ "$existing" == "true" ]]; then
             gh release upload "$RELEASE_TAG" "${files[@]}" --repo "$GITHUB_REPOSITORY"
           else
-            args=(--repo "$GITHUB_REPOSITORY" --target "$SOURCE_SHA" --title "XTYF Manager $RELEASE_TAG" --generate-notes)
+            args=(--repo "$GITHUB_REPOSITORY" --target "$SOURCE_SHA" --title "Aurora Workspace $RELEASE_TAG" --generate-notes)
             if [[ "$RELEASE_CHANNEL" == "prerelease" ]]; then
               args+=(--prerelease --latest=false)
             else

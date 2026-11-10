@@ -11,7 +11,7 @@ from flask.testing import FlaskClient
 from test_tasks import app_module
 
 
-NATIVE = {"X-XTYF-Client-Protocol": "1"}
+NATIVE = {"X-AURORA-Client-Protocol": "1"}
 
 
 class TestClientAPI(unittest.TestCase):
@@ -41,7 +41,7 @@ class TestClientAPI(unittest.TestCase):
                               (actor, self.member_id)).fetchall()
         result = {'test': self.id(), 'stage': stage, 'status': response.status_code,
                   'actor_id': actor, 'session_version': version, 'accounts': rows}
-        if os.environ.get('XTYF_TEST_AUTH_TRACE') == '1':
+        if os.environ.get('AURORA_TEST_AUTH_TRACE') == '1':
             print('SYNTHETIC_AUTH ' + json.dumps(result), flush=True)
         return result
 

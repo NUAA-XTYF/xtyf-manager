@@ -1,5 +1,5 @@
 [Unit]
-Description=XTYF personal morning, team evening and verification mail queue
+Description=AURORA personal morning, team evening and verification mail queue
 After=network-online.target
 Wants=network-online.target
 

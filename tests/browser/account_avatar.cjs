@@ -252,7 +252,7 @@ async function adjustCrop(page, mobile) {
       await page.unroute('**/api/account/avatar?**'); await page.reload(); await loadedImages(page, 3, second.url);
 
       const native = await browser.newContext({storageState:await context.storageState()});
-      await native.addInitScript(() => { window.XTYF = {invoke:async () => ({})}; });
+      await native.addInitScript(() => { window.AURORA = {invoke:async () => ({})}; });
       const nativePage = await native.newPage(); let nativeImages = 0;
       nativePage.on('pageerror', error => errors.push(`${engine.name()} native: ${error.message}`));
       nativePage.on('request', request => { if (request.url().includes('/api/account/avatar')) nativeImages++; });

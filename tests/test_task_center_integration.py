@@ -36,7 +36,7 @@ class TaskCenterIntegrationTest(unittest.TestCase):
         self.assertNotIn('/static/app.js', daily)
         self.assertNotIn('/static/manage.js', daily)
         self.assertIn('日常项目', vehicle)
-        self.assertIn('造车任务', daily)
+        self.assertIn('项目任务', daily)
 
     def test_create_controls_are_available_to_members_for_both_workflows(self):
         vehicle = self.member.get('/tasks').get_data(as_text=True)

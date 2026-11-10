@@ -19,7 +19,7 @@ from modules.invoice_storage import InvoiceFileLock
 
 class TestInvoiceJobRecovery(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory(prefix="xtyf-invoice-jobs-test-")
+        self.temp = tempfile.TemporaryDirectory(prefix="aurora-invoice-jobs-test-")
         self.addCleanup(self.temp.cleanup)
         self.db_path = Path(self.temp.name) / "fixture-data.db"
         self.lock_path = Path(self.temp.name) / ".invoice.lock"

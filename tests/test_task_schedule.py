@@ -184,7 +184,7 @@ class TestTaskSchedule(unittest.TestCase):
             self.assertTrue(any('实际完成日期' in warning['message'] for warning in preview['warnings']))
 
     def test_external_predecessor_readonly_and_snapshot_covers_dates_and_edges(self):
-        second = self.admin.post('/api/projects', json={'name': '外部车组' + self.marker}).get_json()['id']
+        second = self.admin.post('/api/projects', json={'name': '外部项目' + self.marker}).get_json()['id']
         external = self.task(self.mechanical, end='2026-10-25', project_id=second)
         child = self.task(self.electrical, '2026-10-15', '2026-10-17', parent_id=external)
         self.sql("UPDATE tasks SET start_date='',due_date='' WHERE id=?", (child,))
@@ -205,7 +205,7 @@ class TestTaskSchedule(unittest.TestCase):
 
     def test_local_shift_warns_for_intermediate_external_reservations(self):
         first = self.task(self.mechanical)
-        second = self.admin.post('/api/projects', json={'name': '外部中间车组' + self.marker}).get_json()['id']
+        second = self.admin.post('/api/projects', json={'name': '外部中间项目' + self.marker}).get_json()['id']
         external = self.task(self.electrical, '2026-10-20', '2026-10-25', project_id=second, parent_id=first)
         last = self.task(self.vision, '2026-10-23', '2026-10-25', parent_id=external)
         preview = self.preview(base_date='2026-11-01')
@@ -292,7 +292,7 @@ class TestTaskSchedule(unittest.TestCase):
         old_token = URLSafeSerializer(app_module.app.secret_key, salt='vehicle-task-schedule-v1').dumps({'project_id': self.project})
         self.assertEqual(self.admin.post(endpoint, json={'snapshot': old_token}).status_code, 400)
         self.assertEqual(self.admin.post(f'/api/projects/{self.project}/schedule/preview', json={}).status_code, 400)
-        other = self.admin.post('/api/projects', json={'name': 'token车组' + self.marker}).get_json()['id']
+        other = self.admin.post('/api/projects', json={'name': 'token项目' + self.marker}).get_json()['id']
         self.assertEqual(self.admin.post(f'/api/projects/{other}/schedule/apply', json={'snapshot': preview['snapshot']}).status_code, 400)
 
     def test_invalid_parameters_and_archived_project(self):

@@ -1,4 +1,4 @@
-package online.skywalker.manager;
+package com.example.aurora;
 
 import com.sun.net.httpserver.*;
 import java.io.*;
@@ -61,17 +61,17 @@ public final class NativeHttpClientTest {
             fails(() -> invalid.take(true), "Invalid PDF leaves no save result");
         } finally { decodeWorker.shutdownNow(); }
         check("http://localhost:1234".equals(NativeHttpClient.normalize(" HTTP://LOCALHOST:1234/ ")), "Normalize scheme and host");
-        for (String server : Arrays.asList("http://manager.skywalker-rm.online", " HTTP://MANAGER.SKYWALKER-RM.ONLINE/ "))
-            check("http://manager.skywalker-rm.online".equals(NativeHttpClient.normalize(server)), "Preserve the built-in HTTP server: " + server);
-        check("http://manager.skywalker-rm.online:80".equals(NativeHttpClient.normalize("http://manager.skywalker-rm.online:80/")), "Preserve explicit HTTP port 80");
-        for (String unchanged : Arrays.asList("http://manager.skywalker-rm.online:8080", "http://manager.skywalker-rm.online:443", "https://manager.skywalker-rm.online", "https://manager.skywalker-rm.online:8443", "http://example.com", "http://manager.skywalker-rm.online.example.com"))
+        for (String server : Arrays.asList("http://workspace.example.com", " HTTP://WORKSPACE.EXAMPLE.COM/ "))
+            check("http://workspace.example.com".equals(NativeHttpClient.normalize(server)), "Preserve the built-in HTTP server: " + server);
+        check("http://workspace.example.com:80".equals(NativeHttpClient.normalize("http://workspace.example.com:80/")), "Preserve explicit HTTP port 80");
+        for (String unchanged : Arrays.asList("http://workspace.example.com:8080", "http://workspace.example.com:443", "https://workspace.example.com", "https://workspace.example.com:8443", "http://example.com", "http://workspace.example.com.example.com"))
             check(unchanged.equals(NativeHttpClient.normalize(unchanged)), "Keep the selected server unchanged: " + unchanged);
-        NativeHttpClient defaultServer = new NativeHttpClient("http://manager.skywalker-rm.online", "", value -> {});
-        check("http://manager.skywalker-rm.online/api/client/bootstrap".equals(defaultServer.resolve("/api/client/bootstrap").toString()), "Default server requests use HTTP");
-        fails(() -> defaultServer.resolve("https://manager.skywalker-rm.online/api/client/bootstrap"), "Reject a scheme switch from HTTP to HTTPS");
-        NativeHttpClient secureServer = new NativeHttpClient("https://manager.skywalker-rm.online", "", value -> {});
-        check("https://manager.skywalker-rm.online/api/client/bootstrap".equals(secureServer.resolve("/api/client/bootstrap").toString()), "Selected HTTPS server requests use HTTPS");
-        fails(() -> secureServer.resolve("http://manager.skywalker-rm.online/api/client/bootstrap"), "Reject a scheme switch from HTTPS to HTTP");
+        NativeHttpClient defaultServer = new NativeHttpClient("http://workspace.example.com", "", value -> {});
+        check("http://workspace.example.com/api/client/bootstrap".equals(defaultServer.resolve("/api/client/bootstrap").toString()), "Default server requests use HTTP");
+        fails(() -> defaultServer.resolve("https://workspace.example.com/api/client/bootstrap"), "Reject a scheme switch from HTTP to HTTPS");
+        NativeHttpClient secureServer = new NativeHttpClient("https://workspace.example.com", "", value -> {});
+        check("https://workspace.example.com/api/client/bootstrap".equals(secureServer.resolve("/api/client/bootstrap").toString()), "Selected HTTPS server requests use HTTPS");
+        fails(() -> secureServer.resolve("http://workspace.example.com/api/client/bootstrap"), "Reject a scheme switch from HTTPS to HTTP");
         check(NativeHttpClient.probeRedirectAllowed(URI.create("http://example.com/a"), URI.create("https://example.com/b")), "Anonymous probe permits default port HTTPS upgrade");
         check(NativeHttpClient.probeRedirectAllowed(URI.create("http://example.com:8080/a"), URI.create("https://example.com:8080/b")), "Anonymous probe permits same custom port upgrade");
         for (String destination : Arrays.asList("http://evil.example/a", "https://evil.example/a", "https://example.com:8443/a", "https://example.com:80/a", "https://u:p@example.com/a"))
@@ -118,7 +118,7 @@ public final class NativeHttpClientTest {
         server.createContext("/echo", exchange -> {
             ByteArrayOutputStream body = new ByteArrayOutputStream(); NativeHttpClient.copy(exchange.getRequestBody(), body);
             String cookie = exchange.getRequestHeaders().getFirst("Cookie");
-            send(exchange, 200, exchange.getRequestMethod() + "|" + cookie + "|" + exchange.getRequestHeaders().getFirst("X-CSRF-Token") + "|" + exchange.getRequestHeaders().getFirst("X-XTYF-Client-Protocol") + "|" + body.toString("UTF-8"));
+            send(exchange, 200, exchange.getRequestMethod() + "|" + cookie + "|" + exchange.getRequestHeaders().getFirst("X-CSRF-Token") + "|" + exchange.getRequestHeaders().getFirst("X-AURORA-Client-Protocol") + "|" + body.toString("UTF-8"));
         });
         server.createContext("/rotate", exchange -> { exchange.getResponseHeaders().set("X-CSRF-Token", "token-2"); send(exchange, 200, "rotated"); });
         server.createContext("/delete-cookie", exchange -> { exchange.getResponseHeaders().set("Set-Cookie", "session=; Path=/; Max-Age=0"); send(exchange, 200, "deleted"); });
@@ -173,7 +173,7 @@ public final class NativeHttpClientTest {
             NativeHttpClient restored = new NativeHttpClient(origin, saved.get(), saved::set);
             check("GET|session=logged-in|token-1|1|".equals(get(restored, "/echo")), "Restore persistent session across process restart");
             get(restored, "/rotate"); check("token-2".equals(restored.csrf()), "Update rotated CSRF");
-            Map<String,String> spoof = new HashMap<>(); spoof.put("Cookie", "attacker"); spoof.put("X-CSRF-Token", "attacker"); spoof.put("X-XTYF-Client-Protocol", "attacker");
+            Map<String,String> spoof = new HashMap<>(); spoof.put("Cookie", "attacker"); spoof.put("X-CSRF-Token", "attacker"); spoof.put("X-AURORA-Client-Protocol", "attacker");
             byte[] body = "synthetic upload payload".getBytes(StandardCharsets.UTF_8);
             restored.request("/echo", "POST", spoof, output -> output.write(body), "write", (status, headers, input) -> {
                 ByteArrayOutputStream output = new ByteArrayOutputStream(); NativeHttpClient.copy(input, output);

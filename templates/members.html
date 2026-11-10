@@ -2,7 +2,7 @@
 {% block title %}成员管理{% endblock %}
 {% block content %}
 <div class="ux-page-head">
-  <div><p class="ux-eyebrow">TEAM / MEMBERS</p><h1>成员管理</h1><p>集中维护成员专业组、造车组别和账号权限；一个人可同时参与多个造车组别。</p></div>
+  <div><p class="ux-eyebrow">TEAM / MEMBERS</p><h1>成员管理</h1><p>集中维护成员专业组、所属项目和账号权限；一个人可同时参与多个所属项目。</p></div>
   <div class="ux-page-actions"><a class="btn" href="{{ url_for('manage') }}">任务管理</a><a class="btn" data-download-name="members.csv" href="{{ url_for('export_members_csv') }}">导出成员 CSV</a></div>
 </div>
 
@@ -19,20 +19,20 @@
       <label>角色<select name="role"><option value="member">成员</option><option value="manager">项管</option><option value="admin">超级管理员</option></select></label>
       {% endif %}
       <fieldset class="span-2"><legend>专业组（技能方向，可多选）</legend><div id="member-create-groups" class="choice-host"></div></fieldset>
-      <fieldset class="span-2"><legend>造车组别（可多选）</legend><div id="member-create-projects" class="choice-host"></div></fieldset>
+      <fieldset class="span-2"><legend>所属项目（可多选）</legend><div id="member-create-projects" class="choice-host"></div></fieldset>
       <div class="member-form-actions"><button class="btn primary" type="submit">添加成员</button><p class="form-message" role="alert"></p></div>
     </form>
     <form id="import-form" class="form-grid member-import-form" aria-labelledby="member-import-title">
       <h3 class="span-2 member-form-title" id="member-import-title">批量导入</h3>
       <label class="span-2">每行：姓名,专业组1;专业组2[,用户名]<textarea name="text" rows="8" placeholder="张三,视觉;电控&#10;李四,机械,lisi"></textarea></label>
-      <fieldset class="span-2"><legend>为本批次成员选择造车组别（可多选）</legend><div id="member-import-projects" class="choice-host"></div></fieldset>
+      <fieldset class="span-2"><legend>为本批次成员选择所属项目（可多选）</legend><div id="member-import-projects" class="choice-host"></div></fieldset>
       <div class="member-form-actions"><button class="btn" type="submit">批量导入</button><p class="form-message" role="alert"></p></div>
     </form>
   </div>
   <div class="toolbar">
     <input type="search" aria-label="搜索成员" id="m-filter-q" placeholder="搜索姓名 / 用户名">
     <label class="toolbar-field"><span>专业组</span><select id="m-filter-group"><option value="">全部组别</option></select></label>
-    <label class="toolbar-field"><span>造车组别</span><select id="m-filter-project"><option value="">全部造车组别</option></select></label>
+    <label class="toolbar-field"><span>所属项目</span><select id="m-filter-project"><option value="">全部所属项目</option></select></label>
     {% if me.role == "admin" %}<label class="toolbar-field"><input type="checkbox" id="m-show-deleted"> 显示已删除成员</label>{% endif %}
     <select id="m-filter-role">
       <option value="">全部角色</option>
@@ -45,7 +45,7 @@
     <!-- 成员列表：角色下拉（仅超级管理员）、重置密码、停用/启用 -->
 <table id="member-table">
       <thead>
-        <tr><th>ID</th><th>姓名</th><th>用户名</th><th>专业组</th><th>造车组别</th><th>角色</th><th>状态</th><th>操作</th></tr>
+        <tr><th>ID</th><th>姓名</th><th>用户名</th><th>专业组</th><th>所属项目</th><th>角色</th><th>状态</th><th>操作</th></tr>
       </thead>
       <tbody></tbody>
     </table>
@@ -65,9 +65,9 @@
       <ul id="member-group-catalog" class="catalog-list" aria-live="polite"></ul>
     </section>
     <section class="catalog-block">
-      <h3>造车组别字典</h3><p class="ux-note">删除后不再允许分配新任务，既有任务归属保留；超级管理员可随时恢复。</p>
+      <h3>所属项目字典</h3><p class="ux-note">删除后不再允许分配新任务，既有任务归属保留；超级管理员可随时恢复。</p>
       <form id="member-project-create-form" class="catalog-form">
-        <label><span>新造车组别</span><input name="name" maxlength="80" required placeholder="例如：英雄"></label>
+        <label><span>新所属项目</span><input name="name" maxlength="80" required placeholder="例如：英雄"></label>
         <button class="btn" type="submit">新增组别</button>
         <p class="form-message" role="alert"></p>
       </form>

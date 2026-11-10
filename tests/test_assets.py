@@ -15,7 +15,7 @@ from modules.assets import migrate_assets
 
 class AssetsTest(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory(prefix="xtyf-assets-")
+        self.temp = tempfile.TemporaryDirectory(prefix="aurora-assets-")
         self.addCleanup(self.temp.cleanup)
         self.path = str(Path(self.temp.name) / "data.db")
         source = sqlite3.connect(app_module.DB_PATH)

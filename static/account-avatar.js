@@ -36,8 +36,8 @@ if (typeof window !== "undefined") window.AvatarCrop = AvatarCrop;
 
 if (typeof document !== "undefined") document.addEventListener("DOMContentLoaded", () => {
   const editor = document.getElementById("avatar-editor");
-  const native = typeof window.XTYF?.invoke === "function";
-  if (!editor || (native && !window.XTYF.supports?.('image_preview'))) return;
+  const native = typeof window.AURORA?.invoke === "function";
+  if (!editor || (native && !window.AURORA.supports?.('image_preview'))) return;
   editor.hidden = false;
   const $ = id => document.getElementById(id);
   const fileInput = $("avatar-file"), dialog = $("avatar-crop-dialog");
@@ -115,7 +115,7 @@ if (typeof document !== "undefined") document.addEventListener("DOMContentLoaded
       let source = file;
       if (native) {
         if (!file.handle) throw new Error("请通过客户端文件选择器选择图片。");
-        const data = await window.XTYF.invoke('read_selected_image', {handle:file.handle});
+        const data = await window.AURORA.invoke('read_selected_image', {handle:file.handle});
         if (!Number.isInteger(data.size) || data.size <= 0 || data.size > 10 * 1024 * 1024 ||
             !["image/jpeg", "image/png", "image/webp"].includes(data.mime) || typeof data.body !== 'string' ||
             data.body.length > 4 * Math.ceil(10 * 1024 * 1024 / 3)) throw new Error("图片预览数据无效，请重新选择。");

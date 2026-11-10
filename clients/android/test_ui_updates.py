@@ -23,16 +23,16 @@ def main():
         parser.error('org.json test-only JAR SHA256 mismatch')
     suffix = '.exe' if os.name == 'nt' else ''
     java, javac = (args.jdk / ('bin/' + tool + suffix) for tool in ('java', 'javac'))
-    source = ROOT / 'clients/android/src/online/skywalker/manager'
-    with tempfile.TemporaryDirectory(prefix='xtyf-ui-update-test-') as temporary:
+    source = ROOT / 'clients/android/src/com/example/aurora'
+    with tempfile.TemporaryDirectory(prefix='aurora-ui-update-test-') as temporary:
         subprocess.run([str(javac), '-encoding', 'UTF-8', '--release', '8', '-cp', str(args.json_jar), '-d', temporary,
                         str(source / 'NativeHttpClient.java'), str(source / 'UiUpdateStore.java'),
                         str(ROOT / 'clients/android/tests/UiUpdateStoreTest.java')], check=True)
         subprocess.run([str(java), '-cp', temporary + os.pathsep + str(args.json_jar),
-                        'online.skywalker.manager.UiUpdateStoreTest', *([str(args.fixture)] if args.fixture else [])], check=True, timeout=60)
+                        'com.example.aurora.UiUpdateStoreTest', *([str(args.fixture)] if args.fixture else [])], check=True, timeout=60)
         if args.android_jar.is_file():
             build_config = Path(temporary) / 'BuildConfig.java'
-            build_config.write_text('package online.skywalker.manager; public class BuildConfig { '
+            build_config.write_text('package com.example.aurora; public class BuildConfig { '
                                     'public static final String VERSION="1.0.10", SERVER_URL="http://localhost"; }', encoding='utf-8')
             subprocess.run([str(javac), '-encoding', 'UTF-8', '--release', '8', '-cp', str(args.android_jar),
                             '-d', temporary, *map(str, source.glob('*.java')), str(build_config)], check=True)

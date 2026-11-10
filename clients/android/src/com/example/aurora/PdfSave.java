@@ -1,4 +1,4 @@
-package online.skywalker.manager;
+package com.example.aurora;
 
 import java.io.IOException;
 import java.util.Base64;

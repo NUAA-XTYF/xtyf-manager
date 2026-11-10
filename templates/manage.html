@@ -3,13 +3,13 @@
 {% block title %}任务管理{% endblock %}
 {% block content %}
 <div class="ux-page-head">
-  <div><p class="ux-eyebrow">TEAM / MANAGEMENT</p><h1>任务管理</h1><p>管理造车组别、排期和现有任务；新任务在任务中心创建。</p></div>
+  <div><p class="ux-eyebrow">TEAM / MANAGEMENT</p><h1>任务管理</h1><p>管理所属项目、排期和现有任务；新任务在任务中心创建。</p></div>
   <div class="ux-page-actions"><a class="btn" href="{{ url_for('tasks') }}">任务中心</a><a class="btn" href="{{ url_for('members') }}">成员管理</a><a class="btn" data-download-name="tasks.csv" href="{{ url_for('export_csv') }}">导出任务 CSV</a></div>
 </div>
 
 
 <section class="panel">
-  <h2>造车组别字典</h2><p class="ux-note">按车种/机器人类别管理任务，例如步兵、哨兵、重装、飞镖。可自行增加或重命名；不会改变成员的专业组。</p>
+  <h2>所属项目字典</h2><p class="ux-note">按业务或产品线管理任务，例如官网、移动端、数据平台、基础设施。可自行增加或重命名；不会改变成员的专业组。</p>
   <div id="catalog-grid" class="catalog-grid"></div>
 </section>
 
@@ -17,16 +17,16 @@
   <h2>任务列表 <span class="muted" id="task-count"></span></h2>
   <div class="toolbar">
     <input type="search" aria-label="搜索任务" id="t-filter-q" placeholder="搜索任务 / 负责人 / 组别">
-    <label class="toolbar-field"><span>造车组别</span><select id="t-filter-project"><option value="">全部组别</option></select></label>
+    <label class="toolbar-field"><span>所属项目</span><select id="t-filter-project"><option value="">全部组别</option></select></label>
     <label class="toolbar-field"><span>状态</span><select id="t-filter-status"><option value="">全部状态</option></select></label>
     <button class="btn primary" id="schedule-project" type="button" disabled>一键排期</button>
   </div>
-  <p class="field-help">点击“一键排期”后选择造车组别；若已筛选组别，直接预览该组。默认只顺延，进行中和固定日期的任务默认受保护；确认应用后才保存，不受搜索和状态筛选影响。</p>
+  <p class="field-help">点击“一键排期”后选择所属项目；若已筛选组别，直接预览该组。默认只顺延，进行中和固定日期的任务默认受保护；确认应用后才保存，不受搜索和状态筛选影响。</p>
   <div class="table-wrap">
     <!-- 任务列表：支持搜索/组别/状态筛选；行内可编辑、删除 -->
 <table id="task-table">
       <thead>
-        <tr><th>ID</th><th>任务</th><th>负责人</th><th>专业阶段</th><th>参与成员</th><th>造车组别</th><th>开始日期</th><th>截止日期</th><th>优先级</th><th>状态</th><th>剩余天数</th><th>操作</th></tr>
+        <tr><th>ID</th><th>任务</th><th>负责人</th><th>专业阶段</th><th>参与成员</th><th>所属项目</th><th>开始日期</th><th>截止日期</th><th>优先级</th><th>状态</th><th>剩余天数</th><th>操作</th></tr>
       </thead>
       <tbody></tbody>
     </table>

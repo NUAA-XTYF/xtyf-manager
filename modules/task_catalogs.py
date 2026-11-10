@@ -226,13 +226,13 @@ def member_projects(member_id: int):
     data = request.get_json(silent=True)
     if not isinstance(data, dict):
         return jsonify(ok=False, error="请求格式不正确"), 400
-    project_ids, error = normalize_ids(data.get("project_ids"), "造车组别")
+    project_ids, error = normalize_ids(data.get("project_ids"), "所属项目")
     db = get_db()
     if error or project_ids is None:
-        return jsonify(ok=False, error=error or "造车组别不存在"), 400
+        return jsonify(ok=False, error=error or "所属项目不存在"), 400
     existing = {int(r[0]) for r in db.execute("SELECT project_id FROM member_projects WHERE member_id=?", (member_id,))}
     if not active_ids(db, "projects", [x for x in project_ids if x not in existing]):
-        return jsonify(ok=False, error="造车组别已删除或不存在"), 400
+        return jsonify(ok=False, error="所属项目已删除或不存在"), 400
     if db.execute("SELECT 1 FROM members WHERE id=?", (member_id,)).fetchone() is None:
         return jsonify(ok=False, error="成员不存在"), 404
     _set_member_projects(db, member_id, project_ids)
@@ -290,9 +290,9 @@ def member_create():
             db.rollback(); return jsonify(ok=False, error="group_name 与 group_ids 冲突"), 400
         group_ids = legacy
     group_ids = group_ids or []
-    project_ids, project_error = normalize_ids(data.get("project_ids"), "造车组别")
+    project_ids, project_error = normalize_ids(data.get("project_ids"), "所属项目")
     if project_error or project_ids is None or not active_ids(db, "projects", project_ids):
-        db.rollback(); return jsonify(ok=False, error=project_error or "造车组别不存在"), 400
+        db.rollback(); return jsonify(ok=False, error=project_error or "所属项目不存在"), 400
     if error or not active_ids(db, "groups", group_ids):
         db.rollback(); return jsonify(ok=False, error=error or "组别不存在"), 400
     try:
@@ -318,9 +318,9 @@ def members_import():
     requested_groups, group_error = normalize_ids(data.get("group_ids"), "组别")
     if group_error or ("group_ids" in data and not active_ids(db, "groups", requested_groups or [])):
         return jsonify(ok=False, error=group_error or "组别不存在"), 400
-    project_ids, project_error = normalize_ids(data.get("project_ids"), "造车组别")
+    project_ids, project_error = normalize_ids(data.get("project_ids"), "所属项目")
     if project_error or project_ids is None or not active_ids(db, "projects", project_ids):
-        return jsonify(ok=False, error=project_error or "造车组别不存在"), 400
+        return jsonify(ok=False, error=project_error or "所属项目不存在"), 400
     text = data.get('text', '')
     if not isinstance(text, str):
         return jsonify(ok=False, error='导入内容必须是文字'), 400

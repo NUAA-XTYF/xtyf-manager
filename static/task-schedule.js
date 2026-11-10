@@ -64,7 +64,7 @@ function createScheduleSession(projectId, request, changed = () => {}, afterSave
     const liveIds = new Set(result.rows.filter(row => row.eligible && row.needs_duration).map(row => String(row.id)));
     context.draft.durations = Object.fromEntries(Object.entries({...context.draft.durations, ...result.durations})
       .filter(([id]) => liveIds.has(id)));
-    context.message = !result.rows.length ? "当前造车组别没有任务，请先在任务中心创建任务并选择该组别，再回来排期。"
+    context.message = !result.rows.length ? "当前所属项目没有任务，请先在任务中心创建任务并选择该组别，再回来排期。"
       : result.errors?.length ? "请处理下方问题，然后更新预览。" : result.changed_count
       ? "预览将调整 " + Number(result.changed_count) + " 项任务，确认后保存。" : "当前方案无需调整日期。";
     context.error = !!result.errors?.length;
@@ -118,7 +118,7 @@ function schedulePreviewRows(rows, draft = {}) {
     const duration = needsDuration
       ? '<label class="schedule-duration">工期（天，含首尾）<input type="number" inputmode="numeric" min="1" step="1" data-schedule-duration="' + id + '" value="' + esc(draft.durations?.[id] ?? row.duration_days ?? "") + '" aria-label="任务 ' + esc(row.title) + ' 的工期天数" ' + (selected ? "" : "disabled") + '></label>'
       : '<span class="schedule-duration">工期：' + (row.duration_days ? Number(row.duration_days) + " 天（含首尾）" : "未设置") + '</span>';
-    const predecessors = (row.predecessors || []).map((item) => '<li>#' + Number(item.id) + ' ' + esc(item.title) + (item.external ? " · 跨车组" : "") + (item.boundary_date ? " · 衔接 " + esc(item.boundary_date) : "") + '</li>').join("");
+    const predecessors = (row.predecessors || []).map((item) => '<li>#' + Number(item.id) + ' ' + esc(item.title) + (item.external ? " · 跨项目" : "") + (item.boundary_date ? " · 衔接 " + esc(item.boundary_date) : "") + '</li>').join("");
     return '<article class="schedule-task" id="schedule-task-' + id + '" tabindex="-1" aria-label="任务 ' + esc(row.title) + '">' +
       '<div class="schedule-task-main"><label class="schedule-selection"><input type="checkbox" data-schedule-task="' + id + '" ' + (selected ? "checked" : "") + ' ' + (row.eligible ? "" : "disabled") + ' aria-label="' + (row.protected ? "允许本次调整" : "参与排期") + '：' + esc(row.title) + '"><span><strong>' + esc(row.title) + '</strong><small>#' + id + ' · ' + esc(row.status) + ' · ' + esc(row.owner_name || "未指定负责人") + (row.stage ? " · " + esc(row.stage) : "") + '</small></span></label>' +
       (row.protected ? '<p class="schedule-protection">' + esc(row.protection_reason || "日期受保护") + ' · ' + (row.eligible ? "勾选可允许本次调整，保留长期固定标记" : "保留原日期") + '</p>' : "") +
@@ -141,10 +141,10 @@ function scheduleProblemList(items, title, warning = false) {
 function chooseScheduleProject() {
   const projects = state.projects.filter(project => project.is_active !== 0);
   const opened = showModal('<header class="modal-head"><h2>选择排期组别</h2><button class="btn ghost sm" type="button" data-schedule-choice-close>关闭</button></header>' +
-    '<p class="ux-note">一次预览一个造车组别；选择组别不会修改任务，确认应用后才保存日期。</p>' +
-    (projects.length ? '<form id="schedule-project-choice"><label>造车组别<select name="project" required>' + options(projects, "", "请选择造车组别") +
+    '<p class="ux-note">一次预览一个所属项目；选择组别不会修改任务，确认应用后才保存日期。</p>' +
+    (projects.length ? '<form id="schedule-project-choice"><label>所属项目<select name="project" required>' + options(projects, "", "请选择所属项目") +
       '</select></label><div class="modal-actions"><button class="btn primary" type="submit">查看排期预览</button></div></form>'
-      : '<p role="status">暂无可用造车组别，请先关闭此窗口，在本页新增造车组别。</p>'), "选择排期组别", {
+      : '<p role="status">暂无可用所属项目，请先关闭此窗口，在本页新增所属项目。</p>'), "选择排期组别", {
         returnFocus: () => document.getElementById("schedule-project"),
       });
   if (opened === false) return;
@@ -179,7 +179,7 @@ async function openSchedulePreview(projectId) {
   let root;
   const session = createScheduleSession(projectKey, apiRequest, update, refresh);
   const opened = showModal('<div data-schedule-root class="schedule-shell"><header class="modal-head schedule-head"><div><p class="ux-eyebrow">TEAM / SCHEDULE</p><h2>整组排期预览</h2></div><button class="btn ghost sm" type="button" data-schedule-close>关闭</button></header>' +
-    '<div class="schedule-scroll"><p class="ux-note">按所有前置依赖计算；缺失日期时默认按前置结束前 2 天衔接（不早于前置开始），已保存的更早预留开始日期允许重叠，不会因两天建议强制改期；默认只顺延。范围包含整组任务，不受列表筛选影响。进行中和固定日期的任务默认受保护；确认后保存日期，不持续自动联动。同一负责人跨车组及未归属车组任务的日期重叠仅提醒，外部任务不在本次调整范围。</p>' +
+    '<div class="schedule-scroll"><p class="ux-note">按所有前置依赖计算；缺失日期时默认按前置结束前 2 天衔接（不早于前置开始），已保存的更早预留开始日期允许重叠，不会因两天建议强制改期；默认只顺延。范围包含整组任务，不受列表筛选影响。进行中和固定日期的任务默认受保护；确认后保存日期，不持续自动联动。同一负责人跨项目及未归属项目任务的日期重叠仅提醒，外部任务不在本次调整范围。</p>' +
     '<div class="schedule-controls"><label>基准日期<input type="date" id="schedule-base-date" required></label><p id="schedule-summary" class="schedule-summary" role="status">正在读取整组任务…</p></div>' +
     '<p id="schedule-stale" class="schedule-stale hidden" role="status">选项已修改，下方仍为上次预览；请更新预览。</p><div id="schedule-body"><p class="empty">正在生成预览…</p></div></div>' +
     '<footer class="schedule-footer"><p id="schedule-feedback" class="form-message" role="status" aria-live="polite"></p><div class="modal-actions"><button class="btn" type="button" id="schedule-repreview">更新预览</button><button class="btn primary" type="button" id="schedule-apply" disabled>确认应用排期</button></div></footer></div>', "整组排期预览", {
@@ -200,7 +200,7 @@ async function openSchedulePreview(projectId) {
       base.value = context.draft.base_date;
       root.querySelector("#schedule-body").innerHTML = scheduleProblemList(result.errors, "请先处理以下问题")
         + scheduleProblemList(result.warnings, "排期提醒（不阻止应用）", true)
-        + '<div class="schedule-tasks">' + (schedulePreviewRows(result.rows, context.draft) || '<p class="empty">当前造车组别没有任务。<a href="/tasks?type=vehicle">前往任务中心创建任务</a></p>') + '</div>';
+        + '<div class="schedule-tasks">' + (schedulePreviewRows(result.rows, context.draft) || '<p class="empty">当前所属项目没有任务。<a href="/tasks?type=vehicle">前往任务中心创建任务</a></p>') + '</div>';
       root.querySelectorAll("[data-schedule-task]").forEach(input => input.addEventListener("change", () => {
         context.draft.task_ids = [...root.querySelectorAll("[data-schedule-task]:checked")].map(item => Number(item.dataset.scheduleTask));
         context.invalidate();

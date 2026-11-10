@@ -38,7 +38,7 @@ python deploy/audit_maintenance.py --database /path/to/data.db \
 
 **方法 A：管理员页面。** 登录超级管理员账户，打开 `/admin/security` → **审计保留策略**，填写四个级别的天数并保存。值持久化到业务数据库的 `audit_retention_settings` 表，重启服务仍然有效；点击“恢复配置文件／环境变量设置”会删除管理员覆盖值并重新继承服务器配置。普通成员及项管没有权限读取或修改此策略。
 
-**方法 B：服务器 JSON 配置文件。** 将仓库的 `deploy/audit-retention.example.json` 复制到业务库之外的受控路径，例如 `/etc/xtyf-manager/audit-retention.json`，内容：
+**方法 B：服务器 JSON 配置文件。** 将仓库的 `deploy/audit-retention.example.json` 复制到业务库之外的受控路径，例如 `/etc/aurora-manager/audit-retention.json`，内容：
 
 ```json
 {
@@ -49,7 +49,7 @@ python deploy/audit_maintenance.py --database /path/to/data.db \
 }
 ```
 
-服务进程使用 `AUDIT_RETENTION_CONFIG=/etc/xtyf-manager/audit-retention.json` 指向该文件。文件可以只配置需要覆盖的级别；**不得包含 `permanent`**。所有值必须为整数，不允许负数、布尔值、小数、未知字段或超过 36500 天。不存在或格式错误时会拒绝生成清理计划，不会错误地使用危险默认值。JSON 配置不是部署时自动写入的，文件需由管理员自行放置并限制权限，避免随部署覆盖。
+服务进程使用 `AUDIT_RETENTION_CONFIG=/etc/aurora-manager/audit-retention.json` 指向该文件。文件可以只配置需要覆盖的级别；**不得包含 `permanent`**。所有值必须为整数，不允许负数、布尔值、小数、未知字段或超过 36500 天。不存在或格式错误时会拒绝生成清理计划，不会错误地使用危险默认值。JSON 配置不是部署时自动写入的，文件需由管理员自行放置并限制权限，避免随部署覆盖。
 
 **生效优先级：管理员数据库设置 > JSON 文件 > 兼容旧环境变量 > 程序默认值。** 页面会标识每一级别当前值的来源。管理员“保存”一次性覆盖四个非永久级别；“恢复配置文件／环境变量设置”将取消覆盖。
 
@@ -61,7 +61,7 @@ python deploy/audit_maintenance.py --database /path/to/data.db \
 - `AUDIT_ROUTINE_RETENTION_DAYS`：低，默认 7 天。
 - `AUDIT_MAX_ROWS`：默认 100000；仅可能淘汰尚允许清理的低优先级日志；**不删除财务、严重、重要、一般的未过期记录，也不删除设置为 0 天的低优先级记录**。设为 0 关闭容量约束。
 
-维护工具还支持 `--config /etc/xtyf-manager/audit-retention.json` 显式指定文件。管理员数据库覆盖设置与维护工具共用同一个业务数据库，且 `--config` 仅指定 JSON 输入、不能覆盖数据库中已经保存的管理员设置。预览 JSON 输出包含各级别实际使用的 `retention_days` 和 `retention_sources`，请在执行 `--apply` 前核对。
+维护工具还支持 `--config /etc/aurora-manager/audit-retention.json` 显式指定文件。管理员数据库覆盖设置与维护工具共用同一个业务数据库，且 `--config` 仅指定 JSON 输入、不能覆盖数据库中已经保存的管理员设置。预览 JSON 输出包含各级别实际使用的 `retention_days` 和 `retention_sources`，请在执行 `--apply` 前核对。
 
 `pending`、后台发票任务的审计引用和原请求引用链继续豁免；容量上限可能被永久或被保护记录超过。
 

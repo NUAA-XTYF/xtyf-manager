@@ -8,13 +8,13 @@
 
 | 产物 | 字节数 | SHA-256 |
 |---|---:|---|
-| windows/XTYF-Manager-Setup-1.1.1-x64.exe | 8461557 | `e4b3a6de5deb887fc0cced93d00b7348746e3f346ea4b9b856aaa2917f1646cb` |
-| windows/XTYF-Manager-Setup-1.1.1-arm64.exe | 8110511 | `8dfecea93163bdc14cc47335611fb94a1457d8f6b97e84980fd5740d015fecfe` |
-| android/XTYF-Manager-1.1.1.apk | 5663705 | `bf3d77519a1468630b368aaf59a259e022e0b84c4ac9d7c7b64116fc2d0032d5` |
-| linux/XTYF-Manager-1.1.1-arm64.deb | 10042808 | `b74460264125853a38b7b8c5828f0bb55afbb25bb3f9d8223a433c585b96d70b` |
-| linux/XTYF-Manager-1.1.1-x86_64.rpm | 10201834 | `5495142d9bc454fcb2917754b4e5fd0dc0ab8298ad0b2db91f2a21ae1bb28eca` |
-| linux/XTYF-Manager-1.1.1-aarch64.rpm | 10043940 | `e2668397483164ccc3a31bc5c3aa13f89d60df42dac60a74af92dd2986652fdc` |
-| linux/XTYF-Manager-1.1.1-amd64.deb | 10200648 | `8fabbb553a28c07b9f79253e5e257ae41981b6f0cdbebcab4dde190709c6d7fd` |
+| windows/Aurora-Workspace-Setup-1.1.1-x64.exe | 8461557 | `e4b3a6de5deb887fc0cced93d00b7348746e3f346ea4b9b856aaa2917f1646cb` |
+| windows/Aurora-Workspace-Setup-1.1.1-arm64.exe | 8110511 | `8dfecea93163bdc14cc47335611fb94a1457d8f6b97e84980fd5740d015fecfe` |
+| android/Aurora-Workspace-1.1.1.apk | 5663705 | `bf3d77519a1468630b368aaf59a259e022e0b84c4ac9d7c7b64116fc2d0032d5` |
+| linux/Aurora-Workspace-1.1.1-arm64.deb | 10042808 | `b74460264125853a38b7b8c5828f0bb55afbb25bb3f9d8223a433c585b96d70b` |
+| linux/Aurora-Workspace-1.1.1-x86_64.rpm | 10201834 | `5495142d9bc454fcb2917754b4e5fd0dc0ab8298ad0b2db91f2a21ae1bb28eca` |
+| linux/Aurora-Workspace-1.1.1-aarch64.rpm | 10043940 | `e2668397483164ccc3a31bc5c3aa13f89d60df42dac60a74af92dd2986652fdc` |
+| linux/Aurora-Workspace-1.1.1-amd64.deb | 10200648 | `8fabbb553a28c07b9f79253e5e257ae41981b6f0cdbebcab4dde190709c6d7fd` |
 
 完整报告：当前工作区 `dist/clients/build-report.json`；校验和：`dist/clients/SHA256SUMS.txt`。七包生成后再次逐文件校验长度与 SHA-256，全部一致。
 

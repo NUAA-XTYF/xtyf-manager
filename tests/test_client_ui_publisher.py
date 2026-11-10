@@ -24,7 +24,7 @@ class TestClientUIPublisher(unittest.TestCase):
             source, target = Path(temporary) / 'source', Path(temporary) / 'target'
             source.mkdir(); target.mkdir()
             excluded = ['clients/signing/ui-update-private.pem', 'clients/signing/android-password.txt',
-                        'clients/signing/xtyf-manager.jks', '.build-tools/tool', '.git/config',
+                        'clients/signing/aurora-manager.jks', '.build-tools/tool', '.git/config',
                         '.venv/tool', 'clients/desktop/node_modules/tool',
                         'clients/desktop/target/tool', 'clients/android/build/tool', 'dist/setup.exe']
             included = ['app.py', 'clients/update-public-key.pem', 'client-ui-release/update.json']

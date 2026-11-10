@@ -57,7 +57,7 @@ function renderTaskTable() {
 }
 
 function catalogPanel(kind, items) {
-  const label = kind === "projects" ? "造车组别" : "专业组";
+  const label = kind === "projects" ? "所属项目" : "专业组";
   const rows =
     items
       .map(

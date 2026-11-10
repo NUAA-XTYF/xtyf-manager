@@ -40,7 +40,7 @@ function fixture() {
 test('only exact revisioned public GETs enter the finite cache; credentials are omitted',async()=>{
  const f=fixture();await f.dispatch('install');
  const response=await f.read(f.url(publicJS));assert.equal(response.status,200);
- assert.equal(f.stores.get('xtyf-pwa-public-test-one').size,2);
+ assert.equal(f.stores.get('aurora-pwa-public-test-one').size,2);
  assert.ok(f.calls.every(c=>c.options.credentials==='omit'&&c.options.cache==='no-cache'));
  for(const [path,options] of [
   ['/',{}],['/login',{}],['/api/data',{}],['/api/account/preferences',{}],['/logout',{}],
@@ -52,20 +52,20 @@ test('only exact revisioned public GETs enter the finite cache; credentials are 
   ['/api/data',{mode:'navigate',destination:'document'}],
   ['/invoices/api/export/download/1',{mode:'navigate',destination:'document'}],
  ]) assert.equal(await f.read(path,options),undefined,path);
- assert.equal(f.stores.get('xtyf-pwa-public-test-one').size,2);
+ assert.equal(f.stores.get('aurora-pwa-public-test-one').size,2);
 });
 test('dynamic navigation never caches HTML and offline navigation has no account data; APIs fail normally',async()=>{
  const f=fixture();await f.dispatch('install');
  f.setNetwork(async()=>new Response('PRIVATE ACCOUNT A',{headers:{'Content-Type':'text/html','Cache-Control':'no-store'}}));
  assert.equal(await (await f.read('/tasks',{mode:'navigate',destination:'document'})).text(),'PRIVATE ACCOUNT A');
  assert.equal(f.calls.at(-1).options.cache,'no-store');
- assert.equal(f.stores.get('xtyf-pwa-public-test-one').size,2);
+ assert.equal(f.stores.get('aurora-pwa-public-test-one').size,2);
  f.setNetwork(async()=>{throw new TypeError('offline');});
  const fallback=await f.read('/tasks?private=account-A',{mode:'navigate',destination:'document'});
  assert.match(await fallback.text(),/当前离线，业务操作需联网/);
  assert.equal(await f.read('/api/data'),undefined);
  assert.equal(await f.read('/api/csrf'),undefined);
- assert.ok([...f.stores.get('xtyf-pwa-public-test-one').keys()].every(url=>!url.includes('private')));
+ assert.ok([...f.stores.get('aurora-pwa-public-test-one').keys()].every(url=>!url.includes('private')));
 });
 test('wrong hash, MIME, cookies, privacy directives, errors and oversized responses prevent installation',async()=>{
  const cases=[{body:'untrusted'}, {headers:{'Content-Type':'text/html'}}, {headers:{'Set-Cookie':'synthetic=1'}},
@@ -89,7 +89,7 @@ test('compressed transport lengths do not reject correct decoded public bytes',a
    'Content-Type':name===offline?'text/html':'application/javascript','Content-Encoding':'gzip','Content-Length':'1',
   }});
  });
- await f.dispatch('install');assert.equal(f.stores.get('xtyf-pwa-public-test-one').size,2);
+ await f.dispatch('install');assert.equal(f.stores.get('aurora-pwa-public-test-one').size,2);
 });
 test('offline public fallback is revision-bound, HTTP failures are preserved, cache quota failures keep online reads usable',async()=>{
  const f=fixture();await f.dispatch('install');await f.read(f.url(publicJS));
@@ -106,9 +106,9 @@ test('failed installation removes partial cache; activation removes only owned p
  const f=fixture();f.setNetwork(async()=>new Response('bad offline shell',{headers:{'Content-Type':'text/html'}}));
  await assert.rejects(f.dispatch('install'),/Invalid public install resource/);
  assert.deepEqual(await f.caches.keys(),[]);
- await f.caches.open('xtyf-pwa-public-old');await f.caches.open('unrelated-storage');await f.caches.open('xtyf-pwa-public-test-one');
+ await f.caches.open('aurora-pwa-public-old');await f.caches.open('unrelated-storage');await f.caches.open('aurora-pwa-public-test-one');
  await f.dispatch('activate');
- assert.deepEqual(await f.caches.keys(),['unrelated-storage','xtyf-pwa-public-test-one']);
+ assert.deepEqual(await f.caches.keys(),['unrelated-storage','aurora-pwa-public-test-one']);
 });
 test('an in-flight public read cannot recreate a named cache deleted during worker retirement',async()=>{
  const f=fixture();await f.dispatch('install');
@@ -116,7 +116,7 @@ test('an in-flight public read cannot recreate a named cache deleted during work
  const began=new Promise(resolve=>started=resolve),hold=new Promise(resolve=>release=resolve);
  f.setNetwork(async()=>{started();await hold;return new Response(fs.readFileSync('static/pwa.js'),{headers:{'Content-Type':'text/javascript'}});});
  const pending=f.read(f.url(publicJS));await began;
- await f.caches.delete('xtyf-pwa-public-test-one');release();
+ await f.caches.delete('aurora-pwa-public-test-one');release();
  assert.equal((await pending).status,200);assert.deepEqual(await f.caches.keys(),[]);
 });
 test('a partial install quota failure removes every owned partial entry',async()=>{

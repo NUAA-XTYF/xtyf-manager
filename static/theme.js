@@ -1,6 +1,6 @@
 "use strict";
 const WORKSPACE_PALETTES = {
-  silver:{mode:'light',name:'Mistral 暖橙',bg:'#f6f4f1'}, 'rm-light':{mode:'light',name:'RM 机甲红蓝',bg:'#f6f7fb'},
+  silver:{mode:'light',name:'Mistral 暖橙',bg:'#f6f4f1'}, 'rm-light':{mode:'light',name:'经典红蓝',bg:'#f6f7fb'},
   mist:{mode:'light',name:'云雾绿',bg:'#f2f7f4'}, paw:{mode:'light',name:'奶霜猫爪粉',bg:'#fff3f2'},
   space:{mode:'dark',name:'GitHub 暗黑',bg:'#000000'}, 'rm-dark':{mode:'dark',name:'黑白极简',bg:'#090909'},
   graphite:{mode:'dark',name:'石墨灰金',bg:'#191a1d'}, xueli:{mode:'dark',name:'雪梨星语',bg:'#231b20'},

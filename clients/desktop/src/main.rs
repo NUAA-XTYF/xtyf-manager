@@ -38,7 +38,7 @@ struct AppState {
 }
 fn text<'a>(value: &'a Value, key: &str) -> &'a str { value.get(key).and_then(Value::as_str).unwrap_or("") }
 fn smoke_directory() -> Option<PathBuf> {
-    #[cfg(debug_assertions)] { std::env::var_os("XTYF_SMOKE_DIR").map(PathBuf::from) }
+    #[cfg(debug_assertions)] { std::env::var_os("AURORA_SMOKE_DIR").map(PathBuf::from) }
     #[cfg(not(debug_assertions))] { None }
 }
 fn private_directory(directory: &std::path::Path) -> std::io::Result<()> {
@@ -91,7 +91,7 @@ impl AppState {
         let cookies:CookieStore = fs::File::open(&path).ok().and_then(|f| serde_json::from_reader(BufReader::new(f)).ok()).unwrap_or_default();
         let cookies = Arc::new(CookieStoreMutex::new(cookies));
         let client = Client::builder().cookie_provider(cookies.clone()).connect_timeout(Duration::from_secs(20))
-            .timeout(Duration::from_secs(180)).user_agent(format!("XTYFManager/{}", env!("CARGO_PKG_VERSION")))
+            .timeout(Duration::from_secs(180)).user_agent(format!("AURORAManager/{}", env!("CARGO_PKG_VERSION")))
             .redirect(reqwest::redirect::Policy::none()).build().map_err(|e| e.to_string())?;
         let session = Arc::new(Session {client, cookies, csrf: Mutex::new(String::new()), path});
         sessions.insert(server.to_string(), session.clone());
@@ -120,7 +120,7 @@ async fn send_request(state: &AppState, args: &Value) -> Result<reqwest::Respons
     if !matches!(method, Method::GET | Method::HEAD | Method::POST | Method::PUT | Method::PATCH | Method::DELETE | Method::OPTIONS) {
         return Err("不支持的请求方法".into());
     }
-    let mut request = session.client.request(method.clone(), url).header("X-XTYF-Client-Protocol", "1");
+    let mut request = session.client.request(method.clone(), url).header("X-AURORA-Client-Protocol", "1");
     if let Some(headers) = args.get("headers").and_then(Value::as_object) {
         for (key, value) in headers {
             if ["content-type", "accept", "if-match", "range", "x-requested-with"].contains(&key.to_lowercase().as_str()) {
@@ -130,7 +130,7 @@ async fn send_request(state: &AppState, args: &Value) -> Result<reqwest::Respons
     }
     if !matches!(method, Method::GET | Method::HEAD | Method::OPTIONS) {
         if session.csrf.lock().unwrap().is_empty() {
-            let response = session.client.get(format!("{server}/api/csrf")).header("X-XTYF-Client-Protocol","1").send().await.map_err(|e| e.to_string())?;
+            let response = session.client.get(format!("{server}/api/csrf")).header("X-AURORA-Client-Protocol","1").send().await.map_err(|e| e.to_string())?;
             session.update(&response)?;
             if !response.status().is_success() { return Err("无法建立服务器会话".into()); }
         }
@@ -163,7 +163,7 @@ async fn send_request(state: &AppState, args: &Value) -> Result<reqwest::Respons
         let location=response.headers().get(header::LOCATION).and_then(|h|h.to_str().ok()).ok_or("重定向缺少地址")?;
         let next=response.url().join(location).map_err(|e|e.to_string())?;
         if next.origin()!=Url::parse(&server).unwrap().origin() {return Err("禁止向站外地址转发业务请求".into());}
-        response=session.client.request(method.clone(),next).header("X-XTYF-Client-Protocol","1").send().await.map_err(|e|e.to_string())?;
+        response=session.client.request(method.clone(),next).header("X-AURORA-Client-Protocol","1").send().await.map_err(|e|e.to_string())?;
     }
     Ok(response)
 }
@@ -240,7 +240,7 @@ fn external(app: &tauri::AppHandle, input: &str) -> Result<Value, String> {
     if !matches!(url.scheme(),"http"|"https") || !url.username().is_empty() || url.password().is_some() {return Err("仅支持在应用内打开 HTTP/HTTPS 网页".into());}
     let id = uuid::Uuid::new_v4().simple().to_string();
     let window = tauri::window::WindowBuilder::new(app,format!("external-{id}"))
-        .title("网页浏览 — 巡天御风").inner_size(1100.,800.)
+        .title("网页浏览 — 极光").inner_size(1100.,800.)
         .visible(smoke_directory().is_none()).build().map_err(|e|e.to_string())?;
     let smoke_profile = smoke_directory().map(|path|path.join("webview"));
     let mut toolbar = tauri::webview::WebviewBuilder::new(format!("external-controls-{id}"),WebviewUrl::App("external.html".into()));
@@ -319,7 +319,7 @@ fn legacy_server() -> Option<String> {
     let base = if cfg!(windows) {std::env::var_os("APPDATA").map(PathBuf::from)} else {
         std::env::var_os("XDG_CONFIG_HOME").map(PathBuf::from).or_else(||std::env::var_os("HOME").map(|h|PathBuf::from(h).join(".config")))
     }?;
-    ["xtyf-manager-client","巡天御风管理系统"].iter().find_map(|name|{
+    ["aurora-manager-client","极光团队工作台"].iter().find_map(|name|{
         let value:Value=serde_json::from_slice(&fs::read(base.join(name).join("server.json")).ok()?).ok()?;
         normalize_server(text(&value,"serverUrl")).ok()
     })
@@ -344,7 +344,7 @@ fn main() {
         let runtime=native_updates::Runtime::new(&directory,&server,0);
         app.manage(AppState {server:Mutex::new(server),effective_server:Mutex::new(None),website_epoch:std::sync::atomic::AtomicU64::new(0),connection_gate:tokio::sync::Mutex::new(()),website_files:Mutex::new(std::collections::HashSet::new()),directory,sessions:Mutex::new(HashMap::new()),files:Mutex::new(HashMap::new()),requests:Mutex::new(HashMap::new()),updates:Mutex::new(runtime),update_gate:tokio::sync::Mutex::new(())});
         let window=tauri::window::WindowBuilder::new(app,"workspace")
-            .title("巡天御风管理系统").inner_size(1380.,900.).min_inner_size(360.,600.)
+            .title("极光团队工作台").inner_size(1380.,900.).min_inner_size(360.,600.)
             .visible(smoke_directory().is_none())
             .build()?;
         let handle=app.handle().clone();
@@ -377,13 +377,13 @@ mod tests {
     }
     #[test] fn default_server_preserves_http(){
         let defaults:Value=serde_json::from_str(include_str!("../../config.json")).unwrap();
-        assert_eq!(text(&defaults,"serverUrl"), "http://manager.skywalker-rm.online");
-        for input in ["http://manager.skywalker-rm.online", " http://MANAGER.skywalker-rm.online:80/ "] {
+        assert_eq!(text(&defaults,"serverUrl"), "http://workspace.example.com");
+        for input in ["http://workspace.example.com", " http://MANAGER.workspace.example.com:80/ "] {
             let server=normalize_server(input).unwrap();
-            assert_eq!(server, "http://manager.skywalker-rm.online");
-            assert_eq!(server_path(&server, "/api/client/bootstrap").unwrap().as_str(), "http://manager.skywalker-rm.online/api/client/bootstrap");
+            assert_eq!(server, "http://workspace.example.com");
+            assert_eq!(server_path(&server, "/api/client/bootstrap").unwrap().as_str(), "http://workspace.example.com/api/client/bootstrap");
         }
-        for input in ["https://manager.skywalker-rm.online", "http://manager.skywalker-rm.online:8080", "http://127.0.0.1:8520", "http://example.com", "http://manager.skywalker-rm.online.example.com"] {
+        for input in ["https://workspace.example.com", "http://workspace.example.com:8080", "http://127.0.0.1:8520", "http://example.com", "http://workspace.example.com.example.com"] {
             assert_eq!(normalize_server(input).unwrap(), input);
         }
     }

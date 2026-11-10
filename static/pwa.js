@@ -1,7 +1,7 @@
 /* Installation uses the browser's session and UI. No native bridge or auth store. */
 (() => {
   'use strict';
-  if (window.XTYFClient || window.__TAURI_INTERNALS__ || location.protocol === 'tauri:') return;
+  if (window.AURORAClient || window.__TAURI_INTERNALS__ || location.protocol === 'tauri:') return;
   const button = document.getElementById('pwa-install');
   const status = document.getElementById('pwa-status');
   const say = text => { if (status) status.textContent = text; };

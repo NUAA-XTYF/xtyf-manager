@@ -1,4 +1,4 @@
-package online.skywalker.manager;
+package com.example.aurora;
 
 import android.app.*;
 import android.content.*;
@@ -183,14 +183,14 @@ final class WebsiteView {
     private void beginBlob(String url, String name) {
         if (blobPort == null || blobRequest != null) { host.message("请等待当前页面或下载完成后重试"); return; }
         blobRequest = UUID.randomUUID().toString(); blobName = WebsitePolicy.filename(name);
-        web.evaluateJavascript("window.__xtyfWebsiteBlob(" + JSONObject.quote(blobRequest) + "," + JSONObject.quote(url) + ")", null);
+        web.evaluateJavascript("window.__auroraWebsiteBlob(" + JSONObject.quote(blobRequest) + "," + JSONObject.quote(url) + ")", null);
     }
     private void attachBlobPort() {
         if (blobPort != null) return;
         final long expected = generation;
         // Dedicated, top-document port with per-download nonce; no arbitrary file paths, requests or native commands.
-        String script = "(()=>{let port,acks=[];addEventListener('message',e=>{if(e.data!=='xtyf-website-download'||!e.ports[0])return;port=e.ports[0];port.onmessage=()=>acks.shift()?.();});"
-            + "window.__xtyfWebsiteBlob=async(id,url)=>{const send=x=>new Promise(resolve=>{acks.push(resolve);port.postMessage(JSON.stringify(Object.assign({id},x)));});"
+        String script = "(()=>{let port,acks=[];addEventListener('message',e=>{if(e.data!=='aurora-website-download'||!e.ports[0])return;port=e.ports[0];port.onmessage=()=>acks.shift()?.();});"
+            + "window.__auroraWebsiteBlob=async(id,url)=>{const send=x=>new Promise(resolve=>{acks.push(resolve);port.postMessage(JSON.stringify(Object.assign({id},x)));});"
             + "try{const b=await(await fetch(url)).blob();await send({op:'begin',size:b.size,mime:b.type});for(let n=0;n<b.size;n+=49152){const bytes=new Uint8Array(await b.slice(n,n+49152).arrayBuffer());let s='';for(const v of bytes)s+=String.fromCharCode(v);await send({op:'chunk',data:btoa(s)});}await send({op:'end'});}catch(e){port.postMessage(JSON.stringify({id,op:'error'}));}};})();";
         web.evaluateJavascript(script, ignored -> {
             if (!valid(expected) || !WebsitePolicy.trusted(origin, web.getUrl())) return;
@@ -215,7 +215,7 @@ final class WebsiteView {
                     } catch (Exception error) { resetBlob(); host.message(error.getMessage()); }
                 }
             });
-            web.postWebMessage(new WebMessage("xtyf-website-download", new WebMessagePort[]{ports[1]}), Uri.parse(origin));
+            web.postWebMessage(new WebMessage("aurora-website-download", new WebMessagePort[]{ports[1]}), Uri.parse(origin));
         });
     }
 }

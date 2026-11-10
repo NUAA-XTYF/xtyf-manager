@@ -35,7 +35,7 @@ function dashboardTaskRow(task) {
         ${badge(daysLeftText(task), daysLeftClass(task))}
         ${!isFinishedTask(task) && task.dependency_warnings?.length ? badge("依赖提醒", "task-dependency") : ""}
       </span>
-      <span class="ws-task-row-sub">${esc(responsibility)} · ${esc(taskProjectName(task) || "未归属造车组别")} · ${esc(people)}</span>
+      <span class="ws-task-row-sub">${esc(responsibility)} · ${esc(taskProjectName(task) || "未归属项目")} · ${esc(people)}</span>
       <span class="ws-task-progress-head"><span>任务进度</span><strong>${percent}%</strong></span>
       <span class="progress" role="progressbar" aria-label="任务进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><span class="progress-inner blue" style="display:block;width:${percent}%"></span></span>
       ${activity}

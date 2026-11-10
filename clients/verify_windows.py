@@ -1,7 +1,7 @@
 """Verify the actual NSIS payload, using a full 7-Zip with NSIS support.
 
 `--setup` only extracts pinned official tools into .build-tools/7zip; it never
-installs an MSI or changes Windows registration. XTYF_7ZIP can select a separately
+installs an MSI or changes Windows registration. AURORA_7ZIP can select a separately
 managed full 7z.exe. The limited 7za/7zr builds cannot inspect NSIS packages.
 """
 from __future__ import annotations
@@ -44,7 +44,7 @@ def run(args,timeout=180):
 
 def extract_msi_cabinet(msi_path,cabinet_path):
     """Read the known cabinet stream through Microsoft's read-only MSI API."""
-    if os.name!='nt':raise RuntimeError('7-Zip setup requires Windows; use XTYF_7ZIP on another host.')
+    if os.name!='nt':raise RuntimeError('7-Zip setup requires Windows; use AURORA_7ZIP on another host.')
     msi=ctypes.WinDLL('msi')
     handle=wintypes.UINT
     msi.MsiOpenDatabaseW.argtypes=[wintypes.LPCWSTR,wintypes.LPCWSTR,ctypes.POINTER(handle)]
@@ -93,7 +93,7 @@ def setup():
 
 
 def find_extractor():
-    explicit=os.environ.get('XTYF_7ZIP')
+    explicit=os.environ.get('AURORA_7ZIP')
     candidates=[Path(explicit)] if explicit else [TOOLS/'7z.exe']
     if not explicit:
         if shutil.which('7z'):candidates.append(Path(shutil.which('7z')))
@@ -111,7 +111,7 @@ def find_extractor():
             return candidate
         except (OSError,RuntimeError,ValueError,subprocess.TimeoutExpired) as error:failures.append(str(error))
     detail='\n'.join(failures)
-    raise RuntimeError('Full 7-Zip with NSIS support is required. Run python clients/verify_windows.py --setup, or set XTYF_7ZIP to a full 7z.exe.\n'+detail)
+    raise RuntimeError('Full 7-Zip with NSIS support is required. Run python clients/verify_windows.py --setup, or set AURORA_7ZIP to a full 7z.exe.\n'+detail)
 
 
 def pe_machine(path):
@@ -139,7 +139,7 @@ def verify(installer,application,manifest,version,report=None,architecture='x64'
     with tempfile.TemporaryDirectory(prefix='nsis-',dir=workspace) as temporary:
         target=Path(temporary)
         run([extractor,'x','-y','-sccUTF-8','-o'+str(target),'--',installer])
-        applications=list(target.rglob('xtyf-manager.exe'));manifests=list(target.rglob('asset-manifest.json'))
+        applications=list(target.rglob('aurora-manager.exe'));manifests=list(target.rglob('asset-manifest.json'))
         if len(applications)!=1 or len(manifests)!=1:raise ValueError(f'Unexpected NSIS payload: {len(applications)} application(s), {len(manifests)} manifest(s)')
         bundled_app,bundled_manifest=applications[0],manifests[0]
         executable_hash,manifest_hash=sha256(application),sha256(manifest)

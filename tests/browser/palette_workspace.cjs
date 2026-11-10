@@ -16,7 +16,7 @@ async function assertCompleteLogo(page, selector) {
    padding:[style.paddingTop,style.paddingRight,style.paddingBottom,style.paddingLeft].map(parseFloat),
   };
  });
- assert.equal(logo.path,'/static/brand/xtyf-logo.svg');
+ assert.equal(logo.path,'/static/brand/aurora-logo.svg');
  assert.equal(logo.loaded,true);
  assert.equal(logo.clip,'visible');
  assert.equal(logo.fit,'contain');

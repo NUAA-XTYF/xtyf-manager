@@ -86,7 +86,7 @@ def _validate(
     if not active_ids(db, "groups", active_group_ids):
         return "组别不存在"
     if active_project_id is not None and not active_ids(db, "projects", [active_project_id]):
-        return "造车组别不存在"
+        return "所属项目不存在"
     refs = relations["predecessor_ids"]
     parent_id = values.get("parent_id")
     if parent_id is not None:
@@ -152,7 +152,7 @@ def create_task(
         project_name = str(data.get("project") or "").strip()
         legacy_id = _legacy_catalog(db, "projects", project_name, actor['role'] in ('admin', 'manager'))
         if project_name and legacy_id is None:
-            rollback_owned(); return None, None, "造车组别不存在", 400
+            rollback_owned(); return None, None, "所属项目不存在", 400
         if "project_id" in data and project_id != legacy_id:
             rollback_owned(); return None, None, "project 与 project_id 冲突", 400
         project_id = legacy_id
@@ -250,7 +250,7 @@ def update_task(
         legacy_name = str(data.get("project") or "").strip()
         legacy_id = _legacy_catalog(db, "projects", legacy_name, management)
         if legacy_name and legacy_id is None:
-            db.rollback(); return None, "造车组别不存在", 400
+            db.rollback(); return None, "所属项目不存在", 400
         if "project_id" in data and values["project_id"] != legacy_id:
             db.rollback(); return None, "project 与 project_id 冲突", 400
         values["project_id"] = legacy_id
@@ -284,7 +284,7 @@ def update_task(
         if values["owner_id"] != prior["owner_id"]:
             ownership.append("负责人")
         if values["project_id"] != prior["project_id"]:
-            ownership.append("造车组别")
+            ownership.append("所属项目")
         for key, label in (("participant_ids", "参与成员"), ("group_ids", "专业组")):
             if sorted(relations[key]) != sorted(old_relations[key]):
                 ownership.append(label)

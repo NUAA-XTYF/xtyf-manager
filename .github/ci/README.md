@@ -11,7 +11,7 @@ job and then run in parallel with Python 3.13, Node.js 22, Playwright 1.57.0,
 Chromium and WebKit preinstalled. The image's Python/Node dependency versions
 must change alongside their inputs; changing those files rotates the tag.
 
-Registry package: `ghcr.io/shm-white/xtyf-manager-ci-browser`.
+Registry package: `ghcr.io/example-org/aurora-manager-ci-browser`.
 The publishing job uses only `GITHUB_TOKEN` with `packages: write` and runs
 only for branches within this repository, never fork pull requests. The image
 includes an OCI source label linking it to this repository. The browser jobs
@@ -27,8 +27,8 @@ Local reproduction after the image has been published:
 
 ```sh
 docker run --rm -it --init -v "$PWD:/work" -w /work \
-  ghcr.io/shm-white/xtyf-manager-ci-browser:<content-hash> \
-  bash -lc 'ln -s /opt/xtyf-node/node_modules node_modules && node tests/browser/assets.cjs'
+  ghcr.io/example-org/aurora-manager-ci-browser:<content-hash> \
+  bash -lc 'ln -s /opt/aurora-node/node_modules node_modules && node tests/browser/assets.cjs'
 ```
 
 The browser test script starts its own temporary test server. Replace the tag

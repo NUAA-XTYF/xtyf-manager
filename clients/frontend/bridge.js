@@ -8,7 +8,7 @@
     return new Error(typeof message==='string'&&message?message:'原生操作失败');
   }
   window.addEventListener('message',event=>{
-    if(event.data!=='xtyf-native-port'||!event.ports?.[0]||port)return;
+    if(event.data!=='aurora-native-port'||!event.ports?.[0]||port)return;
     // Android's native postWebMessage has an empty/null source. A web frame may not replace it.
     if(event.source&&event.source!==window)return;
     port=event.ports[0];
@@ -20,7 +20,7 @@
       else callback.resolve(message.result);
     };port.start?.();readyResolve();
   });
-  const existing=window.XTYFNative;
+  const existing=window.AURORANative;
   async function invoke(action,args={}) {
     try{
       if(existing?.invoke)return await existing.invoke(action,args);
@@ -32,5 +32,5 @@
       });
     }catch(error){throw nativeError(error);}
   }
-  window.XTYFNative={invoke};
+  window.AURORANative={invoke};
 })();

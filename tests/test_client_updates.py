@@ -27,7 +27,7 @@ class TestClientUpdates(unittest.TestCase):
                                                             serialization.PublicFormat.SubjectPublicKeyInfo)
 
     def setUp(self):
-        temporary = tempfile.TemporaryDirectory(prefix="xtyf-ui-test-")
+        temporary = tempfile.TemporaryDirectory(prefix="aurora-ui-test-")
         self.addCleanup(temporary.cleanup)
         self.root = Path(temporary.name)
         self.private = self.root / "private.pem"
@@ -59,18 +59,18 @@ class TestClientUpdates(unittest.TestCase):
         return ui_release.publish(self.frontend, self.output, self.private, self.public, sequence, version, installers)
 
     def test_absent_release_is_explicit_and_public_before_login(self):
-        response = self.client.get("/api/client/updates", headers={"X-XTYF-Client-Protocol": "1"})
+        response = self.client.get("/api/client/updates", headers={"X-AURORA-Client-Protocol": "1"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, {"ok": True, "available": False})
         self.assertEqual(response.headers["Cache-Control"], "no-store")
 
     def test_signed_release_download_and_exact_manifest_file_totals(self):
         payload = self.publish()
-        response = self.client.get("/api/client/updates", headers={"X-XTYF-Client-Protocol": "1"})
+        response = self.client.get("/api/client/updates", headers={"X-AURORA-Client-Protocol": "1"})
         self.assertEqual(response.status_code, 200)
         _, verified = verify_envelope(response.data, self.public_bytes)
         self.assertEqual(verified, payload)
-        download = self.client.get(payload["bundle"]["url"], headers={"X-XTYF-Client-Protocol": "1"})
+        download = self.client.get(payload["bundle"]["url"], headers={"X-AURORA-Client-Protocol": "1"})
         self.assertEqual(download.status_code, 200)
         self.assertEqual(download.mimetype, "application/zip")
         self.assertEqual(hashlib.sha256(download.data).hexdigest(), payload["bundle"]["sha256"])
@@ -125,7 +125,7 @@ class TestClientUpdates(unittest.TestCase):
         self.assertEqual(created.status_code, 200)
         from flask.testing import FlaskClient
         client = FlaskClient(self.app, use_cookies=True)
-        headers = {"X-XTYF-Client-Protocol": "1"}
+        headers = {"X-AURORA-Client-Protocol": "1"}
         token = client.get("/api/client/bootstrap", headers=headers).json["csrf_token"]
         response = client.post("/api/client/login", json={"username": username, "password": "test-pass-123"},
                                headers={**headers, "X-CSRF-Token": token})

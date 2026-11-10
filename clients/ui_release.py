@@ -142,7 +142,7 @@ def main():
     parser.add_argument("--installers", type=Path, help="Reviewed JSON map of existing published installer paths/hashes")
     args = parser.parse_args()
     # A clean directory prevents removed assets from leaking out of an earlier build.
-    with tempfile.TemporaryDirectory(prefix="xtyf-ui-build-") as temporary:
+    with tempfile.TemporaryDirectory(prefix="aurora-ui-build-") as temporary:
         build(Path(temporary))
         sequence = reserve_sequence(args.private_key, args.sequence)
         installers = json.loads(args.installers.read_text(encoding="utf-8")) if args.installers else {}

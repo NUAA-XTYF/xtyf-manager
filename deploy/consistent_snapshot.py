@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Offline, verified recovery-point archive for the complete xtyf-manager data set.
+"""Offline, verified recovery-point archive for the complete aurora-manager data set.
 
 No online consistency claims: the operator must stop *all* application writers.
 All outputs contain passwords, invoices and signing keys: keep archives private.
@@ -219,7 +219,7 @@ def verify_snapshot(archive_path: Path) -> dict:
                         size += len(block)
                 if digest.hexdigest() != expected.get("sha256") or size != expected.get("size"):
                     raise SnapshotError(f"备份校验失败：{name}")
-            with tempfile.TemporaryDirectory(prefix="xtyf-verify-db-") as tmp:
+            with tempfile.TemporaryDirectory(prefix="aurora-verify-db-") as tmp:
                 for name in DATABASES:
                     path = Path(tmp) / Path(name).name
                     with archive.open(name) as source, path.open("wb") as destination:
@@ -239,7 +239,7 @@ def restore_snapshot(archive_path: Path, target: Path) -> dict:
     if not target.parent.is_dir():
         raise SnapshotError("恢复目录的父目录不存在")
     manifest = verify_snapshot(archive_path)
-    temp = Path(tempfile.mkdtemp(prefix=".xtyf-restore-", dir=target.parent))
+    temp = Path(tempfile.mkdtemp(prefix=".aurora-restore-", dir=target.parent))
     try:
         os.chmod(temp, 0o700)
         with zipfile.ZipFile(archive_path) as archive:

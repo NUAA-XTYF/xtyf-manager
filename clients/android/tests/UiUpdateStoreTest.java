@@ -1,4 +1,4 @@
-package online.skywalker.manager;
+package com.example.aurora;
 
 import org.json.*;
 import com.sun.net.httpserver.*;
@@ -58,7 +58,7 @@ public final class UiUpdateStoreTest {
     public static void main(String[] args) throws Exception {
         KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA"); generator.initialize(3072); keys = generator.generateKeyPair();
         pem = "-----BEGIN PUBLIC KEY-----\n"+Base64.getEncoder().encodeToString(keys.getPublic().getEncoded())+"\n-----END PUBLIC KEY-----";
-        File data = Files.createTempDirectory("xtyf-ui-store-").toFile();
+        File data = Files.createTempDirectory("aurora-ui-store-").toFile();
         HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1",0),0); ExecutorService executor = Executors.newCachedThreadPool(); server.setExecutor(executor);
         CountDownLatch blocked = new CountDownLatch(1), release = new CountDownLatch(1); AtomicBoolean block = new AtomicBoolean();
         server.createContext("/api/client/updates", exchange -> { metadataHits.incrementAndGet(); if(block.get()) { blocked.countDown(); try { release.await(10,TimeUnit.SECONDS); } catch(InterruptedException error) { Thread.currentThread().interrupt(); } } send(exchange,envelope.get().getBytes(StandardCharsets.UTF_8)); });

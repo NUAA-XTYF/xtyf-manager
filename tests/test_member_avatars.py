@@ -27,7 +27,7 @@ def image_bytes(fmt="PNG", size=(96, 64), color="red", **options):
 
 class TestMemberAvatars(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory(prefix="xtyf-avatar-test-")
+        self.temp = tempfile.TemporaryDirectory(prefix="aurora-avatar-test-")
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         config = patch.dict(app_module.app.config, {"TASK_ATTACHMENTS_DIR": str(self.root)})

@@ -63,7 +63,7 @@ impl Drop for LocalServer {
     fn drop(&mut self) { self.stopped.store(true, Ordering::SeqCst); let _ = TcpStream::connect(self.origin.trim_start_matches("http://")); if let Some(worker) = self.worker.take() { worker.join().unwrap(); } }
 }
 struct Scratch(PathBuf);
-impl Scratch { fn new() -> Self { let path = std::env::temp_dir().join(format!("xtyf-native-http-{}", uuid::Uuid::new_v4())); fs::create_dir(&path).unwrap(); Self(path) } }
+impl Scratch { fn new() -> Self { let path = std::env::temp_dir().join(format!("aurora-native-http-{}", uuid::Uuid::new_v4())); fs::create_dir(&path).unwrap(); Self(path) } }
 impl Drop for Scratch {
     fn drop(&mut self) { assert_eq!(self.0.parent(), Some(std::env::temp_dir().as_path())); let _ = fs::remove_dir_all(&self.0); }
 }
@@ -97,7 +97,7 @@ fn cookies_csrf_rotation_persistence_and_header_boundary() {
         "/bootstrap" => Outgoing::text(200, "boot").with("Set-Cookie", "session=synthetic-login; Path=/; Max-Age=3600; HttpOnly").with("X-CSRF-Token", "token-1"),
         "/rotate" => Outgoing::text(200, "rotated").with("X-CSRF-Token", "token-2"),
         "/api/csrf" => {
-            assert_eq!(request.headers.get("x-xtyf-client-protocol").map(String::as_str), Some("1"));
+            assert_eq!(request.headers.get("x-aurora-client-protocol").map(String::as_str), Some("1"));
             Outgoing::text(200, "{}").with("X-CSRF-Token", "token-after-restart")
         },
         _ => echo(request),
@@ -107,10 +107,10 @@ fn cookies_csrf_rotation_persistence_and_header_boundary() {
         let bootstrap = call(&first, json!({"path":"/bootstrap"})).await;
         assert!(bootstrap["headers"].get("set-cookie").is_none(), "Cookie credentials must not be returned to the page");
         call(&first, json!({"path":"/rotate"})).await;
-        let request = json!({"path":"/echo","method":"POST","body":"test-body","headers":{"Cookie":"spoof","Authorization":"spoof","X-CSRF-Token":"spoof","X-XTYF-Client-Protocol":"spoof","Content-Type":"text/plain"}});
+        let request = json!({"path":"/echo","method":"POST","body":"test-body","headers":{"Cookie":"spoof","Authorization":"spoof","X-CSRF-Token":"spoof","X-AURORA-Client-Protocol":"spoof","Content-Type":"text/plain"}});
         let echoed = response_json(&call(&first, request.clone()).await);
         assert_eq!(echoed["body"], "test-body"); assert_eq!(echoed["headers"]["cookie"], "session=synthetic-login");
-        assert_eq!(echoed["headers"]["x-csrf-token"], "token-2"); assert_eq!(echoed["headers"]["x-xtyf-client-protocol"], "1");
+        assert_eq!(echoed["headers"]["x-csrf-token"], "token-2"); assert_eq!(echoed["headers"]["x-aurora-client-protocol"], "1");
         assert!(echoed["headers"].get("authorization").is_none());
         let restarted = state(&server.origin, &scratch.0);
         let echoed = response_json(&call(&restarted, request).await);

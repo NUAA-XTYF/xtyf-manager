@@ -1,4 +1,4 @@
-package online.skywalker.manager;
+package com.example.aurora;
 
 import java.io.*;
 import java.net.*;
@@ -170,12 +170,12 @@ final class NativeHttpClient {
                 checkCancelled(requestId); HttpURLConnection connection = (HttpURLConnection) target.toURL().openConnection(); active.put(requestId, connection);
                 try {
                     connection.setConnectTimeout(20000); connection.setReadTimeout(180000); connection.setInstanceFollowRedirects(false); connection.setUseCaches(false); connection.setRequestMethod(verb);
-                    connection.setRequestProperty("User-Agent", "XTYFManager-Native/2 Android"); connection.setRequestProperty("Accept", "application/json");
+                    connection.setRequestProperty("User-Agent", "AURORAManager-Native/2 Android"); connection.setRequestProperty("Accept", "application/json");
                     for (Map.Entry<String, String> entry : headers.entrySet()) {
                         String name = entry.getKey();
-                        if (!Arrays.asList("cookie", "host", "origin", "referer", "content-length", "connection", "transfer-encoding", "x-csrf-token", "authorization", "sec-fetch-site", "x-xtyf-client-protocol").contains(name.toLowerCase(Locale.ROOT))) connection.setRequestProperty(name, entry.getValue());
+                        if (!Arrays.asList("cookie", "host", "origin", "referer", "content-length", "connection", "transfer-encoding", "x-csrf-token", "authorization", "sec-fetch-site", "x-aurora-client-protocol").contains(name.toLowerCase(Locale.ROOT))) connection.setRequestProperty(name, entry.getValue());
                     }
-                    connection.setRequestProperty("X-XTYF-Client-Protocol", "1");
+                    connection.setRequestProperty("X-AURORA-Client-Protocol", "1");
                     String[] credentials = probe ? new String[]{"", ""} : credentials(target);
                     if (!credentials[0].isEmpty()) connection.setRequestProperty("Cookie", credentials[0]);
                     if (!credentials[1].isEmpty()) connection.setRequestProperty("X-CSRF-Token", credentials[1]);

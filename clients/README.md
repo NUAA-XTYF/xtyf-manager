@@ -2,22 +2,22 @@
 
 Windows、Ubuntu、Fedora 使用 Tauri 2，Android 使用系统 WebView。登录页、全部业务页面、脚本、样式、字体和 PDF 阅读器随安装包内置。支持更新协议的客户端还可从配置服务器下载经过发布者签名验证的完整页面资源，在本地加载；兼容服务器优先使用本地界面；服务器缺少客户端接口时，可在应用内独立网站视图继续使用网站。
 
-默认服务器为 **http://manager.skywalker-rm.online/**。断网可以打开本地界面和服务器设置，业务操作需要联网。站外 HTTP/HTTPS 链接在 App 内独立浏览视图打开，具有返回、关闭入口，不调用系统浏览器。图片及 PDF 在 App 内预览，其余附件通过系统保存窗口下载。
+默认服务器为 **http://workspace.example.com/**。断网可以打开本地界面和服务器设置，业务操作需要联网。站外 HTTP/HTTPS 链接在 App 内独立浏览视图打开，具有返回、关闭入口，不调用系统浏览器。图片及 PDF 在 App 内预览，其余附件通过系统保存窗口下载。
 
 ## 安装和升级
 
-Android 的 JKS 与配套密码文件是发布凭证，必须一起离线备份。构建时缺少任一文件会停止，不能通过重新生成密钥修复已有安装的升级问题。仅全新身份允许显式 `--init-signing-key` 并设置 `XTYF_CONFIRM_NEW_SIGNING_KEY=1`；CI 临时构建使用 `--test-signing`，不会写入发布签名目录，也不能作为正式发布。
+Android 的 JKS 与配套密码文件是发布凭证，必须一起离线备份。构建时缺少任一文件会停止，不能通过重新生成密钥修复已有安装的升级问题。仅全新身份允许显式 `--init-signing-key` 并设置 `AURORA_CONFIRM_NEW_SIGNING_KEY=1`；CI 临时构建使用 `--test-signing`，不会写入发布签名目录，也不能作为正式发布。
 
 Android 构建报告 `android-build.json` 记录实际验签、对齐结果及证书 SHA-256。统一发布会对比上一份报告：证书变化默认失败；只有明确选择 `--allow-signer-change` 才放行并标记，通常将无法覆盖升级旧安装。旧报告没有证书指纹时标记 `no-baseline`，不表示已验证签名连续性。包内校验不等于目标设备运行验收。
 
-- Windows 10/11 x64 / Windows 11 ARM64：`dist/clients/windows/XTYF-Manager-Setup-<版本>-x64.exe`。NSIS 安装器提供快捷方式和卸载入口；缺少 WebView2 时联网补齐运行时。EXE 未使用发布者证书签名。
-- Windows ARM64 安装包：`XTYF-Manager-Setup-<版本>-arm64.exe`，使用 ARM64 原生程序及 WebView2。x64 主机仅检查其 PE 架构、安装载荷及嵌入资源，不执行 ARM64 程序。
-- Ubuntu 22.04 amd64：`XTYF-Manager-<版本>-amd64.deb`；Fedora ARM64：`XTYF-Manager-<版本>-aarch64.rpm`。
-- Android 8.0+：`dist/clients/android/XTYF-Manager-<版本>.apk`。保留包名 `online.skywalker.manager` 和既有发布密钥，递增 versionCode 后覆盖安装。返回使用系统返回键或手势。
-- Ubuntu 22.04 ARM64：`sudo apt install ./XTYF-Manager-<版本>-arm64.deb`。
-- Fedora 44/45 x86_64：`sudo dnf install ./XTYF-Manager-<版本>-x86_64.rpm`。
+- Windows 10/11 x64 / Windows 11 ARM64：`dist/clients/windows/Aurora-Workspace-Setup-<版本>-x64.exe`。NSIS 安装器提供快捷方式和卸载入口；缺少 WebView2 时联网补齐运行时。EXE 未使用发布者证书签名。
+- Windows ARM64 安装包：`Aurora-Workspace-Setup-<版本>-arm64.exe`，使用 ARM64 原生程序及 WebView2。x64 主机仅检查其 PE 架构、安装载荷及嵌入资源，不执行 ARM64 程序。
+- Ubuntu 22.04 amd64：`Aurora-Workspace-<版本>-amd64.deb`；Fedora ARM64：`Aurora-Workspace-<版本>-aarch64.rpm`。
+- Android 8.0+：`dist/clients/android/Aurora-Workspace-<版本>.apk`。保留包名 `com.example.aurora` 和既有发布密钥，递增 versionCode 后覆盖安装。返回使用系统返回键或手势。
+- Ubuntu 22.04 ARM64：`sudo apt install ./Aurora-Workspace-<版本>-arm64.deb`。
+- Fedora 44/45 x86_64：`sudo dnf install ./Aurora-Workspace-<版本>-x86_64.rpm`。
 
-桌面升级保留服务器地址，首次从 Electron 迁移需要重新登录。Windows 安装器识别旧版 Electron 的卸载记录，保留用户数据后完成替换；Linux 保持 `xtyf-manager` 包名。Android 保留原服务器地址设置，新的原生会话首次需要登录。
+桌面升级保留服务器地址，首次从 Electron 迁移需要重新登录。Windows 安装器识别旧版 Electron 的卸载记录，保留用户数据后完成替换；Linux 保持 `aurora-manager` 包名。Android 保留原服务器地址设置，新的原生会话首次需要登录。
 
 服务器地址支持 HTTP/HTTPS 根地址及自定义端口，按输入的协议连接，HTTPS 正常校验证书。保存时保留输入协议；连接探测允许同主机从 HTTP 80 升级到 HTTPS 443，或保持同一自定义端口的 HTTPS 升级。实际连接地址会显示在设置中，不覆盖输入地址。不接受跨主机、非预期端口或 HTTPS 降级，也不自动重放提交请求。升级保留已保存的服务器地址。切换服务器会取消当前请求、清空页面状态，各服务器会话分别保存。
 
@@ -45,7 +45,7 @@ Android 构建报告 `android-build.json` 记录实际验签、对齐结果及�
 服务器发布入口 `python deploy/package_release.py` 从同一个 Git HEAD 构建网站源码及配套页面，校验后将签名资源放入源码包内的 `client-ui-release/`，随服务端一起上线。该命令只生成本地交付文件，不部署服务器。
 
 - 签名公钥为受版本控制的 `clients/update-public-key.pem`。独立私钥保存在被忽略的 `clients/signing/ui-update-private.pem`；需单独离线备份，不能放进源码包、安装包或服务器公开目录。
-- 默认读取该私钥，也可使用 `--ui-signing-key <path>` 或 `XTYF_UI_SIGNING_KEY`。密钥缺失或与公钥不匹配时发布失败，不生成无签名更新。
+- 默认读取该私钥，也可使用 `--ui-signing-key <path>` 或 `AURORA_UI_SIGNING_KEY`。密钥缺失或与公钥不匹配时发布失败，不生成无签名更新。
 - 发布序号在私钥旁的 `.sequence` 文件中单调递增。回退页面也须重新发布，使用更高序号指向旧页面内容；不要恢复较旧的序号文件。并行发布锁失败时先检查另一发布进程，不自动删除锁。
 - 默认没有安装包下载入口。已有正式发布产物时，通过 `--installers <reviewed.json>` 提供 `windows-x86_64`、`ubuntu-aarch64`、`fedora-x86_64`、`android` 的 `{version,url,sha256}`。先核对正式构建报告、SHA256SUMS 和实际上传文件；URL 必须是当前服务器内的路径，不能填写待构建产物。
 - 更新接口 `/api/client/updates` 和 `/api/client/ui/<id>.zip` 仅公开签名清单与公共页面，不含账户、数据库、头像、附件或配置。没有发布资源时客户端继续使用原界面。
@@ -120,7 +120,7 @@ python clients/build_linux.py --setup
 python clients/build_linux.py --check
 ```
 
-Linux 默认使用 `Ubuntu-22.04` WSL 的 root 构建用户，缓存位于 `/root/.cache/xtyf-manager-build`；可通过脚本参数指定发行版和用户。ARM64 开发包提取到独立 sysroot，不修改主机 apt 软件源或外国架构列表。Linux 依赖及输出与 Windows 分开。
+Linux 默认使用 `Ubuntu-22.04` WSL 的 root 构建用户，缓存位于 `/root/.cache/aurora-manager-build`；可通过脚本参数指定发行版和用户。ARM64 开发包提取到独立 sysroot，不修改主机 apt 软件源或外国架构列表。Linux 依赖及输出与 Windows 分开。
 
 单平台生成安装包同样需要确认是否生成及版本号；以下命令只用于按当前版本调试，不代替七包正式发布（`-Check` 仅检查环境）：
 
@@ -140,9 +140,9 @@ python clients/build_linux.py --output-dir .build-tools/linux-debug
 
 现有 [Client validation](../.github/workflows/clients.yml) 仅在 `clients/**`（排除 Markdown 文档）、`templates/*.html` 或 `static/**` 变化时自动触发，覆盖指向 `main` 的 PR 和 `main` 推送。在原有前端／Rust／Java 验证通过后，使用 Windows x64／ARM64、Ubuntu 22.04 x64／ARM64 和 Android SDK runner 构建实际客户端。打开 GitHub Actions → **Client validation** → 对应 PR 或 main 的运行 → **Artifacts**，获取以下产物：
 
-- `xtyf-client-windows-x64` 和 `xtyf-client-windows-arm64`：两个独立架构的 NSIS `.exe`、安装包验证报告与 SHA-256。
-- `xtyf-client-linux-x64` 和 `xtyf-client-linux-arm64`：分别内含对应架构的 Ubuntu 22.04 `.deb`、Fedora `.rpm`、验证报告与 SHA-256。
-- `xtyf-client-android-apk`：一个通用 `.apk` 与 SHA-256。Android 原生层为纯 Java/WebView，没有 `.so` ABI 库，因此该 APK 同时支持 ARM64 和 x86_64，无需生成重复 APK。
+- `aurora-client-windows-x64` 和 `aurora-client-windows-arm64`：两个独立架构的 NSIS `.exe`、安装包验证报告与 SHA-256。
+- `aurora-client-linux-x64` 和 `aurora-client-linux-arm64`：分别内含对应架构的 Ubuntu 22.04 `.deb`、Fedora `.rpm`、验证报告与 SHA-256。
+- `aurora-client-android-apk`：一个通用 `.apk` 与 SHA-256。Android 原生层为纯 Java/WebView，没有 `.so` ABI 库，因此该 APK 同时支持 ARM64 和 x86_64，无需生成重复 APK。
 
 产物保留 14 天。CI 只使用 `clients/config.json` 的当前版本，不调用会递增版本的 `clients/release.py`，不部署服务器、不上传任何密钥。PR 只上传 Artifacts；客户端变更合并或直接推送到 main 后，全部构建通过才发布测试 Pre-release。Windows 未进行代码签名；Android 每次运行临时生成不同的测试签名密钥，**不能覆盖安装正式签名 APK，也不保证两次 CI 生成的 APK 可以相互覆盖升级**。这些测试安装包不属于正式交付，不应分发给生产用户。Linux 构建进行实际包结构、ELF 架构与依赖校验，但不能替代 Ubuntu ARM64 和 Fedora 的真机运行验收。
 
@@ -166,7 +166,7 @@ python clients/build_linux.py --output-dir .build-tools/linux-debug
 
 ## 应用图标源文件
 
-原始彩色图标以透明 SVG 形式保存在 `clients/assets/xtyf-logo.svg`。旧 JPEG 转为白色方形图标时带来的上下白边已移除。图标只保留透明安全间距；桌面 PNG/ICO 与 Android 512px 启动图标属于 **构建输出**，由 `python clients/build_icons.py` 调用固定版本 Tauri CLI 生成，不进入 Git。首次运行前安装依赖：`npm ci --prefix clients/desktop`。所有 Actions 打包任务都会重新生成同一份图标；不会拿旧二进制图标冒充修复版本。
+原始彩色图标以透明 SVG 形式保存在 `clients/assets/aurora-logo.svg`。旧 JPEG 转为白色方形图标时带来的上下白边已移除。图标只保留透明安全间距；桌面 PNG/ICO 与 Android 512px 启动图标属于 **构建输出**，由 `python clients/build_icons.py` 调用固定版本 Tauri CLI 生成，不进入 Git。首次运行前安装依赖：`npm ci --prefix clients/desktop`。所有 Actions 打包任务都会重新生成同一份图标；不会拿旧二进制图标冒充修复版本。
 
 
 ## GitHub Actions 自动发布
@@ -177,8 +177,8 @@ python clients/build_linux.py --output-dir .build-tools/linux-debug
 
 Windows 使用 WebView2 系统授权流程；Linux WebKitGTK 在可信页面发起视频请求后显示确认窗口；Android 保留 CAMERA 运行时授权与请求来源校验。仅允许本地页面和当前配置的 HTTPS 网站，外链窗口与麦克风请求不开放。普通 HTTP 网站不能实时调用摄像头，可使用相册识别或本地界面；不会关闭浏览器安全检查。用户拒绝、系统隐私开关、无设备或驱动问题仍可能阻止取流。包检查、权限逻辑测试与目标设备真实取流分别记录。
 
-跨架构发布保持相同 Tauri 2 / Android 系统 WebView 技术栈。统一入口要求两个 EXE、四个 Linux 包及 APK 全部校验通过，才发布七包报告。可通过 `XTYF_SIGNING_DIR` 指向既有签名目录；不复制或重新生成发布密钥。
+跨架构发布保持相同 Tauri 2 / Android 系统 WebView 技术栈。统一入口要求两个 EXE、四个 Linux 包及 APK 全部校验通过，才发布七包报告。可通过 `AURORA_SIGNING_DIR` 指向既有签名目录；不复制或重新生成发布密钥。
 
 Windows ARM64 还需要 MSVC ARM64 编译工具和 Clang（既有 `ring` 加密库的交叉编译要求）；发布预检查会确认 Clang 可用，可放在 PATH 或使用 Visual Studio 官方 Clang 组件。Linux 显式启用 WebKitGTK 媒体采集，并在 DEB/RPM 中声明 GStreamer Good 插件依赖，供 Video4Linux 摄像头取流。
 
-`clients/desktop/test_camera_runtime.cjs` 使用 `XTYF_TEST_EXE` 指向调试程序、`XTYF_SMOKE_DIR` 隔离配置。默认场景使用模拟摄像头和模拟同意；设置 `XTYF_CAMERA_TEST_MODE=deny` 在全新、不绕过权限回调的进程中检查麦克风拒绝。两项结果位于 `.build-tools/camera-native-check/`，不代表真实摄像头或所有目标平台已运行。
+`clients/desktop/test_camera_runtime.cjs` 使用 `AURORA_TEST_EXE` 指向调试程序、`AURORA_SMOKE_DIR` 隔离配置。默认场景使用模拟摄像头和模拟同意；设置 `AURORA_CAMERA_TEST_MODE=deny` 在全新、不绕过权限回调的进程中检查麦克风拒绝。两项结果位于 `.build-tools/camera-native-check/`，不代表真实摄像头或所有目标平台已运行。

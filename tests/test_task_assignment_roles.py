@@ -101,11 +101,11 @@ class TaskAssignmentRoles(unittest.TestCase):
 
     def test_vehicle_accepts_admin_as_owner_and_participant(self):
         first = self.admin.post('/api/task', json={
-            'title': '管理员担任造车负责人', 'owner_id': self.admin_id,
+            'title': '管理员担任项目负责人', 'owner_id': self.admin_id,
             'participant_ids': [self.member_ids[0]]})
         self.assertEqual(first.status_code, 200, first.get_json())
         second = self.admin.post('/api/task', json={
-            'title': '管理员担任造车参与者', 'owner_id': self.member_ids[0],
+            'title': '管理员担任项目参与者', 'owner_id': self.member_ids[0],
             'participant_ids': [self.admin_id]})
         self.assertEqual(second.status_code, 200, second.get_json())
 
@@ -141,7 +141,7 @@ class TaskAssignmentRoles(unittest.TestCase):
         self.assertEqual(vehicle.status_code, 400)
 
     def test_vehicle_historical_admin_relationship_and_log_are_not_rewritten(self):
-        created = self.admin.post('/api/task', json={'title': '历史造车任务', 'owner_id': self.member_ids[0]}).get_json()
+        created = self.admin.post('/api/task', json={'title': '历史项目任务', 'owner_id': self.member_ids[0]}).get_json()
         with self.app.app_context():
             db = get_db()
             db.execute('INSERT INTO task_participants VALUES(?,?)', (created['id'], self.admin_id))

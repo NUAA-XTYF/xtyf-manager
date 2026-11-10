@@ -29,7 +29,7 @@ def extract(raw, destination):
 def main():
     actual_head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
     raw = subprocess.check_output(['git', '-c', 'core.autocrlf=false', 'archive', 'HEAD'], cwd=ROOT)
-    with tempfile.TemporaryDirectory(prefix='xtyf-real-package-test-') as temporary:
+    with tempfile.TemporaryDirectory(prefix='aurora-real-package-test-') as temporary:
         temporary = Path(temporary).resolve()
         source = temporary / 'source'; source.mkdir()
         extract(raw, source)

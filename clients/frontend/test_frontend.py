@@ -49,7 +49,7 @@ class FrontendTests(unittest.TestCase):
                         fixtures.append({'name':name,'context':context,'expected':env.get_template(name).render(**context)})
         context={'me':None,'page':'login','role_names':{}}
         fixtures.append({'name':'login.html','context':context,'expected':env.get_template('login.html').render(**context)})
-        script=(self.dist/'templates.js').read_text(encoding='utf-8')+'\nconst fs=require("node:fs");const tests=JSON.parse(fs.readFileSync(0,"utf8"));process.stdout.write(JSON.stringify(tests.map(t=>XTYFTemplates.render(t.name,t.context))));'
+        script=(self.dist/'templates.js').read_text(encoding='utf-8')+'\nconst fs=require("node:fs");const tests=JSON.parse(fs.readFileSync(0,"utf8"));process.stdout.write(JSON.stringify(tests.map(t=>AURORATemplates.render(t.name,t.context))));'
         program=self.dist/'render-check.cjs';program.write_text(script,encoding='utf-8')
         result=subprocess.run(['node',str(program)],input=json.dumps(fixtures,ensure_ascii=False),text=True,encoding='utf-8',capture_output=True,check=True)
         rendered=json.loads(result.stdout)
@@ -86,10 +86,10 @@ class FrontendTests(unittest.TestCase):
     def test_navigation_adaptation_preserves_unrelated_identifiers(self):
         source="location.assign('/');window.location.href='/';other.location.href='/';history.replaceState(null,'','/');"
         result=adapt_script(source)
-        self.assertIn('window.XTYFLocation.assign',result)
-        self.assertIn('window.XTYFLocation.href',result)
+        self.assertIn('window.AURORALocation.assign',result)
+        self.assertIn('window.AURORALocation.href',result)
         self.assertIn('other.location.href',result)
-        self.assertIn('window.XTYFHistory.replaceState',result)
+        self.assertIn('window.AURORAHistory.replaceState',result)
 
 
 

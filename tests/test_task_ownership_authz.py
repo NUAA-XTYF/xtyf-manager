@@ -70,7 +70,7 @@ class TaskOwnershipAuthorization(unittest.TestCase):
         project = self.admin.post('/api/projects', json={'name': '归属组-' + uuid4().hex[:6]}).get_json()['id']
         moved = self.update('member', project_id=project)
         self.assertEqual(moved.status_code, 403, moved.get_json())
-        self.assertIn('造车组别', moved.get_json()['error'])
+        self.assertIn('所属项目', moved.get_json()['error'])
 
     def test_manager_may_reassign_owner(self):
         response = self.update('manager', owner_id=self.ids['manager'])

@@ -97,7 +97,7 @@ def full_restore(app):
         "request_id": key, "record_type": "进", "amount": "12.34",
         "record_date": "2026-10-24", "source_dest": "合成恢复", "notes": "合成资料"}).get_json()
     assert funds["code"] == 0, funds
-    with tempfile.TemporaryDirectory(prefix="xtyf-full-restore-") as directory:
+    with tempfile.TemporaryDirectory(prefix="aurora-full-restore-") as directory:
         base = Path(directory)
         source = base / "offline-source"
         source.mkdir()
@@ -144,7 +144,7 @@ def legacy_deploy():
     if os.name != "posix":
         return {"status": "not run: Linux mock-command harness required"}
     results = {}
-    with tempfile.TemporaryDirectory(prefix="xtyf-deploy-mock-") as directory:
+    with tempfile.TemporaryDirectory(prefix="aurora-deploy-mock-") as directory:
         root = Path(directory)
         source, binaries = root / "source", root / "bin"
         (source / "deploy").mkdir(parents=True)
@@ -198,7 +198,7 @@ if [[ "$PROBE_FAILURE" == http500 || "$PROBE_FAILURE" == slow && "$count" -lt 3 
 def sse_capacity():
     if os.name != "posix":
         raise RuntimeError("SSE experiment requires Linux Gunicorn, not a Flask development server")
-    with tempfile.TemporaryDirectory(prefix="xtyf-sse-capacity-") as directory:
+    with tempfile.TemporaryDirectory(prefix="aurora-sse-capacity-") as directory:
         root = Path(directory)
         (root / ".synthetic-only").touch()
         with socket.socket() as listener:
@@ -225,7 +225,7 @@ def sse_capacity():
             process = subprocess.Popen([sys.executable, "-m", "gunicorn", "--config", "deploy/gunicorn.conf.py",
                 "--pythonpath", "tests", "--workers", "1", "--threads", "8", "--timeout", "240",
                 "--bind", f"127.0.0.1:{port}", "reliability_probe_app:app"], cwd=ROOT,
-                env={**os.environ, "XTYF_RELIABILITY_ROOT": str(root)}, stdout=log, stderr=log, start_new_session=True)
+                env={**os.environ, "AURORA_RELIABILITY_ROOT": str(root)}, stdout=log, stderr=log, start_new_session=True)
             try:
                 deadline = time.monotonic() + 30
                 while True:

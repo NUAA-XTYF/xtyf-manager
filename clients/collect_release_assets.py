@@ -17,16 +17,16 @@ import shutil
 
 def expected_artifacts(version: str) -> dict[str, list[str]]:
     return {
-        "xtyf-client-windows-x64": [f"XTYF-Manager-Setup-{version}-x64.exe"],
-        "xtyf-client-windows-arm64": [f"XTYF-Manager-Setup-{version}-arm64.exe"],
-        "xtyf-client-android-apk": [f"XTYF-Manager-{version}.apk"],
-        "xtyf-client-linux-x64": [
-            f"XTYF-Manager-{version}-amd64.deb",
-            f"XTYF-Manager-{version}-x86_64.rpm",
+        "aurora-client-windows-x64": [f"Aurora-Workspace-Setup-{version}-x64.exe"],
+        "aurora-client-windows-arm64": [f"Aurora-Workspace-Setup-{version}-arm64.exe"],
+        "aurora-client-android-apk": [f"Aurora-Workspace-{version}.apk"],
+        "aurora-client-linux-x64": [
+            f"Aurora-Workspace-{version}-amd64.deb",
+            f"Aurora-Workspace-{version}-x86_64.rpm",
         ],
-        "xtyf-client-linux-arm64": [
-            f"XTYF-Manager-{version}-arm64.deb",
-            f"XTYF-Manager-{version}-aarch64.rpm",
+        "aurora-client-linux-arm64": [
+            f"Aurora-Workspace-{version}-arm64.deb",
+            f"Aurora-Workspace-{version}-aarch64.rpm",
         ],
     }
 

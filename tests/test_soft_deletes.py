@@ -88,7 +88,7 @@ class TestSoftDeletes(unittest.TestCase):
             "name": "归档专业_" + self.suffix
         }).get_json()["id"]
         vehicle = self.admin.post("/api/projects", json={
-            "name": "归档车组_" + self.suffix
+            "name": "归档项目_" + self.suffix
         }).get_json()["id"]
         self.assertEqual(self.admin.post(f"/api/member/{self.member_id}/groups", json={
             "group_ids": [professional]
@@ -97,11 +97,11 @@ class TestSoftDeletes(unittest.TestCase):
             "project_ids": [vehicle]
         }).status_code, 200)
         task = self.admin.post("/api/task", json={
-            "title": "历史造车归属 " + self.suffix,
+            "title": "历史项目归属 " + self.suffix,
             "owner_id": self.member_id, "project_id": vehicle
         }).get_json()["id"]
         for path, name in (("groups", "归档专业_" + self.suffix),
-                           ("projects", "归档车组_" + self.suffix)):
+                           ("projects", "归档项目_" + self.suffix)):
             obj_id = professional if path == "groups" else vehicle
             self.assertEqual(self.member.post(f"/api/{path}/{obj_id}/delete", json={
                 "confirm_name": name
@@ -132,7 +132,7 @@ class TestSoftDeletes(unittest.TestCase):
         }).status_code, 400)
         data = self.admin.get("/api/data").get_json()
         historical = next(t for t in data["tasks"] if t["id"] == task)
-        self.assertEqual(historical["project"], "归档车组_" + self.suffix)
+        self.assertEqual(historical["project"], "归档项目_" + self.suffix)
         for path, obj_id in (("groups", professional), ("projects", vehicle)):
             self.assertEqual(self.admin.post(f"/api/{path}/{obj_id}/restore", json={}).status_code, 200)
             self.assertEqual(next(x for x in self.admin.get(f"/api/{path}").get_json()[path]

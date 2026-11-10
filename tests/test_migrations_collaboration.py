@@ -116,8 +116,8 @@ class TestCollaborationMigration(unittest.TestCase):
         migrate(db)
         db.execute("UPDATE groups SET name='嵌入式硬件' WHERE name='硬件'")
         db.execute("DELETE FROM groups WHERE name='运营'")
-        db.execute("UPDATE projects SET name='新赛季步兵' WHERE name='步兵'")
-        db.execute("DELETE FROM projects WHERE name='飞镖'")
+        db.execute("UPDATE projects SET name='新赛季项目' WHERE name=?", (DEFAULT_VEHICLE_GROUPS[0],))
+        db.execute("DELETE FROM projects WHERE name=?", (DEFAULT_VEHICLE_GROUPS[3],))
         db.commit()
         migrate(db)
         names = {row[0] for row in db.execute("SELECT name FROM groups")}
@@ -125,9 +125,9 @@ class TestCollaborationMigration(unittest.TestCase):
         self.assertNotIn("硬件", names)
         self.assertNotIn("运营", names)
         vehicle_names = {row[0] for row in db.execute("SELECT name FROM projects")}
-        self.assertIn("新赛季步兵", vehicle_names)
-        self.assertNotIn("步兵", vehicle_names)
-        self.assertNotIn("飞镖", vehicle_names)
+        self.assertIn("新赛季项目", vehicle_names)
+        self.assertNotIn(DEFAULT_VEHICLE_GROUPS[0], vehicle_names)
+        self.assertNotIn(DEFAULT_VEHICLE_GROUPS[3], vehicle_names)
         self.assertTrue(set(range(1, 9)).issubset({row[0] for row in db.execute("SELECT version FROM schema_migrations")}))
         db.close()
 

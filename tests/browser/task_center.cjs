@@ -126,14 +126,14 @@ async function ready(page) { await page.locator('#task-create-panel[open][aria-b
     await page.locator('#new-task-toggle').click();await ready(page);await page.locator('#daily-form [name=title]').fill('新项目独立草稿');await page.keyboard.press('Escape');
     await page.locator('#daily-edit').click();await ready(page);assert.equal(await page.locator('#daily-form [name=title]').inputValue(),'编辑草稿保留');await page.keyboard.press('Escape');
     await page.locator('#new-task-toggle').click();await ready(page);assert.equal(await page.locator('#daily-form [name=title]').inputValue(),'新项目独立草稿');
-    await page.locator('#task-create-type').selectOption('vehicle');await ready(page);await page.locator('#create-form [name=title]').fill('日常页发起造车任务');await page.locator('#create-form [type=submit]').click();await page.waitForURL(/\/tasks\?type=vehicle&task=\d+$/);await page.locator('#modal').filter({hasText:'日常页发起造车任务'}).waitFor();
+    await page.locator('#task-create-type').selectOption('vehicle');await ready(page);await page.locator('#create-form [name=title]').fill('日常页发起项目任务');await page.locator('#create-form [type=submit]').click();await page.waitForURL(/\/tasks\?type=vehicle&task=\d+$/);await page.locator('#modal').filter({hasText:'日常页发起项目任务'}).waitFor();
     checks.push('daily edit catalog failure has retry; new and edit drafts isolated; daily page can create vehicle without app.js');
     await page.goto(base+'/tasks?type=daily');
     let candidate,releaseCandidate;const candidateReady=new Promise(resolve=>releaseCandidate=resolve);await page.route('**/api/data',route=>{candidate=route;releaseCandidate();});await page.locator('#new-task-toggle').click();await page.waitForFunction(()=>document.querySelector('#task-create-panel').getAttribute('aria-busy')==='true');
     await candidateReady;await page.locator('.task-create-heading [data-task-create-close]').click();assert.equal(await page.locator('#task-create-panel').evaluate(node=>node.open),false);await candidate.fulfill({status:503,json:{ok:false,error:'模拟迟到的失败'}});await page.unroute('**/api/data');
     await page.locator('#new-task-toggle').click();await ready(page);await page.keyboard.press('Escape');checks.push('candidate loading can be closed; late failure does not reopen dialog');
     await page.goto(base+'/daily-projects/'+id);await page.waitForURL(base+'/tasks?type=daily&project='+id);
-    await page.locator('.task-type-tabs a').filter({hasText:'造车任务'}).click();await page.locator('#board').waitFor();assert.equal(await page.locator('#daily-app').count(),0);
+    await page.locator('.task-type-tabs a').filter({hasText:'项目任务'}).click();await page.locator('#board').waitFor();assert.equal(await page.locator('#daily-app').count(),0);
     checks.push('daily tab retains grouped ownership; legacy URL redirects; switching restores vehicle board');
     // Assert the actual default card, disclosure and archive behavior in a mixed dataset.
     await page.waitForFunction(() => state.members.some(member => member.role !== 'admin'));
@@ -228,7 +228,7 @@ async function ready(page) { await page.locator('#task-create-panel[open][aria-b
         await memberPage.locator('#login-form [type=submit]').click();await memberPage.waitForURL('**/account');
         assert.equal((await api(memberPage,'/api/password',{old:'member-initial',new:'member-updated'})).status,200);
         await memberPage.goto(base+'/tasks#create');await ready(memberPage);
-        await memberPage.locator('#create-form [name=title]').fill(engine+'成员造车任务');
+        await memberPage.locator('#create-form [name=title]').fill(engine+'成员项目任务');
         await memberPage.locator('#create-owner').selectOption(String(created.body.id));
         await memberPage.locator('#create-form [type=submit]').click();
         await memberPage.locator('#task-create-feedback').filter({hasText:'任务已创建'}).waitFor();

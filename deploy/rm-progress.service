@@ -1,6 +1,6 @@
 # systemd 服务模板：deploy.sh 安装时用 sed 替换 {{APP_USER}} / {{APP_DIR}} 占位符
 [Unit]
-Description=RoboMaster Progress Tracker (Flask + gunicorn)
+Description=Aurora Workspace (Flask + gunicorn)
 After=network-online.target
 Wants=network-online.target
 
@@ -9,8 +9,8 @@ User={{APP_USER}}
 WorkingDirectory={{APP_DIR}}
 Environment=PYTHONUNBUFFERED=1
 Environment=PYTHONDONTWRITEBYTECODE=1
-Environment=MPLCONFIGDIR=/tmp/xtyf-matplotlib
-Environment=XDG_CACHE_HOME=/tmp/xtyf-cache
+Environment=MPLCONFIGDIR=/tmp/aurora-matplotlib
+Environment=XDG_CACHE_HOME=/tmp/aurora-cache
 NoNewPrivileges=yes
 ProtectSystem=strict
 PrivateTmp=yes

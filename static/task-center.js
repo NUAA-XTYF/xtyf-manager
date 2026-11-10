@@ -67,7 +67,7 @@
   });
   document.addEventListener('task:created',event=>{
     setBusy(false);close();
-    document.getElementById('task-create-feedback').textContent='任务已创建，可在造车任务中查看。';
+    document.getElementById('task-create-feedback').textContent='任务已创建，可在项目任务中查看。';
     if(typeof refresh==='function')refresh();
     else location.assign('/tasks?type=vehicle&task='+event.detail.id);
   });

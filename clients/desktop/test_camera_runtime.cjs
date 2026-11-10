@@ -16,15 +16,15 @@ catch (_) {
   playwright = require(driver);
 }
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-const denyTest = process.env.XTYF_CAMERA_TEST_MODE === 'deny';
+const denyTest = process.env.AURORA_CAMERA_TEST_MODE === 'deny';
 let application, browser, server;
 const result = {platform:'Windows x64 WebView2', realCameraVerified:false, checks:[]};
 (async () => {
   server = http.createServer((request, response) => { response.writeHead(503); response.end('isolated offline fixture'); });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   fs.writeFileSync(path.join(profile, 'server.json'), JSON.stringify({serverUrl:`http://127.0.0.1:${server.address().port}`}));
-  application = spawn(process.env.XTYF_TEST_EXE, [], {cwd:root, windowsHide:true, stdio:'ignore', env:{...process.env,
-    XTYF_SMOKE_DIR:profile, WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS:'--remote-debugging-port=9243 --use-fake-device-for-media-stream' + (denyTest ? '' : ' --use-fake-ui-for-media-stream')}});
+  application = spawn(process.env.AURORA_TEST_EXE, [], {cwd:root, windowsHide:true, stdio:'ignore', env:{...process.env,
+    AURORA_SMOKE_DIR:profile, WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS:'--remote-debugging-port=9243 --use-fake-device-for-media-stream' + (denyTest ? '' : ' --use-fake-ui-for-media-stream')}});
   for (let attempt=0; attempt<100; attempt++) {
     try { browser = await playwright.chromium.connectOverCDP('http://127.0.0.1:9243', {timeout:500}); break; }
     catch (_) { await sleep(200); }

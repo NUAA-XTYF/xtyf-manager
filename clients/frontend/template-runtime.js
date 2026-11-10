@@ -15,5 +15,5 @@
     if(!Object.hasOwn(templates,name)) throw new Error('Unknown packaged template: '+name);
     return templates[name]({...context},blocks);
   }
-  globalThis.XTYFTemplates={render,names:Object.keys(templates)};
+  globalThis.AURORATemplates={render,names:Object.keys(templates)};
 })();

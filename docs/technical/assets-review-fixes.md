@@ -41,7 +41,7 @@ python -m coverage report --fail-under=65
 node --test tests/js/*.test.cjs
 node --test clients/frontend/test_bridge.cjs
 python -m unittest discover -s clients/frontend -p test_frontend.py -v
-$env:XTYF_UPGRADE_BASE_SHA='c3a20f75f4804acec57087abe5b972cf51cf691b'
+$env:AURORA_UPGRADE_BASE_SHA='c3a20f75f4804acec57087abe5b972cf51cf691b'
 python tests/upgrade_from_main.py
 ```
 

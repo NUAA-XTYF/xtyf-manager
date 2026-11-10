@@ -472,7 +472,7 @@ def save_object(db, data):
     reason = text(data, "reason", maximum=500)
     project = integer(data, "project_id") if data.get("project_id") else None
     if project and row(db, "projects", project)["deleted_at"]:
-        raise Invalid("造车组已删除", 409)
+        raise Invalid("项目组已删除", 409)
     active = data.get("active", True)
     if type(active) is not bool:
         raise Invalid("启用状态无效")

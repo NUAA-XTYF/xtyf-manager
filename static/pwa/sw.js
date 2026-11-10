@@ -1,7 +1,7 @@
 /* Only this generated, exact public allowlist may enter Cache Storage. */
 'use strict';
 const CONFIG = __PWA_CONFIG__;
-const PREFIX = 'xtyf-pwa-public-';
+const PREFIX = 'aurora-pwa-public-';
 const CACHE = PREFIX + CONFIG.version;
 const OFFLINE = '/static/pwa/offline.html';
 const PAGES = new Set(['/', '/login', '/account', '/tasks', '/manage', '/members',

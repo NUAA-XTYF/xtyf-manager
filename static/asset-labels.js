@@ -3,7 +3,7 @@
   'use strict';
   const $=id=>document.getElementById(id),form=$('asset-label-form'),link=$('asset-label-download');
   const Layout=window.AssetLabelLayout;
-  const SETTINGS_KEY='xtyf.asset.labels.v3',defaults={paper:'thermal',width:50,height:30,layout:'auto',font:11,font_width:88,
+  const SETTINGS_KEY='aurora.asset.labels.v3',defaults={paper:'thermal',width:50,height:30,layout:'auto',font:11,font_width:88,
     show_text:true,show_qr:true,show_barcode:true,auto_fit:true,name_font:11,spec_font:8.5,serial_font:8.5,code_font:8.5,
     name_overflow:'wrap',spec_overflow:'wrap',serial_overflow:'truncate',code_overflow:'truncate'};
   function setValues(values){
@@ -37,7 +37,7 @@
   }
   function restore(){
     let saved;
-    try{saved=JSON.parse(localStorage.getItem(SETTINGS_KEY)||localStorage.getItem('xtyf.asset.labels.v2')||'null');}catch(_){return;}
+    try{saved=JSON.parse(localStorage.getItem(SETTINGS_KEY)||localStorage.getItem('aurora.asset.labels.v2')||'null');}catch(_){return;}
     if(!saved||typeof saved!=='object')return;
     const f=$('asset-label-form');
     for(const [key,value] of Object.entries(defaults)){
@@ -85,8 +85,8 @@
         (opts.show_text?' · '+(opts.auto_fit?'自动缩小':'固定字号')+' · 字宽 '+opts.font_width+'%':'')+' '+Layout.warnings(geometry).join('；');
       const path='/api/assets/labels.pdf?'+new URLSearchParams({ids:records.map(u=>u.id).join(','),kind:records[0].item_id?'unit':'item',...opts});
       let content;
-      if(window.XTYF){
-        const response=await window.XTYF.readResource(path);
+      if(window.AURORA){
+        const response=await window.AURORA.readResource(path);
         if(response.status!==200)throw Error('PDF 读取失败，请检查登录状态');
         content=Uint8Array.from(atob(response.body),c=>c.charCodeAt(0));
       }else{
@@ -106,7 +106,7 @@
       documentPdf=doc;page=1;await showPage(own);if(own!==generation)return;
       bytes=content;url=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'}));link.href=url;link.hidden=false;
       status(`共 ${doc.numPages} 页 · ${records.length} 张标签。预览与下载为同一份 PDF，请按实际尺寸打印。`);
-      if(window.XTYF&&!window.XTYF.config?.capabilities?.includes('pdf_save')){link.hidden=true;status('PDF 预览已生成；请升级客户端以保存同一份 PDF，或在浏览器下载。');}
+      if(window.AURORA&&!window.AURORA.config?.capabilities?.includes('pdf_save')){link.hidden=true;status('PDF 预览已生成；请升级客户端以保存同一份 PDF，或在浏览器下载。');}
     }catch(e){if(own!==generation)return;clear();status('PDF 预览失败：'+e.message);}
   }
   form.onsubmit=e=>{e.preventDefault();render();};
@@ -128,9 +128,9 @@
     showPage(generation).catch(e=>{clear();status('PDF 预览失败：'+e.message);});
   };
   link.onclick=async e=>{
-    if(!window.XTYF)return;e.preventDefault();if(!bytes)return;
+    if(!window.AURORA)return;e.preventDefault();if(!bytes)return;
     const own=generation;let binary='';for(let i=0;i<bytes.length;i+=32768)binary+=String.fromCharCode(...bytes.subarray(i,i+32768));
-    try{await window.XTYF.invoke('download',{filename:'asset-labels.pdf',pdfBody:btoa(binary)});}
+    try{await window.AURORA.invoke('download',{filename:'asset-labels.pdf',pdfBody:btoa(binary)});}
     catch(error){if(own===generation)status('PDF 保存失败：'+error.message);}
   };
   $('asset-label-close').onclick=()=>$('asset-label-dialog').close();

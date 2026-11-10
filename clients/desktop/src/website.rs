@@ -16,11 +16,11 @@ pub(crate) fn discovery_redirect(from: &Url, to: &Url) -> bool {
 async fn discover(configured: &str, path: &str) -> Result<String, String> {
     let client = Client::builder().redirect(reqwest::redirect::Policy::none())
         .connect_timeout(Duration::from_secs(20)).timeout(Duration::from_secs(20))
-        .user_agent(format!("XTYFManager/{}", env!("CARGO_PKG_VERSION")))
+        .user_agent(format!("AURORAManager/{}", env!("CARGO_PKG_VERSION")))
         .build().map_err(|e| e.to_string())?;
     let mut url = server_path(configured, path)?;
     for redirects in 0..=5 {
-        let response = client.get(url.clone()).header("X-XTYF-Client-Protocol", "1")
+        let response = client.get(url.clone()).header("X-AURORA-Client-Protocol", "1")
             .send().await.map_err(|e| e.to_string())?;
         if !response.status().is_redirection() { return Ok(url.origin().ascii_serialization()); }
         if redirects == 5 { return Err("服务器重定向次数过多".into()); }
@@ -167,7 +167,7 @@ pub fn return_local(app: &tauri::AppHandle, intent: &str) -> Result<Value, Strin
     if !matches!(intent, "settings" | "retry" | "return") { return Err("返回操作无效".into()); }
     close(app);
     let view = app.get_webview("main").ok_or("本地页面不可用")?;
-    view.eval(&format!("window.dispatchEvent(new CustomEvent('xtyf-website-return',{{detail:{{intent:{}}}}}));", json!(intent))).map_err(|e| e.to_string())?;
+    view.eval(&format!("window.dispatchEvent(new CustomEvent('aurora-website-return',{{detail:{{intent:{}}}}}));", json!(intent))).map_err(|e| e.to_string())?;
     view.set_focus().map_err(|e| e.to_string())?;
     Ok(json!({"returned":true}))
 }

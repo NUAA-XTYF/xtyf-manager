@@ -60,9 +60,9 @@ Linux Python 3.13 首次完整回归 **657 项，1 failure / 2 errors**：资产
 - 首次 Linux 失败和上轮客户端权限 401 属同类认证失效表象，尚不能断定相同根因。
   客户端模块独立、反向、固定随机（seed 20261025）各 14 项通过；资产/协作首次失败模块独立 57 项通过。
   没有以这些重跑结果抵消完整顺序失败。
-- 第二次 Linux 完整测试带 `XTYF_TEST_AUTH_TRACE=1`，679 项通过且未记录签名拒绝；缺少失败现场，不能归因于时钟或共享状态。
+- 第二次 Linux 完整测试带 `AURORA_TEST_AUTH_TRACE=1`，679 项通过且未记录签名拒绝；缺少失败现场，不能归因于时钟或共享状态。
 - WSL 四组补查增加仅记录资源路径、失败类型、DOM 就绪/崩溃事件的诊断；未复现加载超时。日志中的导航取消不等同于加载失败，不能由软件渲染通过推断 GPU 是根因。
-- `XTYF_TEST_AUTH_TRACE=1` 仅对合成夹具增加账号 ID、数据库/会话版本、状态以及签名拒绝类型/时间诊断；不输出 Cookie、密码或 Token。
+- `AURORA_TEST_AUTH_TRACE=1` 仅对合成夹具增加账号 ID、数据库/会话版本、状态以及签名拒绝类型/时间诊断；不输出 Cookie、密码或 Token。
 - Windows 新增诊断早期有 SQLite 连接未显式关闭，25 项断言通过但退出清理出现 WinError 32；改用 closing 后完整回归无该清理错误。
 - 跨 Windows/WSL 的 Git 指针与命令替换曾读取错误工作区，旧代码 SSE 测量无效；改为显式 Git 可见源码清单同步后才得到上表有效结果。
   升级检查首次因跨 shell 提前解析 SHA 得到空值而失败；改为在隔离 Linux 脚本内解析并校验完整 SHA，保留首次日志。
@@ -100,7 +100,7 @@ python -m coverage run --branch --source=app,common,modules,deploy -m unittest d
 python -m coverage report --fail-under=65
 ruff check app.py common.py modules deploy tests
 node --test tests/js/*.test.cjs
-XTYF_UPGRADE_BASE_SHA=<72643c1 的完整 SHA> python tests/upgrade_from_main.py
+AURORA_UPGRADE_BASE_SHA=<72643c1 的完整 SHA> python tests/upgrade_from_main.py
 python tests/reliability_experiments.py --output <隔离结果路径>
 python tests/reliability_dependencies.py --scan --output <清单路径>
 python clients/frontend/test_frontend.py

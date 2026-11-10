@@ -15,7 +15,7 @@ catch (_) {
 }
 const root = path.resolve(__dirname, '../..');
 const fixturePython = process.env.REVIEW_PYTHON || (fs.existsSync(path.join(root,'.venv/Scripts/python.exe')) ? path.join(root,'.venv/Scripts/python.exe') : 'python');
-const executable = path.resolve(process.env.XTYF_TEST_EXE || path.join(root,'.build-tools/tauri-target-windows/debug/xtyf-manager.exe'));
+const executable = path.resolve(process.env.AURORA_TEST_EXE || path.join(root,'.build-tools/tauri-target-windows/debug/aurora-manager.exe'));
 const output = path.join(root,'.build-tools/tauri-runtime-check');
 fs.mkdirSync(output,{recursive:true});
 const userData = fs.mkdtempSync(path.join(output,'profile-'));
@@ -29,7 +29,7 @@ async function waitFor(check,label,timeout=30000) {
   throw new Error('Timed out: '+label+'\n'+appLog.slice(-2000));
 }
 async function startApp() {
-  application=spawn(executable,[],{cwd:root,windowsHide:true,env:{...process.env,XTYF_SMOKE_DIR:userData,WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS:'--remote-debugging-port=9224'},stdio:['ignore','pipe','pipe']});
+  application=spawn(executable,[],{cwd:root,windowsHide:true,env:{...process.env,AURORA_SMOKE_DIR:userData,WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS:'--remote-debugging-port=9224'},stdio:['ignore','pipe','pipe']});
   application.stdout.on('data',data=>appLog+=data);application.stderr.on('data',data=>appLog+=data);
   await waitFor(async()=>{const response=await fetch('http://127.0.0.1:9224/json/version');return response.ok;},'WebView2 CDP',45000);
   browser=await waitFor(()=>playwright.chromium.connectOverCDP('http://127.0.0.1:9224',{timeout:3000}),'WebView2 CDP handshake');
@@ -79,7 +79,7 @@ async function targetEvaluate(target,expression) {
 function pass(text) {results.push(text);console.log(text);}
 async function nativeAPI(page, apiPath, data) {
   const response=await page.evaluate(async({apiPath,data})=>{
-    const result=await XTYF.request(apiPath,data===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    const result=await AURORA.request(apiPath,data===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
     return {status:result.status,body:await result.json()};
   },{apiPath,data});
   assert(response.status>=200&&response.status<300,`Isolated fixture API ${apiPath}: ${JSON.stringify(response.body)}`);
@@ -110,7 +110,7 @@ async function verifyMemberTaskNavigation(page,frame) {
   for(const [title,status] of [['本地运行验收·进行中','进行中'],['本地运行验收·待办','未开始'],['本地运行验收·已完成','已完成']]) {
     created.push(await nativeAPI(page,'/api/task',{title,status,owner_id:member.id}));
   }
-  await page.evaluate(()=>XTYF.navigate('/tasks'));
+  await page.evaluate(()=>AURORA.navigate('/tasks'));
   await frame.locator('#view-seg [data-view="person"]').click();
   await frame.locator('#f-q').fill('本地运行验收');
   const trigger=frame.locator(`[data-lane-tasks="m-${member.id}"]`);
@@ -125,19 +125,19 @@ async function verifyMemberTaskNavigation(page,frame) {
   await page.screenshot({path:path.join(output,'windows-member-task-list.png')});
   await frame.locator(`#modal [data-task-id="${created[0].id}"]`).click();
   await frame.locator('#modal [data-close]').filter({hasText:'返回任务列表'}).waitFor();
-  assert.equal(await page.evaluate(()=>window.XTYFClient.back()),true);
+  assert.equal(await page.evaluate(()=>window.AURORAClient.back()),true);
   await frame.locator('#modal.member-task-list-dialog').waitFor();
   assert.equal(await frame.locator('#modal [data-task-id]').count(),3);
-  assert.equal(await page.evaluate(()=>window.XTYFClient.back()),true);
+  assert.equal(await page.evaluate(()=>window.AURORAClient.back()),true);
   await frame.locator('#modal-mask').waitFor({state:'hidden'});
   assert.deepEqual(await frame.locator('body').evaluate(()=>({filters:{...state.filters},view:state.view})),before);
   assert.equal(await frame.locator('#f-q').inputValue(),'本地运行验收');
-  assert.equal(await page.evaluate(()=>XTYF.route),'/tasks');
+  assert.equal(await page.evaluate(()=>AURORA.route),'/tasks');
   uiChecks.memberTaskList={source:'real API fixture via native transport',active:2,finished:1,backSequence:['detail','member-task-list','person-lane'],filtersPreserved:true,host:'Windows WebView2; shared Android frontend back handler only'};
   pass('Member task list includes active and completed tasks; shared back handler returns detail → list → lane on Windows');
 }
 async function verifyAccountGrid(page,frame,forcedGeometry) {
-  await page.evaluate(()=>XTYF.navigate('/account'));
+  await page.evaluate(()=>AURORA.navigate('/account'));
   await frame.locator('#account-profile-form').waitFor();
   await waitFor(async()=>!(await frame.locator('#account-group-choices').innerText()).includes('加载中'),'account choices');
   const normal=await accountGeometry(frame);
@@ -153,7 +153,7 @@ async function verifyInvoiceButtons(page,frame) {
   // This creates only a queued job in the isolated fixture; its worker is deliberately disabled.
   const job=await nativeAPI(page,'/invoices/api/job/start',{type:'scan_dups'});
   assert(job.job_id,'Isolated invoice job should have an ID');
-  await page.evaluate(()=>XTYF.navigate('/invoices/'));
+  await page.evaluate(()=>AURORA.navigate('/invoices/'));
   const selectors=[`#invoiceJobsList [data-job-id="${job.job_id}"]`,'#invoiceSortDirection'];
   await frame.locator(selectors[0]).waitFor();
   const palettes=[];
@@ -197,7 +197,7 @@ async function main() {
   const buildInfoPath=path.join(output,'runtime-build-info.json');
   execFileSync(executable,['--build-info',buildInfoPath],{cwd:root,windowsHide:true});
   const buildInfo=JSON.parse(fs.readFileSync(buildInfoPath,'utf8'));
-  const frontendManifest=fs.readFileSync(process.env.XTYF_FRONTEND_MANIFEST||path.join(root,'clients/frontend/dist/asset-manifest.json'));
+  const frontendManifest=fs.readFileSync(process.env.AURORA_FRONTEND_MANIFEST||path.join(root,'clients/frontend/dist/asset-manifest.json'));
   assert.deepEqual(buildInfo.frontend,JSON.parse(frontendManifest),'Executable must contain the expected shared frontend manifest');
   const frontendManifestSha256=crypto.createHash('sha256').update(frontendManifest).digest('hex');
   backend=spawn(fixturePython,['-B',path.join(root,'tests/browser/server.py')],{cwd:root,windowsHide:true,env:{...process.env,PYTHONDONTWRITEBYTECODE:'1'},stdio:['ignore','pipe','pipe']});
@@ -206,41 +206,41 @@ async function main() {
   await waitFor(()=>{if(backend.exitCode!==null)throw new Error('Flask fixture failed: '+backendLog);return serverUrl;},'isolated Flask fixture');
   fs.writeFileSync(path.join(userData,'server.json'),JSON.stringify({serverUrl}));
   let page=await startApp();
-  await waitFor(()=>page.evaluate(()=>window.XTYF?.compatible),'native bootstrap');
+  await waitFor(()=>page.evaluate(()=>window.AURORA?.compatible),'native bootstrap');
   assert.match(page.url(),/^https?:\/\/tauri\.localhost/);
   assert.equal(await page.evaluate(()=>typeof window.__TAURI_INTERNALS__.invoke),'function');
   assert(await page.locator('#page-host iframe').getAttribute('srcdoc'),'Business UI is a local document');
-  const config=await page.evaluate(()=>XTYFNative.invoke('get_config',{}));assert.equal(config.serverUrl,serverUrl);
+  const config=await page.evaluate(()=>AURORANative.invoke('get_config',{}));assert.equal(config.serverUrl,serverUrl);
   pass('Actual Windows Tauri executable and native IPC load local login');
   nativeMenus.push(...inspectNativeMenus(application.pid));assert(nativeMenus.length);assert(nativeMenus.every(window=>window.menuHandle===0));
   pass('Actual native Windows application windows have no attached menu');
   let frame=page.frameLocator('#page-host iframe');
   await frame.locator('input[name=username]').fill('admin');await frame.locator('input[name=password]').fill('browser-test-initial');await frame.locator('button[type=submit]').click();
-  await waitFor(()=>page.evaluate(()=>XTYF.bootstrap.authenticated&&XTYF.route==='/account'),'initial-password gate');
+  await waitFor(()=>page.evaluate(()=>AURORA.bootstrap.authenticated&&AURORA.route==='/account'),'initial-password gate');
   await frame.locator('#account-password-form').waitFor();
   const forcedAccountGeometry=await accountGeometry(frame);
   await frame.locator('#account-password-form [name=old]').fill('browser-test-initial');
   await frame.locator('#account-password-form [name=new]').fill('local-runtime-password-2026');
   await frame.locator('#account-password-form [name=confirm]').fill('local-runtime-password-2026');
   await frame.locator('#account-password-form button[type=submit]').click();
-  await waitFor(()=>page.evaluate(()=>XTYF.bootstrap.authenticated&&!XTYF.bootstrap.me.must_change_password),'password change');
+  await waitFor(()=>page.evaluate(()=>AURORA.bootstrap.authenticated&&!AURORA.bootstrap.me.must_change_password),'password change');
   pass('Native JSON login, CSRF and forced password change against isolated Flask database');
   for(const [route,label] of [['/','工作台'],['/tasks','任务中心'],['/manage','任务管理'],['/members','成员管理'],['/discussions/','协作'],['/funds/','资金'],['/invoices/','发票'],['/account','账户'],['/admin/mail','邮件'],['/admin/security','权限']]) {
-    await page.evaluate(route=>XTYF.navigate(route),route);await frame.locator('h1').first().waitFor();
+    await page.evaluate(route=>AURORA.navigate(route),route);await frame.locator('h1').first().waitFor();
     await waitFor(async()=>(await frame.locator('h1').first().innerText()).includes(label),'local route '+route);
   }
   pass('Ten business routes render as packaged local documents through native API transport');
   await verifyMemberTaskNavigation(page,frame);
   await verifyAccountGrid(page,frame,forcedAccountGeometry);
   await verifyInvoiceButtons(page,frame);
-  await page.evaluate(()=>XTYF.navigate('/tasks'));await frame.locator('h1').first().waitFor();await page.screenshot({path:path.join(output,'windows-tasks.png')});
+  await page.evaluate(()=>AURORA.navigate('/tasks'));await frame.locator('h1').first().waitFor();await page.screenshot({path:path.join(output,'windows-tasks.png')});
   await page.keyboard.press('Alt');await page.screenshot({path:path.join(output,'windows-alt.png')});await page.keyboard.press('Escape');
   assert.deepEqual(webRequests,[],'Privileged main WebView must not fetch remote business pages or CDN assets');
   pass('Privileged WebView keeps all page resources local');
   externalServer=http.createServer((request,response)=>{externalRequests.push(request.headers);response.setHeader('Content-Type','text/html');response.end('<!doctype html><h1 id="external-check">Isolated external view</h1>');});
   externalServer.listen(0,'127.0.0.1');await once(externalServer,'listening');
   const externalUrl='http://127.0.0.1:'+externalServer.address().port+'/';
-  await page.evaluate(url=>XTYFNative.invoke('open_external',{url}),externalUrl);
+  await page.evaluate(url=>AURORANative.invoke('open_external',{url}),externalUrl);
   // Incognito native WebViews are separate browser contexts. Read their actual CDP target directly.
   const external=await waitFor(async()=>{const targets=await(await fetch('http://127.0.0.1:9224/json/list')).json();return targets.find(target=>target.url===externalUrl);},'native external WebView');
   assert.equal(await targetEvaluate(external,"Boolean(document.getElementById('external-check'))"),true);
@@ -250,9 +250,9 @@ async function main() {
   const controls=browser.contexts().flatMap(context=>context.pages()).find(page=>page.url().includes('external.html'));
   if(controls)await controls.evaluate(()=>window.__TAURI_INTERNALS__.invoke('native_call',{action:'external_close',args:{}})).catch(()=>{});
   await stopApp();page=await startApp();frame=page.frameLocator('#page-host iframe');
-  await waitFor(()=>page.evaluate(()=>XTYF.bootstrap?.authenticated),'persistent login after app restart');pass('Native server session persists across application restart');
-  await page.evaluate(()=>XTYF.navigate('/account'));await frame.locator('form[action="/logout"] button').click();
-  await waitFor(()=>page.evaluate(()=>!XTYF.bootstrap.authenticated&&XTYF.route.startsWith('/login')),'native logout');pass('Native logout returns local login');
+  await waitFor(()=>page.evaluate(()=>AURORA.bootstrap?.authenticated),'persistent login after app restart');pass('Native server session persists across application restart');
+  await page.evaluate(()=>AURORA.navigate('/account'));await frame.locator('form[action="/logout"] button').click();
+  await waitFor(()=>page.evaluate(()=>!AURORA.bootstrap.authenticated&&AURORA.route.startsWith('/login')),'native logout');pass('Native logout returns local login');
   backend.kill();await Promise.race([once(backend,'exit'),sleep(3000)]).catch(()=>{});backend=null;
   await page.reload();await frame.locator('#login-form').waitFor();await page.locator('#connection-status').waitFor({state:'visible'});
   await page.locator('#client-settings-open').click();await page.locator('#server-url').waitFor({state:'visible'});await page.screenshot({path:path.join(output,'windows-offline-settings.png')});await page.locator('#settings-cancel').click();

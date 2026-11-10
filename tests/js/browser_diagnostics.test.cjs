@@ -7,7 +7,7 @@ const {test} = require('node:test');
 const {recordFailure, cleanupResources} = require('../browser/diagnostics.cjs');
 
 test('crashed browser diagnostics preserve the first error and continue after screenshot failure', async () => {
-  const output = fs.mkdtempSync(path.join(os.tmpdir(), 'xtyf-diagnostics-'));
+  const output = fs.mkdtempSync(path.join(os.tmpdir(), 'aurora-diagnostics-'));
   try {
     let evaluated = false;
     const original = Error('page.reload: Page crashed');

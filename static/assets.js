@@ -24,8 +24,8 @@
   });
   // In-flight writes survive dialog closure, page reloads and packaged-view navigation.
   // Namespace by server, then verify the user before ever replaying a saved write.
-  const serverScope=window.XTYF?.config?.serverUrl||location.origin;
-  const pendingKey='xtyf.assets.unconfirmed.v1:'+serverScope;
+  const serverScope=window.AURORA?.config?.serverUrl||location.origin;
+  const pendingKey='aurora.assets.unconfirmed.v1:'+serverScope;
   function readPending(){
     try{
       const value=JSON.parse(sessionStorage.getItem(pendingKey)||'null');

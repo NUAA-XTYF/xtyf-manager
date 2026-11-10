@@ -20,7 +20,7 @@ def generate(destination):
     public = destination / "public.pem"
     public.write_bytes(key.public_key().public_bytes(serialization.Encoding.PEM,
                                                     serialization.PublicFormat.SubjectPublicKeyInfo))
-    with tempfile.TemporaryDirectory(prefix="xtyf-native-update-fixture-") as temporary:
+    with tempfile.TemporaryDirectory(prefix="aurora-native-update-fixture-") as temporary:
         temporary = Path(temporary)
         private = temporary / "private.pem"
         private.write_bytes(key.private_bytes(serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8,

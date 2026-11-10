@@ -13,7 +13,7 @@ from test_tasks import app_module
 
 class AssetBomTest(unittest.TestCase):
     def setUp(self):
-        folder = tempfile.TemporaryDirectory(prefix="xtyf-bom-")
+        folder = tempfile.TemporaryDirectory(prefix="aurora-bom-")
         self.addCleanup(folder.cleanup)
         self.path = str(Path(folder.name) / "data.db")
         source = sqlite3.connect(app_module.DB_PATH)

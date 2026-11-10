@@ -300,8 +300,8 @@
     const file=e.target.files[0];if(!file)return;stop();last='';const own=generation;
     if(file.size>10*1024*1024){status('请选择不超过 10 MiB 的图片');return;}
     let source=file;
-    if(window.XTYF&&file.handle){
-      try{const data=await window.XTYF.invoke('read_selected_image',{handle:file.handle});
+    if(window.AURORA&&file.handle){
+      try{const data=await window.AURORA.invoke('read_selected_image',{handle:file.handle});
         if(data.size>10*1024*1024||typeof data.body!=='string'||data.body.length>14*1024*1024)throw Error('图片过大');
         source=new Blob([Uint8Array.from(atob(data.body),c=>c.charCodeAt(0))],{type:data.mime});
       }catch(e){if(own===generation)status('客户端图片读取失败：'+e.message);return;}
@@ -315,5 +315,5 @@
   $('asset-scan-dialog').addEventListener('close',stop);
   document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
   window.addEventListener('pagehide',stop);
-  window.addEventListener('xtyf-foreground',e=>{if(!e.detail?.active)stop();});
+  window.addEventListener('aurora-foreground',e=>{if(!e.detail?.active)stop();});
 })();

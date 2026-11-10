@@ -2,7 +2,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   const banner = document.querySelector('[data-site-update-banner]');
   if (banner) {
-    const storageKey = 'xtyf-site-release-seen:' + banner.dataset.userId;
+    const storageKey = 'aurora-site-release-seen:' + banner.dataset.userId;
     const close = banner.querySelector('[data-site-update-close]');
     const detail = banner.querySelector('[data-site-update-detail]');
     const summary = banner.querySelector('[data-site-update-summary]');
@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
         meta.append(when, make('span', '', entry.author || '未知作者'));
         body.append(meta, make('p', '', entry.subject || '未填写提交说明'));
         const link = make('a', '', entry.sha.slice(0, 10) + ' ↗');
-        link.href = 'https://github.com/SHM-white/xtyf-manager/commit/' + entry.sha;
+        link.href = 'https://github.com/example-org/aurora-manager/commit/' + entry.sha;
         link.target = '_blank';
         link.rel = 'noopener noreferrer';
         link.setAttribute('aria-label', '在 GitHub 查看提交 ' + entry.sha.slice(0, 10));

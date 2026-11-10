@@ -13,7 +13,7 @@ from deploy import update_release
 
 class MailInstallerTests(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory(prefix="xtyf-mail-install-")
+        self.temp = tempfile.TemporaryDirectory(prefix="aurora-mail-install-")
         self.addCleanup(self.temp.cleanup)
         root = Path(self.temp.name)
         self.app = root / "rm-progress"
@@ -21,7 +21,7 @@ class MailInstallerTests(unittest.TestCase):
         deploy.mkdir(parents=True)
         for name in ("mail-163.env.example", "rm-mail.service", "rm-mail.timer"):
             shutil.copyfile(Path(__file__).resolve().parents[1] / "deploy" / name, deploy / name)
-        self.config = root / "etc" / "xtyf-manager" / "mail.env"
+        self.config = root / "etc" / "aurora-manager" / "mail.env"
         self.units = root / "systemd"
 
     def install(self):
@@ -33,7 +33,7 @@ class MailInstallerTests(unittest.TestCase):
         self.assertIn("EnvironmentFile=" + str(self.config),
                       (self.units / "rm-mail.service").read_text(encoding="utf-8"))
         self.assertIn("EnvironmentFile=" + str(self.config),
-                      (self.units / "rm-progress.service.d/zz-xtyf-mail.conf").read_text(encoding="utf-8"))
+                      (self.units / "rm-progress.service.d/zz-aurora-mail.conf").read_text(encoding="utf-8"))
         self.assertIn("User=rmuser", (self.units / "rm-mail.service").read_text(encoding="utf-8"))
         self.assertIn("WorkingDirectory=" + str(self.app),
                       (self.units / "rm-mail.service").read_text(encoding="utf-8"))
@@ -130,7 +130,7 @@ class MailPauseTests(unittest.TestCase):
 
 class WebUnitUpgradeTests(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory(prefix="xtyf-web-unit-")
+        self.temp = tempfile.TemporaryDirectory(prefix="aurora-web-unit-")
         self.addCleanup(self.temp.cleanup)
         root = Path(self.temp.name)
         self.app = root / "app"
@@ -149,7 +149,7 @@ class WebUnitUpgradeTests(unittest.TestCase):
             "ExecStart={{APP_DIR}}/venv/bin/gunicorn --timeout 240 app:app\n",
             encoding="utf-8")
         self.unit.write_bytes(self.old.read_text(encoding="utf-8")
-                              .replace("{{APP_USER}}", "xtyf")
+                              .replace("{{APP_USER}}", "aurora")
                               .replace("{{APP_DIR}}", str(self.app))
                               .encode("utf-8"))
         self.original = self.unit.read_bytes()
@@ -161,7 +161,7 @@ class WebUnitUpgradeTests(unittest.TestCase):
         self.addCleanup(self.patch_release.stop)
 
     def test_known_timeout_upgrade_applies_and_can_rollback(self):
-        planned = update_release.plan_web_unit_update("xtyf", installed_unit=self.unit)
+        planned = update_release.plan_web_unit_update("aurora", installed_unit=self.unit)
         self.assertEqual(planned[0], self.original)
         self.assertIn(b"--timeout 240", planned[1])
         update_release.replace_web_unit(self.unit, planned[1])
@@ -172,19 +172,19 @@ class WebUnitUpgradeTests(unittest.TestCase):
     def test_locally_modified_unit_must_be_reviewed(self):
         self.unit.write_bytes(self.original + b"# locally modified\n")
         with self.assertRaisesRegex(RuntimeError, "preserve customizations"):
-            update_release.plan_web_unit_update("xtyf", installed_unit=self.unit)
+            update_release.plan_web_unit_update("aurora", installed_unit=self.unit)
         self.assertIn(b"locally modified", self.unit.read_bytes())
 
     def test_no_template_change_requires_no_service_reinstall(self):
         self.new.write_bytes(self.old.read_bytes())
         self.unit.write_bytes(b"manual configuration")
-        self.assertIsNone(update_release.plan_web_unit_update("xtyf", installed_unit=self.unit))
+        self.assertIsNone(update_release.plan_web_unit_update("aurora", installed_unit=self.unit))
 
     def test_rejects_unresolved_template_variables(self):
         self.new.write_text("[Service]\nUser={{APP_USER}}\nUnknown={{NEW_FIELD}}\n",
                             encoding="utf-8")
         with self.assertRaisesRegex(RuntimeError, "Unresolved placeholder"):
-            update_release.plan_web_unit_update("xtyf", installed_unit=self.unit)
+            update_release.plan_web_unit_update("aurora", installed_unit=self.unit)
 
     def test_rejects_symlinked_web_unit(self):
         target = self.unit.with_name("unit-target")
@@ -195,7 +195,7 @@ class WebUnitUpgradeTests(unittest.TestCase):
         except (NotImplementedError, OSError):
             self.skipTest("filesystem cannot create a symlink")
         with self.assertRaisesRegex(RuntimeError, "symlinked"):
-            update_release.plan_web_unit_update("xtyf", installed_unit=self.unit)
+            update_release.plan_web_unit_update("aurora", installed_unit=self.unit)
         self.assertEqual(target.read_bytes(), self.original)
 
     def test_upgrade_checks_template_before_stopping_service(self):

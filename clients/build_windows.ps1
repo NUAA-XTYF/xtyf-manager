@@ -4,7 +4,7 @@ $projectRoot = Split-Path $PSScriptRoot -Parent
 $desktop = Join-Path $PSScriptRoot 'desktop'
 # The local default stays isolated; hosted CI runners already provide rustup
 # and use their own temporary home, so avoid shadowing those installed shims.
-if ($env:XTYF_USE_SYSTEM_RUST -ne '1') {
+if ($env:AURORA_USE_SYSTEM_RUST -ne '1') {
     $env:CARGO_HOME = Join-Path $projectRoot '.build-tools\cargo'
     $env:RUSTUP_HOME = Join-Path $projectRoot '.build-tools\rustup'
     $env:PATH = "$env:CARGO_HOME\bin;$env:PATH"
@@ -57,9 +57,9 @@ try {
     $releaseDir = Join-Path $env:CARGO_TARGET_DIR "$targetTriple\release"
     $installers = @(Get-ChildItem (Join-Path $releaseDir 'bundle\nsis') -Filter "*_$($config.version)_*-setup.exe")
     if ($installers.Count -ne 1) { throw "Expected one Tauri $Architecture NSIS installer, found $($installers.Count)" }
-    $target = Join-Path $OutputDirectory "XTYF-Manager-Setup-$($config.version)-$Architecture.exe"
+    $target = Join-Path $OutputDirectory "Aurora-Workspace-Setup-$($config.version)-$Architecture.exe"
     Copy-Item -LiteralPath $installers[0].FullName -Destination $target -Force
-    $application = Join-Path $releaseDir 'xtyf-manager.exe'
+    $application = Join-Path $releaseDir 'aurora-manager.exe'
     $reportName = if ($Architecture -eq 'x64') { 'windows-verification.json' } else { 'windows-verification-arm64.json' }
     $reportPath = Join-Path $OutputDirectory $reportName
     & python.exe (Join-Path $PSScriptRoot 'verify_windows.py') --installer $target --application $application --manifest '..\frontend\dist\asset-manifest.json' --version $config.version --architecture $Architecture --report $reportPath

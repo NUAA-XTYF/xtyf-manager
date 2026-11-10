@@ -31,7 +31,7 @@ module.exports=async function({page,api,post,campus,label}){
   }
   await page.evaluate(()=>{const f=document.querySelector('#asset-label-form');f.elements.layout.value='compact';f.elements.font.value='8';f.elements.font_width.value='75';f.requestSubmit();});
   await page.locator('#asset-label-download').waitFor();assert.deepEqual(await content(),generated);
-  const remembered=await page.evaluate(()=>JSON.parse(localStorage.getItem('xtyf.asset.labels.v3')));
+  const remembered=await page.evaluate(()=>JSON.parse(localStorage.getItem('aurora.asset.labels.v3')));
   assert.equal(remembered.layout,'compact');assert.equal(remembered.font,8);assert.equal(remembered.font_width,75);
   // Independent content switches must produce genuinely code-only PDFs and
   // release the disabled text area's space. Decode both actual rendered codes.
@@ -72,7 +72,7 @@ module.exports=async function({page,api,post,campus,label}){
     f.elements.name_overflow.value='truncate';f.elements.spec_overflow.value='wrap';f.elements.auto_fit.checked=false;f.requestSubmit();
   });
   await page.locator('#asset-label-download').waitFor();
-  const independent=await page.evaluate(()=>JSON.parse(localStorage.getItem('xtyf.asset.labels.v3')));
+  const independent=await page.evaluate(()=>JSON.parse(localStorage.getItem('aurora.asset.labels.v3')));
   assert.equal(independent.name_font,14);assert.equal(independent.spec_font,9);assert.equal(independent.auto_fit,false);
   assert.equal(independent.name_overflow,'truncate');assert.equal(independent.spec_overflow,'wrap');
   await page.locator('#asset-label-recommend').click();await page.locator('#asset-label-download').waitFor();
@@ -85,13 +85,13 @@ module.exports=async function({page,api,post,campus,label}){
   const encoded=generated.toString('base64');await page.unroute('**/api/assets/labels.pdf?*',capture);
   await page.evaluate(async ({encoded,units})=>{
     document.querySelector('#asset-label-dialog').close();
-    window.XTYF={config:{capabilities:['pdf_save']},readResource:async path=>{window.pdfReadPath=path;return {status:200,body:encoded};},invoke:async(action,args)=>{window.pdfSaved={action,args};return {cancelled:false};}};
+    window.AURORA={config:{capabilities:['pdf_save']},readResource:async path=>{window.pdfReadPath=path;return {status:200,body:encoded};},invoke:async(action,args)=>{window.pdfSaved={action,args};return {cancelled:false};}};
     await AssetLabels.open(units);
   },{encoded,units});
   await page.locator('#asset-label-download').click();
   const saved=await page.evaluate(()=>window.pdfSaved);assert.equal(saved.action,'download');assert.equal(saved.args.pdfBody,encoded);
   assert((await page.evaluate(()=>window.pdfReadPath)).startsWith('/api/assets/labels.pdf?'));
-  await page.evaluate(()=>{delete window.XTYF;document.querySelector('#asset-label-dialog').close();});
+  await page.evaluate(()=>{delete window.AURORA;document.querySelector('#asset-label-dialog').close();});
   // A slow obsolete response must not overwrite the latest failed preview.
   let release,started;const began=new Promise(r=>started=r),hold=new Promise(r=>release=r);let calls=0;
   const race=async r=>{calls++;if(calls===1){started();await hold;await r.fulfill({status:200,contentType:'application/pdf',body:generated});}else await r.fulfill({status:500,body:'synthetic PDF failure'});};
@@ -103,7 +103,7 @@ module.exports=async function({page,api,post,campus,label}){
   await page.locator('#asset-label-close').click();await page.unroute('**/api/assets/labels.pdf?*',race);
   // Restore independent settings after a page reload, then migrate the old
   // v2 font/size preferences without disabling any newly introduced content.
-  await page.evaluate(value=>localStorage.setItem('xtyf.asset.labels.v3',JSON.stringify(value)),independent);
+  await page.evaluate(value=>localStorage.setItem('aurora.asset.labels.v3',JSON.stringify(value)),independent);
   await page.reload();await page.locator('#asset-status').filter({hasText:'数据已更新'}).waitFor();
   assert.equal(await page.locator('#asset-label-form [name=name_font]').inputValue(),'14');
   assert.equal(await page.locator('#asset-label-form [name=spec_font]').inputValue(),'9');
@@ -113,8 +113,8 @@ module.exports=async function({page,api,post,campus,label}){
   await page.evaluate(async values=>{await AssetLabels.open(values);},units);
   await page.locator('#asset-label-download').waitFor();await page.locator('#asset-label-close').click();
   await page.evaluate(()=>{
-    localStorage.removeItem('xtyf.asset.labels.v3');
-    localStorage.setItem('xtyf.asset.labels.v2',JSON.stringify({paper:'thermal',width:20,height:12,layout:'compact',font:8,font_width:75}));
+    localStorage.removeItem('aurora.asset.labels.v3');
+    localStorage.setItem('aurora.asset.labels.v2',JSON.stringify({paper:'thermal',width:20,height:12,layout:'compact',font:8,font_width:75}));
   });
   await page.reload();await page.locator('#asset-status').filter({hasText:'数据已更新'}).waitFor();
   assert.equal(await page.locator('#asset-label-form [name=name_font]').inputValue(),'8');

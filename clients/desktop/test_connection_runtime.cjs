@@ -4,15 +4,15 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),http=require('node:http');
 const {spawn}=require('node:child_process'),{once}=require('node:events');
 const {chromium}=require('playwright');
-const root=path.resolve(__dirname,'../..'),output=process.env.XTYF_TEST_OUTPUT||path.join(root,'.build-tools/connection-delivery/webview2');
+const root=path.resolve(__dirname,'../..'),output=process.env.AURORA_TEST_OUTPUT||path.join(root,'.build-tools/connection-delivery/webview2');
 fs.mkdirSync(output,{recursive:true});
 const profile=fs.mkdtempSync(path.join(output,'profile-'));
-const executable=process.env.XTYF_TEST_EXE||path.join(root,'.build-tools/tauri-target-windows/debug/xtyf-manager.exe');
+const executable=process.env.AURORA_TEST_EXE||path.join(root,'.build-tools/tauri-target-windows/debug/aurora-manager.exe');
 const checks=[],errors=[];let application,browser,server,outsideServer,origin,appLog='',uploaded=false,outsideCookie=false,slowStarted=false,slowTimer;
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 async function until(check,label,timeout=30000){const end=Date.now()+timeout;let error;while(Date.now()<end){try{const value=await check();if(value)return value;}catch(e){error=e;}await sleep(100);}throw new Error(label+': '+(error?.message||'timed out')+'\n'+appLog.slice(-1000));}
 async function start(){
-  application=spawn(executable,[],{cwd:root,windowsHide:true,stdio:['ignore','pipe','pipe'],env:{...process.env,HTTP_PROXY:'',HTTPS_PROXY:'',ALL_PROXY:'',NO_PROXY:'*',XTYF_SMOKE_DIR:profile,WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS:'--remote-debugging-port=9238'}});
+  application=spawn(executable,[],{cwd:root,windowsHide:true,stdio:['ignore','pipe','pipe'],env:{...process.env,HTTP_PROXY:'',HTTPS_PROXY:'',ALL_PROXY:'',NO_PROXY:'*',AURORA_SMOKE_DIR:profile,WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS:'--remote-debugging-port=9238'}});
   application.stdout.on('data',data=>appLog+=data);application.stderr.on('data',data=>appLog+=data);
   await until(async()=>{const response=await fetch('http://127.0.0.1:9238/json/version');return response.ok;},'WebView2 CDP');
   browser=await until(()=>chromium.connectOverCDP('http://127.0.0.1:9238',{timeout:2000}),'CDP connection');
@@ -75,7 +75,7 @@ public class OwnedWindowBounds {
    IntPtr found=IntPtr.Zero;
    EnumWindows((window,state)=>{uint pid;GetWindowThreadProcessId(window,out pid);if(pid!=owner)return true;
      var title=new StringBuilder(256);GetWindowText(window,title,title.Capacity);
-     if(title.ToString()!="巡天御风管理系统")return true;found=window;return false;},IntPtr.Zero);
+     if(title.ToString()!="极光团队工作台")return true;found=window;return false;},IntPtr.Zero);
    return found;
  }
 }
@@ -201,12 +201,12 @@ async function failedSave(page){
 }
 
 async function main(){
-  if(process.env.XTYF_PUBLIC_SMOKE==='1'){
-    const configured='http://manager.skywalker-rm.online';
+  if(process.env.AURORA_PUBLIC_SMOKE==='1'){
+    const configured='http://workspace.example.com';
     fs.writeFileSync(path.join(profile,'server.json'),JSON.stringify({serverUrl:configured}));
-    const local=await start();const website=await pageMatching(page=>page.url().startsWith('https://manager.skywalker-rm.online/'));
+    const local=await start();const website=await pageMatching(page=>page.url().startsWith('https://workspace.example.com/'));
     await website.locator('input[name="username"]').waitFor();await website.locator('input[name="password"]').waitFor();
-    const config=await invoke(local,'get_config');assert.equal(config.serverUrl,configured);assert.equal(config.effectiveServerUrl,'https://manager.skywalker-rm.online');
+    const config=await invoke(local,'get_config');assert.equal(config.serverUrl,configured);assert.equal(config.effectiveServerUrl,'https://workspace.example.com');
     assert.equal(await website.locator('input[name="username"]').inputValue(),'');assert.equal(await website.locator('input[name="password"]').inputValue(),'');
     await website.screenshot({path:path.join(output,'public-login.png')});
     fs.writeFileSync(path.join(output,'public-result.json'),JSON.stringify({ok:true,engine:'actual Windows WebView2',configured:config.serverUrl,effective:config.effectiveServerUrl,url:website.url(),loginFormVisible:true,credentialsEntered:false,installerGenerated:false},null,2));console.log('Public default server opened its HTTPS login page in the actual client; no credentials entered.');return;
@@ -225,7 +225,7 @@ async function main(){
   });
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));origin='http://127.0.0.1:'+server.address().port;
   fs.writeFileSync(path.join(profile,'server.json'),JSON.stringify({serverUrl:origin}));
-  let local=await start();await local.waitForFunction(()=>!!window.XTYFNative);
+  let local=await start();await local.waitForFunction(()=>!!window.AURORANative);
   const config=await invoke(local,'get_config');assert(config.capabilities.includes('website_fallback'));assert.equal(config.effectiveServerUrl,origin);
   let remote=await pageMatching(page=>page.url().startsWith(origin));remote.on('pageerror',error=>errors.push(error.message));
   await remote.getByRole('heading',{name:'测试网站登录'}).waitFor();checks.push('404 bootstrap automatically opens a real website inside WebView2');
@@ -253,7 +253,7 @@ async function main(){
   await remote.locator('#slow-download').click();await until(()=>slowStarted&&fs.readdirSync(path.join(profile,'website-downloads')).length>0,'slow download has private partial bytes');
   const next='http://127.0.0.1:9',oldLocal=local;await invoke(local,'set_server',{serverUrl:next});await until(()=>remote.isClosed(),'old website closes on server switch');
   await until(()=>fs.readdirSync(path.join(profile,'website-downloads')).length===0,'server switch clears private partial downloads');checks.push('Switching servers during a slow download removes the old private partial file');
-  await until(()=>oldLocal.isClosed(),'old local page closes before rebuilding for the new server');local=await pageMatching(page=>/^https?:\/\/tauri\.localhost\/(?:index.html)?(?:[?#].*)?$/.test(page.url()));await local.waitForFunction(()=>!!window.XTYFNative);assert.equal((await invoke(local,'get_config')).effectiveServerUrl,next);await local.locator('#client-settings-open').click();await local.waitForFunction(()=>document.getElementById('client-settings').open);checks.push('Server switch closes the old website and offline local settings remain available');
+  await until(()=>oldLocal.isClosed(),'old local page closes before rebuilding for the new server');local=await pageMatching(page=>/^https?:\/\/tauri\.localhost\/(?:index.html)?(?:[?#].*)?$/.test(page.url()));await local.waitForFunction(()=>!!window.AURORANative);assert.equal((await invoke(local,'get_config')).effectiveServerUrl,next);await local.locator('#client-settings-open').click();await local.waitForFunction(()=>document.getElementById('client-settings').open);checks.push('Server switch closes the old website and offline local settings remain available');
   assert.deepEqual(errors,[]);fs.writeFileSync(path.join(output,'result.json'),JSON.stringify({ok:true,engine:'actual Windows WebView2',node:process.version,playwright:require('playwright/package.json').version,clientVersion:config.version,checks,errors,installerGenerated:false,profile},null,2));console.log(JSON.stringify({ok:true,checks},null,2));
 }
-main().catch(error=>{console.error(error);fs.writeFileSync(path.join(output,process.env.XTYF_PUBLIC_SMOKE==='1'?'public-result.json':'result.json'),JSON.stringify({ok:false,checks,errors,error:error.stack,appLog,profile},null,2));process.exitCode=1;}).finally(async()=>{clearTimeout(slowTimer);await stop().catch(()=>{});for(const item of [server,outsideServer])if(item)await new Promise(resolve=>{item.closeAllConnections();item.close(resolve);});});
+main().catch(error=>{console.error(error);fs.writeFileSync(path.join(output,process.env.AURORA_PUBLIC_SMOKE==='1'?'public-result.json':'result.json'),JSON.stringify({ok:false,checks,errors,error:error.stack,appLog,profile},null,2));process.exitCode=1;}).finally(async()=>{clearTimeout(slowTimer);await stop().catch(()=>{});for(const item of [server,outsideServer])if(item)await new Promise(resolve=>{item.closeAllConnections();item.close(resolve);});});

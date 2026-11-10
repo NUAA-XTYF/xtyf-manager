@@ -15,7 +15,7 @@ spec.loader.exec_module(module)
 
 class ReleaseTests(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory(prefix='xtyf-release-test-')
+        self.temp = tempfile.TemporaryDirectory(prefix='aurora-release-test-')
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         for directory in ('clients/desktop', 'clients/android', 'dist/clients/windows', 'dist/clients/android', 'dist/clients/linux'):
@@ -26,18 +26,18 @@ class ReleaseTests(unittest.TestCase):
         module.write_json(self.root / 'clients/desktop/package.json', {'name': 'test', 'version': '1.0.9'})
         module.write_json(self.root / 'clients/desktop/package-lock.json', {'version': '1.0.9', 'packages': {'': {'version': '1.0.9'}}})
         module.write_json(self.root / 'clients/desktop/tauri.conf.json', {'version':'1.0.9'})
-        (self.root / 'clients/desktop/Cargo.toml').write_text('[package]\nname = \"xtyf-manager\"\nversion = \"1.0.9\"\n')
-        (self.root / 'clients/desktop/Cargo.lock').write_text('[[package]]\nname = \"xtyf-manager\"\nversion = \"1.0.9\"\n')
+        (self.root / 'clients/desktop/Cargo.toml').write_text('[package]\nname = \"aurora-manager\"\nversion = \"1.0.9\"\n')
+        (self.root / 'clients/desktop/Cargo.lock').write_text('[[package]]\nname = \"aurora-manager\"\nversion = \"1.0.9\"\n')
         (self.root / 'clients/frontend/dist').mkdir(parents=True)
         (self.root / 'clients/frontend/dist/asset-manifest.json').write_text('{}')
         (self.root / 'clients/android/AndroidManifest.xml').write_text('<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionCode="11" android:versionName="1.0.9"/>', encoding='utf-8')
         (self.root / 'clients/README.md').write_text('instructions', encoding='utf-8')
         self.output = self.root / 'dist/clients'
         self.old = [
-            self.output / 'windows/XTYF-Manager-Setup-1.0.9-x64.exe',
-            self.output / 'android/XTYF-Manager-1.0.9.apk',
-            self.output / 'linux/XTYF-Manager-1.0.9-arm64.deb',
-            self.output / 'linux/XTYF-Manager-1.0.9-x86_64.rpm',
+            self.output / 'windows/Aurora-Workspace-Setup-1.0.9-x64.exe',
+            self.output / 'android/Aurora-Workspace-1.0.9.apk',
+            self.output / 'linux/Aurora-Workspace-1.0.9-arm64.deb',
+            self.output / 'linux/Aurora-Workspace-1.0.9-x86_64.rpm',
         ]
         for file in self.old:
             file.write_bytes(b'previous installer')
@@ -61,13 +61,13 @@ class ReleaseTests(unittest.TestCase):
         if '-OutputDirectory' in command:
             out = Path(command[command.index('-OutputDirectory') + 1])
             arch = command[command.index('-Architecture')+1] if '-Architecture' in command else 'x64'
-            names = [f'XTYF-Manager-Setup-{config["version"]}-{arch}.exe']
+            names = [f'Aurora-Workspace-Setup-{config["version"]}-{arch}.exe']
         else:
             out = Path(command[command.index('--output-dir') + 1])
             if any(Path(str(arg)).name == 'build_linux.py' for arg in command):
-                names = [f'XTYF-Manager-{config["version"]}-{suffix}' for suffix in ('arm64.deb','amd64.deb','x86_64.rpm','aarch64.rpm')]
+                names = [f'Aurora-Workspace-{config["version"]}-{suffix}' for suffix in ('arm64.deb','amd64.deb','x86_64.rpm','aarch64.rpm')]
             else:
-                names = [f'XTYF-Manager-{config["version"]}.apk']
+                names = [f'Aurora-Workspace-{config["version"]}.apk']
         out.mkdir(parents=True, exist_ok=True)
         for name in names:
             (out / name).write_bytes(b'new installer ' + config['version'].encode())
@@ -188,7 +188,7 @@ class ReleaseTests(unittest.TestCase):
                     if '--output-dir' in command and Path(command[1]).name == 'build_linux.py':
                         staging = Path(command[command.index('--output-dir') + 1]).parent
                         if platform == 'android':
-                            path = staging / 'android/XTYF-Manager-1.0.10.apk'
+                            path = staging / 'android/Aurora-Workspace-1.0.10.apk'
                             with zipfile.ZipFile(path, 'w') as apk:
                                 apk.writestr('assets/frontend/asset-manifest.json', b'{}')
                         else:
@@ -229,7 +229,7 @@ class ReleaseTests(unittest.TestCase):
             self.builder(command, root)
             if '--output-dir' in command and Path(command[1]).name == 'build_linux.py':
                 out = Path(command[command.index('--output-dir') + 1])
-                (out / 'XTYF-Manager-1.0.10-x86_64.rpm').unlink()
+                (out / 'Aurora-Workspace-1.0.10-x86_64.rpm').unlink()
         with self.assertRaisesRegex(RuntimeError, 'complete installer.*rpm'):
             module.release(self.root, omit_rpm)
         self.assert_rollback()
@@ -303,7 +303,7 @@ class ReleaseTests(unittest.TestCase):
     def test_partial_installer_copy_is_removed_on_failure(self):
         original_copy = module.shutil.copy2
         def partial_copy(source, destination):
-            if Path(destination).name == 'XTYF-Manager-1.0.10-x86_64.rpm':
+            if Path(destination).name == 'Aurora-Workspace-1.0.10-x86_64.rpm':
                 Path(destination).write_bytes(b'incomplete copy')
                 raise OSError('simulated incomplete copy')
             return original_copy(source, destination)
@@ -318,7 +318,7 @@ class ReleaseTests(unittest.TestCase):
         self.assertEqual(module.next_config(self.root)['versionCode'], 12)
 
     def test_numbering_includes_both_linux_installer_formats(self):
-        for name in ('XTYF-Manager-1.0.20-arm64.deb', 'XTYF-Manager-1.0.20-x86_64.rpm'):
+        for name in ('Aurora-Workspace-1.0.20-arm64.deb', 'Aurora-Workspace-1.0.20-x86_64.rpm'):
             with self.subTest(name=name):
                 path = self.output / 'linux' / name
                 path.write_bytes(b'newer Linux installer')
@@ -359,7 +359,7 @@ class ReleaseTests(unittest.TestCase):
         report = module.release(self.root, self.builder, requested_version='2.0.0')
         self.assertEqual(report['version'], '2.0.0')
         self.assertEqual(report['android']['versionCode'], 12)
-        self.assertTrue((self.output / 'android/XTYF-Manager-2.0.0.apk').exists())
+        self.assertTrue((self.output / 'android/Aurora-Workspace-2.0.0.apk').exists())
         self.assertEqual(module.read_json(self.root / 'clients/config.json')['version'], '2.0.0')
         self.assertEqual(module.next_config(self.root)['version'], '2.0.1')
 
@@ -381,7 +381,7 @@ class ReleaseTests(unittest.TestCase):
         cases = (
             ('clients/config.json', self.original['clients/config.json'].replace(b'1.0.9', b'1.0.8')),
             ('dist/clients/build-report.json', b'{"version":"1.0.9","android":{"versionCode":12}}'),
-            ('clients/desktop/Cargo.lock', b'[[package]]\nname = "xtyf-manager"\nversion = "1.0.8"\n'),
+            ('clients/desktop/Cargo.lock', b'[[package]]\nname = "aurora-manager"\nversion = "1.0.8"\n'),
             ('clients/android/AndroidManifest.xml', self.original['clients/android/AndroidManifest.xml'].replace(b'"11"', b'"12"')),
         )
         for relative, content in cases:
@@ -392,7 +392,7 @@ class ReleaseTests(unittest.TestCase):
                     module.rebuild_config(self.root, '1.0.9')
                 self.assertEqual(path.read_bytes(), content)
                 path.write_bytes(self.original[relative])
-        newer = self.output / 'linux/XTYF-Manager-1.0.20-arm64.deb'
+        newer = self.output / 'linux/Aurora-Workspace-1.0.20-arm64.deb'
         newer.write_bytes(b'newer release')
         with self.assertRaises(ValueError):
             module.rebuild_config(self.root, '1.0.9')
@@ -484,7 +484,7 @@ class ReleaseTests(unittest.TestCase):
             self.builder(command, root)
             if '-OutputDirectory' in command:
                 out = Path(command[command.index('-OutputDirectory') + 1])
-                (out / 'XTYF-Manager-Setup-1.0.9-x64.exe.blockmap').write_bytes(b'new blockmap')
+                (out / 'Aurora-Workspace-Setup-1.0.9-x64.exe.blockmap').write_bytes(b'new blockmap')
         original_replace = Path.replace
         def fail_report(path, destination):
             if path.name == 'SHA256SUMS.txt':

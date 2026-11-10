@@ -109,8 +109,8 @@ def _create_legacy_database(path: Path, *, omit_task_group: bool = False) -> Non
             "start_date, due_date, created_by, created_at, updated_at) "
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             [
-                ("演练任务甲", "保留原始内容", 1, "  机械  ", " 哨兵 ", "高", "进行中", 0, "2026-10-13", "2026-10-20", 1, "2026-10-12 00:01:00", "2026-10-12 00:01:00"),
-                ("演练任务乙", "关联停用成员的历史任务", 2, "电控", " 哨兵 ", "中", "未开始", 0, "", "", 1, "2026-10-12 00:02:00", "2026-10-12 00:02:00"),
+                ("演练任务甲", "保留原始内容", 1, "  机械  ", " 官网 ", "高", "进行中", 0, "2026-10-13", "2026-10-20", 1, "2026-10-12 00:01:00", "2026-10-12 00:01:00"),
+                ("演练任务乙", "关联停用成员的历史任务", 2, "电控", " 官网 ", "中", "未开始", 0, "", "", 1, "2026-10-12 00:02:00", "2026-10-12 00:02:00"),
             ],
         )
         db.executemany(
@@ -183,7 +183,7 @@ def _exercise_rollback(path: Path) -> bool:
 
 def _run_rehearsal() -> RehearsalResult:
     """Run migration, repeat migration, online backup, mutation, and joint isolated restoration."""
-    with tempfile.TemporaryDirectory(prefix="xtyf-collaboration-recovery-") as temporary_name:
+    with tempfile.TemporaryDirectory(prefix="aurora-collaboration-recovery-") as temporary_name:
         temporary_root = Path(temporary_name)
         source_db_path = temporary_root / "legacy-progress.db"
         attachment_root = temporary_root / "source-attachments"

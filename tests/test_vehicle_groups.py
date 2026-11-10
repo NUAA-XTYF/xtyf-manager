@@ -22,7 +22,7 @@ class TestVehicleGroupMembership(unittest.TestCase):
         a = self.admin.post("/api/projects", json={"name": "测试步兵项目"}).get_json()["id"]
         b = self.admin.post("/api/projects", json={"name": "测试哨兵项目"}).get_json()["id"]
         created = self.admin.post("/api/member", json={
-            "name": "跨车组开发者", "username": "vehicle_group_member_test",
+            "name": "跨项目开发者", "username": "vehicle_group_member_test",
             "password": "vehicle-group-password", "group_ids": [specialized],
             "project_ids": [a, b],
         }).get_json()
@@ -70,7 +70,7 @@ class TestVehicleGroupMembership(unittest.TestCase):
             self.admin.get("/api/members/export.csv").get_data(as_text=True).lstrip("\ufeff")
         )))
         row = next(x for x in member_rows if x["ID"] == str(member["id"]))
-        self.assertEqual(row["造车组别"], "测试飞镖新名")
+        self.assertEqual(row["所属项目"], "测试飞镖新名")
         task_rows = list(csv.DictReader(io.StringIO(
             self.admin.get("/export.csv").get_data(as_text=True).lstrip("\ufeff")
         )))
@@ -78,7 +78,7 @@ class TestVehicleGroupMembership(unittest.TestCase):
 
     def test_invalid_vehicle_links_and_member_permission(self):
         created = self.admin.post("/api/member", json={
-            "name": "车组限制成员", "username": "vehicle_permission_member",
+            "name": "项目限制成员", "username": "vehicle_permission_member",
             "password": "vehicle-permission-password",
         }).get_json()
         member_id = created["id"]

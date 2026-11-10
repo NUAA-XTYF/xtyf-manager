@@ -29,7 +29,7 @@ class TestMemberProfiles(unittest.TestCase):
 
     def test_admin_complete_edit_keeps_id_and_task_foreign_key(self):
         group = self.admin.post("/api/groups", json={"name": "专业_" + self.username}).get_json()["id"]
-        project = self.admin.post("/api/projects", json={"name": "车组_" + self.username}).get_json()["id"]
+        project = self.admin.post("/api/projects", json={"name": "项目_" + self.username}).get_json()["id"]
         task = self.admin.post("/api/task", json={
             "title": "成员标识不变", "owner_id": self.member_id, "project_id": project
         }).get_json()["id"]
@@ -62,7 +62,7 @@ class TestMemberProfiles(unittest.TestCase):
         first = self.member_client()
         second = self.member_client()
         group = self.admin.post("/api/groups", json={"name": "自助专业_" + self.username}).get_json()["id"]
-        project = self.admin.post("/api/projects", json={"name": "自助车组_" + self.username}).get_json()["id"]
+        project = self.admin.post("/api/projects", json={"name": "自助项目_" + self.username}).get_json()["id"]
         response = first.post("/api/account/profile", json={
             "username": self.username + "_self",
             "group_ids": [group], "project_ids": [project],

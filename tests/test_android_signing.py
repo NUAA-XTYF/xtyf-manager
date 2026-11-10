@@ -15,7 +15,7 @@ class AndroidSigningTests(unittest.TestCase):
             self.assertEqual(list(root.iterdir()), [])
 
     def test_partial_identity_cannot_be_initialized_over(self):
-        for filename in ('xtyf-manager.jks', 'android-password.txt'):
+        for filename in ('aurora-manager.jks', 'android-password.txt'):
             with self.subTest(filename=filename), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
                 (root / filename).write_bytes(b'existing')
@@ -27,7 +27,7 @@ class AndroidSigningTests(unittest.TestCase):
     def test_existing_identity_is_preserved(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            (root / 'xtyf-manager.jks').write_bytes(b'existing key')
+            (root / 'aurora-manager.jks').write_bytes(b'existing key')
             (root / 'android-password.txt').write_text('example-password', encoding='ascii')
             key, password = build_android.resolve_signing_identity(root, allow_create=False)
             self.assertEqual(key.read_bytes(), b'existing key')

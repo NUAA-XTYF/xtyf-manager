@@ -43,7 +43,7 @@ jobs:
         run: echo "sha=$(git -C .ci-main-baseline rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - name: Test migration from main commit with populated SQLite data
         env:
-          XTYF_UPGRADE_BASE_SHA: ${{ steps.baseline_sha.outputs.sha }}
+          AURORA_UPGRADE_BASE_SHA: ${{ steps.baseline_sha.outputs.sha }}
         run: python tests/upgrade_from_main.py
       - name: Python syntax check
         run: python -m compileall -q app.py common.py modules tests deploy
@@ -158,10 +158,10 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
-      - run: docker build -f .github/ci/browser.Dockerfile -t xtyf-browser-smoke .
+      - run: docker build -f .github/ci/browser.Dockerfile -t aurora-browser-smoke .
       - name: Launch both browser engines in the built image
         run: |
-          docker run --rm --ipc=host xtyf-browser-smoke node -e '(async()=>{const p=require("playwright");for(const name of ["chromium","webkit"]){const b=await p[name].launch({headless:true});const page=await b.newPage();await page.setContent("<title>smoke</title>");if(await page.title()!=="smoke")throw Error(name);await b.close();}})().catch(e=>{console.error(e);process.exit(1)})'
+          docker run --rm --ipc=host aurora-browser-smoke node -e '(async()=>{const p=require("playwright");for(const name of ["chromium","webkit"]){const b=await p[name].launch({headless:true});const page=await b.newPage();await page.setContent("<title>smoke</title>");if(await page.title()!=="smoke")throw Error(name);await b.close();}})().catch(e=>{console.error(e);process.exit(1)})'
 
   browser-image:
     name: Prepare reusable browser container (GHCR)
@@ -212,8 +212,8 @@ jobs:
           file: .github/ci/browser.Dockerfile
           push: true
           tags: ${{ steps.tag.outputs.image }}
-          cache-from: type=gha,scope=xtyf-browser-ci
-          cache-to: type=gha,mode=max,scope=xtyf-browser-ci
+          cache-from: type=gha,scope=aurora-browser-ci
+          cache-to: type=gha,mode=max,scope=aurora-browser-ci
 
   browser:
     name: Browser end-to-end (${{ matrix.group }})
@@ -263,7 +263,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ln -s /opt/xtyf-node/node_modules node_modules
+          ln -s /opt/aurora-node/node_modules node_modules
           python --version
           node --version
           node -e "require('playwright')"

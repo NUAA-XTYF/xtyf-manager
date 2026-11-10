@@ -57,7 +57,7 @@ the verified current-platform entry. `retry:true` allows retry of a quarantined 
 `apply_update({})` activates the validated pending bundle and recreates/reloads the
 main view; callers must obtain a user reload confirmation first.
 `ui_ready({viewToken})` marks locally rendered UI + bridge initialization healthy (no network
-success required). Desktop injects an immutable `window.__XTYF_VIEW_TOKEN__` per view
+success required). Desktop injects an immutable `window.__AURORA_VIEW_TOKEN__` per view
 and rejects acknowledgements from a previous view; Android binds calls to the current
 view's message port and accepts a null token. Startup trial watchdog: 15 seconds, then try previous successful
 version once, then bundled UI. Persist unconfirmed trial so a crash also rolls back.
@@ -102,7 +102,7 @@ other port changes and downgrades are rejected. Mutating requests are not replay
 view. It does not accept an arbitrary target URL. Remote documents have no generic
 business/native bridge. Native navigation controls call `return_local({intent})`,
 where intent is `settings`, `retry` or `return`; the preserved local shell receives
-`xtyf-website-return` with that intent. Returning never automatically reopens the
+`aurora-website-return` with that intent. Returning never automatically reopens the
 website. Website cookies remain separate from native transport sessions; third-party
 cookies are not enabled. Switching server cancels old requests and pending file work.
 

@@ -33,7 +33,7 @@ pub fn request(view: tauri::Webview, kind: PermissionKind, server: Option<&Url>)
     #[cfg(target_os = "linux")]
     {
         let granted = rfd::MessageDialog::new().set_title("摄像头权限")
-            .set_description("当前巡天御风页面请求使用摄像头进行扫码。是否允许？")
+            .set_description("当前极光页面请求使用摄像头进行扫码。是否允许？")
             .set_buttons(rfd::MessageButtons::YesNo).show() == rfd::MessageDialogResult::Yes;
         if granted && view.url().is_ok_and(|current| current == document) {
             PermissionResponse::Allow

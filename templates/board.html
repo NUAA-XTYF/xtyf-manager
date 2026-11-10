@@ -3,7 +3,7 @@
 {% block title %}任务中心{% endblock %}
 {% block content %}
 <div class="page-intro ux-page-head">
-  <div><p class="ux-eyebrow">TEAM / TASKS</p><h1>任务中心</h1><p>造车任务按计划推进，日常项目由所选专业组协作记录。</p></div>
+  <div><p class="ux-eyebrow">TEAM / TASKS</p><h1>任务中心</h1><p>项目任务按计划推进，日常项目由所选专业组协作记录。</p></div>
   <div class="ux-page-actions">{% if task_type != 'daily' %}<span id="sync-status" class="sync-status" role="status" aria-live="polite">正在同步…</span>
     <button id="refresh-now" class="btn" type="button">刷新</button>
     {% endif %}
@@ -11,12 +11,12 @@
     {% if task_type != 'daily' %}<a class="btn" data-download-name="tasks.csv" href="{{ url_for('export_csv') }}">导出任务 CSV</a>{% endif %}</div>
 </div>
 <nav class="task-type-tabs" aria-label="任务类型">
-  <a class="btn{% if task_type != 'daily' %} active{% endif %}" href="{{ url_for('tasks', type='vehicle') }}"{% if task_type != 'daily' %} aria-current="page"{% endif %}>造车任务</a>
+  <a class="btn{% if task_type != 'daily' %} active{% endif %}" href="{{ url_for('tasks', type='vehicle') }}"{% if task_type != 'daily' %} aria-current="page"{% endif %}>项目任务</a>
   <a class="btn{% if task_type == 'daily' %} active{% endif %}" href="{{ url_for('tasks', type='daily') }}"{% if task_type == 'daily' %} aria-current="page"{% endif %}>日常项目</a>
 </nav>
 <dialog id="task-create-panel" class="task-create-dialog" data-default-type="{{ task_type }}" aria-labelledby="task-create-title">
   <div class="task-create-heading"><div><p class="ux-eyebrow">TEAM / TASK</p><h2 id="task-create-title">新建任务</h2></div><button class="btn" type="button" data-task-create-close aria-label="关闭任务窗口">关闭</button></div>
-  <div class="task-create-type-row"><label>任务类型<select id="task-create-type"><option value="vehicle">造车任务</option><option value="daily">日常项目</option></select></label><p id="task-create-type-help" class="field-help">切换类型会保留尚未提交的内容。</p></div>
+  <div class="task-create-type-row"><label>任务类型<select id="task-create-type"><option value="vehicle">项目任务</option><option value="daily">日常项目</option></select></label><p id="task-create-type-help" class="field-help">切换类型会保留尚未提交的内容。</p></div>
   <p id="task-create-load" class="form-message" role="status" aria-live="polite"></p>
   <div class="task-create-pane" data-create-pane="vehicle" hidden>{% include '_task_create.html' %}</div>
   <div class="task-create-pane" data-create-pane="daily" hidden><div id="daily-editor"></div></div>
@@ -30,10 +30,10 @@
   <div class="seg" id="view-seg">
     <button type="button" data-view="person" class="active" aria-pressed="true">按人</button>
     <button type="button" data-view="status" aria-pressed="false">按状态</button>
-    <button type="button" data-view="specialty" aria-pressed="false" disabled title="先选择一个造车组别">按专业组</button>
+    <button type="button" data-view="specialty" aria-pressed="false" disabled title="先选择一个所属项目">按专业组</button>
     <button type="button" data-view="tree" aria-pressed="false">依赖图</button>
   </div>
-  <label class="toolbar-field"><span>造车组别</span><select id="f-project"><option value="">全部组别</option></select></label>
+  <label class="toolbar-field"><span>所属项目</span><select id="f-project"><option value="">全部组别</option></select></label>
   <label class="toolbar-field"><span>状态</span><select id="f-status"><option value="">全部状态</option></select></label>
   <input id="f-q" type="search" aria-label="搜索任务" placeholder="搜索任务 / 负责人 / 组别">
   <label class="check"><input type="checkbox" id="f-mine"> 只看我的</label>

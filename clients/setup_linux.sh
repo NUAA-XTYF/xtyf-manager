@@ -2,7 +2,7 @@
 set -eu
 # Run in the existing Ubuntu 22.04 WSL distro. ARM packages are extracted into
 # an isolated sysroot; do not change the host's architectures or apt sources.
-cache="$HOME/.cache/xtyf-manager-build"
+cache="$HOME/.cache/aurora-manager-build"
 mkdir -p "$cache"
 as_root() {
   if [ "$(id -u)" -eq 0 ]; then "$@"; else sudo "$@"; fi

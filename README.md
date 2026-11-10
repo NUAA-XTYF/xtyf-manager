@@ -1,10 +1,10 @@
-# 巡天御风管理系统
+# 极光团队工作台
 
-面向 RoboMaster 战队的内部管理工作台，基于 **Flask + SQLite + 原生 HTML/CSS/JavaScript**，包含任务协作、成员与组别管理、资金台账、发票归档及本地话题协作。
+面向团队协作的内部管理工作台，基于 **Flask + SQLite + 原生 HTML/CSS/JavaScript**，包含任务协作、成员与组别管理、资金台账、发票归档及本地话题协作。
 
 > **代码状态与线上状态不同**：本文说明仓库 `main` 分支已经实现的功能，不代表生产服务器已部署同一提交。生产版本应由维护者核对部署记录；本仓库不会自动升级线上数据库。
 
-推荐使用 **[HTTPS 网页](https://manager.skywalker-rm.online/)**；部署支持代码后，可在 Chrome / Edge 安装为 PWA，或在 iOS Safari 添加到主屏幕。安装仍使用同一网站，离线仅显示无数据的连接说明。旧 Windows / Linux / Android 客户端继续保留。见[网页与 PWA 使用说明](docs/usage/网页与PWA.md)和[迁移、部署与回滚](docs/technical/PWA迁移与运维.md)。
+推荐使用 **[HTTPS 网页](https://workspace.example.com/)**；部署支持代码后，可在 Chrome / Edge 安装为 PWA，或在 iOS Safari 添加到主屏幕。安装仍使用同一网站，离线仅显示无数据的连接说明。旧 Windows / Linux / Android 客户端继续保留。见[网页与 PWA 使用说明](docs/usage/网页与PWA.md)和[迁移、部署与回滚](docs/technical/PWA迁移与运维.md)。
 
 ## 快速开始
 
@@ -30,13 +30,23 @@ Windows 双击 **`start.bat`** 可同时启动 HTTP 服务和手机扫码用的 
 | 工作台 / 任务中心 | 任务统计、按人/状态/树展示、筛选搜索、CSV 导出 | `/`、`/tasks` |
 | 任务管理 | 一个总负责人和多个参与者；任务树、前置依赖、版本冲突、字段修订与撤销、受控截图上传、逻辑删除 | `/manage` |
 | 成员管理 | 新建/导入、资料编辑、角色、停用与恢复、随机初始密码、两套组别字典 | `/members` |
-| 账户设置 | 修改自己的用户名、专业组、造车组别和密码；真实姓名由管理员维护 | `/account` |
+| 账户设置 | 修改自己的用户名、专业组、所属项目和密码；真实姓名由管理员维护 | `/account` |
 | 资金台账 | 收支、统计、CSV、受授权的审核人审批 | `/funds/` |
 | 发票中心 | PDF 上传/确认、归属控制、查重、报销状态、归档、统计与导出 | `/invoices/` |
 | 权限与审计 | 管理员按成员 ID 配置资金审核/发票管理权限，分页查看业务操作记录 | `/admin/security` |
 | 协作 | 本地话题、回复、任意格式附件、撤回及未读提醒 | `/discussions` |
 
-**组别定义**：专业组（如视觉、电控、机械、硬件、宣传、运营）表示人员技能；造车组别（如步兵、哨兵、重装、飞镖，以及自定义细分）表示实际任务归属。成员可同时属于多个专业组和多个造车组别；**每个任务只选一个造车组别**，不自动继承负责人专业组。
+**组别定义**：专业组（如视觉、电控、机械、硬件、宣传、运营）表示人员技能；所属项目（如官网、移动端、数据平台、基础设施，以及自定义细分）表示实际任务归属。成员可同时属于多个专业组和多个所属项目；**每个任务只选一个所属项目**，不自动继承负责人专业组。
+
+## 脱敏演示数据
+
+仓库不附带真实数据库。需要不带任何真实团队信息的演示环境时，可用 `data/seed_demo.py` 在 `.local-test-data/demo-workspace/` 生成完全虚构的成员、任务、资金和话题：
+
+    python data/seed_demo.py
+    . .\.local-test-data\demo-workspace\use-demo-data.ps1
+    python app.py
+
+演示管理员为 `admin / Demo@admin2026`，普通成员为 `chen_xing / Demo@2026`。数据目录与 `.local-test-data` 下的服务器快照采用相同的环境变量切换方式，不会读写仓库根目录的真实 `data.db` 或 `data/`。`--reset` 会重建演示目录；`.local-test-data/` 始终由本地排除规则忽略。
 
 ## 项目布局
 
@@ -54,7 +64,7 @@ Windows 双击 **`start.bat`** 可同时启动 HTTP 服务和手机扫码用的 
 
 2026-10-14 修复增加资金审核版本校验、发票安全事件及元数据校验/保留、草稿选择保留、Windows 连接关闭和只读历史诊断。实现及验收边界见[全项目审查修复](docs/technical/全项目审查修复.md)。资金审核旧页面必须刷新，旧脚本必须携带记录 `version`。
 
-邮件服务首次部署与后续升级均自动安装 systemd 模板与共享环境配置，默认不启用发信；在服务器设置 `/etc/xtyf-manager/mail.env` 后自行启用邮件 timer，见[邮件服务配置](docs/technical/日常项目与邮件服务.md)。
+邮件服务首次部署与后续升级均自动安装 systemd 模板与共享环境配置，默认不启用发信；在服务器设置 `/etc/aurora-manager/mail.env` 后自行启用邮件 timer，见[邮件服务配置](docs/technical/日常项目与邮件服务.md)。
 
 本仓库使用 GitHub Actions 在指向 `main` 的 PR 创建或更新时自动执行
 Python 单元/API 回归测试、前端 JavaScript 单元测试、语法检查与分支覆盖率统计。

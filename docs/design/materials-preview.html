@@ -63,7 +63,7 @@
     <symbol id="icon-wallet" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="15" rx="2"/><path d="M3 10h18M6 6V3h12M16 15h2"/></symbol>
   </svg>
   <aside class="workspace-sidebar" aria-label="示例主导航">
-    <a class="ws-brand" href="#preview" data-preview-action="工作台"><span class="ws-brand-mark" aria-hidden="true">御</span><span class="ws-brand-text"><strong>巡天御风</strong><small>TEAM MANAGEMENT</small></span></a>
+    <a class="ws-brand" href="#preview" data-preview-action="工作台"><span class="ws-brand-mark" aria-hidden="true">御</span><span class="ws-brand-text"><strong>极光</strong><small>TEAM MANAGEMENT</small></span></a>
     <nav class="ws-nav" aria-label="业务工作区">
       <div class="ws-nav-group"><div class="ws-nav-caption">工作空间</div><a href="#preview" data-preview-action="工作台" class="ws-nav-link"><svg aria-hidden="true"><use href="#icon-grid"/></svg>工作台</a></div>
       <div class="ws-nav-group">
@@ -176,7 +176,7 @@
       let savedMessage = '';
       const campuses = ['南校区', '北校区'];
       const categories = ['动力组件', '电子元件', '紧固件', '仪器工具'];
-      const objects = [{ id: 1, name: '步兵机器人 01', type: '机器人', campus: '南校区', note: '训练与调试使用', devices: ['M3508-017 · M3508 电机', 'C620-006 · 电调'] }];
+      const objects = [{ id: 1, name: '演示设备 01', type: '设备', campus: '南校区', note: '训练与调试使用', devices: ['M3508-017 · M3508 电机', 'C620-006 · 电调'] }];
       let collection = '';
       let editingIndex = -1;
       let selectedObject = null;
@@ -258,7 +258,7 @@
         setScreen(`unit-${action}`, operation.title, `${context(activeItem)}
           <div class="asset-operation-summary"><strong>${escape(operation.title)} ${selected.length} 件</strong><p>${selected.map(unit => escape(unit.id)).join('、')}</p><span>${escape(operation.state)} → ${escape(operation.next)}</span></div>
           <section class="asset-form-section"><h3>${action === 'borrow' ? '借给谁，用在哪里' : '确认处理信息'}</h3><div class="asset-form-grid">
-          ${action === 'borrow' ? '<label>借用人<input name="person" required maxlength="30" placeholder="填写借用人姓名"></label><label>使用对象<input name="purpose" required maxlength="60" placeholder="例如：步兵机器人"></label>' : ''}
+          ${action === 'borrow' ? '<label>借用人<input name="person" required maxlength="30" placeholder="填写借用人姓名"></label><label>使用对象<input name="purpose" required maxlength="60" placeholder="例如：演示设备"></label>' : ''}
           ${destination ? `<label>${action === 'move' ? '目标校区' : '入库校区'}<select name="campus" required>${options(campuses, selected[0].campus)}</select></label><label>存放位置<input name="place" required maxlength="60" value="${escape(action === 'move' ? '' : 'A-02 货架')}" placeholder="例如：A-02 货架"></label>` : ''}
           <label>${action === 'fault' ? '故障说明（必填）' : '备注（选填）'}<textarea name="remark" rows="3" maxlength="200"${action === 'fault' ? ' required' : ''} placeholder="${action === 'fault' ? '例如：上电后无响应' : '补充本次操作信息'}"></textarea></label></div></section>`, `确认${operation.title}`, from === 'mine' ? '返回我的借用' : '返回单件列表');
       };
@@ -393,7 +393,7 @@
       const showObjectEditor = object => {
         selectedObject = object;
         returnScreen = 'objects';
-        setScreen('object-edit', object ? '编辑使用对象' : '新增使用对象', `<section class="asset-form-section"><h3>基本信息</h3><div class="asset-form-grid"><label>对象名称（必填）<input name="name" required maxlength="60" value="${escape(object?.name || '')}" placeholder="例如：步兵机器人 02"></label><label>类型<select name="type">${options(['机器人', '设备', '项目'], object?.type || '机器人')}</select></label><label>所属校区<select name="campus">${options(campuses, object?.campus || campuses[0])}</select></label><label>备注<textarea name="note" rows="3" maxlength="200">${escape(object?.note || '')}</textarea></label></div></section>`, '保存使用对象', '返回使用对象');
+        setScreen('object-edit', object ? '编辑使用对象' : '新增使用对象', `<section class="asset-form-section"><h3>基本信息</h3><div class="asset-form-grid"><label>对象名称（必填）<input name="name" required maxlength="60" value="${escape(object?.name || '')}" placeholder="例如：演示设备 02"></label><label>类型<select name="type">${options(['设备', '项目'], object?.type || '设备')}</select></label><label>所属校区<select name="campus">${options(campuses, object?.campus || campuses[0])}</select></label><label>备注<textarea name="note" rows="3" maxlength="200">${escape(object?.note || '')}</textarea></label></div></section>`, '保存使用对象', '返回使用对象');
       };
       const countUnits = () => (items.find(item => item.id === countScope.itemId)?.units || []).filter(unit => unit.campus === countScope.campus);
       const showCount = (setup = true) => {

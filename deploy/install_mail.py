@@ -9,10 +9,10 @@ import os
 from pathlib import Path
 import tempfile
 
-CONFIG_PATH = Path("/etc/xtyf-manager/mail.env")
+CONFIG_PATH = Path("/etc/aurora-manager/mail.env")
 SYSTEMD_DIR = Path("/etc/systemd/system")
-DROPIN_NAME = "zz-xtyf-mail.conf"
-HEADER = "# Managed by xtyf-manager deploy/install_mail.py; do not edit here.\n"
+DROPIN_NAME = "zz-aurora-mail.conf"
+HEADER = "# Managed by aurora-manager deploy/install_mail.py; do not edit here.\n"
 
 
 def _regular(path):
@@ -26,7 +26,7 @@ def _atomic_unit(path, content):
     if path.exists() and path.read_bytes() == data:
         return
     path.parent.mkdir(parents=True, exist_ok=True)
-    fd, temporary = tempfile.mkstemp(prefix=".xtyf-mail-", dir=path.parent)
+    fd, temporary = tempfile.mkstemp(prefix=".aurora-mail-", dir=path.parent)
     try:
         with os.fdopen(fd, "wb") as stream:
             os.chmod(temporary, 0o644)

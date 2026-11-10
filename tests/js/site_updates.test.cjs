@@ -13,7 +13,7 @@ function setup(previous = '') {
   let interval;
   let respond = { available: true, commit: first, latest_subject: '第一版更新' };
   const values = new Map();
-  if (previous) values.set('xtyf-site-release-seen:7', previous);
+  if (previous) values.set('aurora-site-release-seen:7', previous);
   const listeners = {};
   const detailListeners = {};
   const closeListeners = {};
@@ -53,13 +53,13 @@ test('announces initial release and stores dismissed commit per member', async (
   assert.equal(app.summary.textContent, '第一版更新');
   app.clickClose();
   assert.equal(app.banner.hidden, true);
-  assert.equal(app.values.get('xtyf-site-release-seen:7'), first);
+  assert.equal(app.values.get('aurora-site-release-seen:7'), first);
   app.change({ available: true, commit: second, latest_subject: '第二版更新' });
   await app.poll();
   assert.equal(app.banner.hidden, false);
   assert.equal(app.summary.textContent, '第二版更新');
   app.clickDetail();
-  assert.equal(app.values.get('xtyf-site-release-seen:7'), second);
+  assert.equal(app.values.get('aurora-site-release-seen:7'), second);
 });
 
 test('previously acknowledged release stays hidden', async () => {
@@ -103,5 +103,5 @@ test('timeline renders cached commit subject as text without HTML interpolation'
   root.children.forEach(visit);
   assert.equal(allNodes.find(x => x.tag === 'p' && x.textContent === subject).textContent, subject);
   assert.equal(allNodes.find(x => x.tag === 'a').href,
-    'https://github.com/SHM-white/xtyf-manager/commit/' + first);
+    'https://github.com/example-org/aurora-manager/commit/' + first);
 });

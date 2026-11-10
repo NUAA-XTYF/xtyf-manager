@@ -56,7 +56,7 @@ def run():
                 return {'status':status,'headers':{'Content-Type':'text/html'},'body':body,'encoding':'text'}
             if args['path']=='/__upload_test':return {'status':200,'headers':{'Content-Type':'application/json'},'body':json.dumps(args.get('multipart')),'encoding':'text'}
             if args['path']=='/__preview.pdf':return {'status':200,'headers':{'Content-Type':'application/pdf'},'body':base64.b64encode(pdf_bytes).decode(),'encoding':'base64'}
-            headers={**args.get('headers',{}),'X-XTYF-Client-Protocol':'1'}
+            headers={**args.get('headers',{}),'X-AURORA-Client-Protocol':'1'}
             response=client.open(args['path'],method=args.get('method','GET'),headers=headers,data=args.get('body'))
             if args['path']=='/funds/api/records' and args.get('method')=='POST' and state.get('drop_funds_response'):
                 state['drop_funds_response']=False
@@ -87,7 +87,7 @@ def run():
         # An iframe's heading can render before deferred theme.js binds its
         # handlers. Clicking before DOMContentLoaded silently drops the action.
         wait_until(page, """(
-            window.XTYF.route==='/account' &&
+            window.AURORA.route==='/account' &&
             document.querySelector('#page-host iframe')?.contentDocument
               ?.querySelector('[data-theme-toggle]')?.title?.startsWith('切换为')
         )""")
@@ -98,15 +98,15 @@ def run():
         page.on('pageerror',lambda error:errors.append(str(error)))
         page.on('request',lambda request:remote_requests.append(request.url) if request.url.startswith('http') and not request.url.startswith('http://127.0.0.1:') else None)
         page.expose_function('__nativeTest',native)
-        page.add_init_script("window.XTYFNative={invoke:(action,args)=>window.__nativeTest(action,args)};")
+        page.add_init_script("window.AURORANative={invoke:(action,args)=>window.__nativeTest(action,args)};")
         try:
             page.goto(f'http://127.0.0.1:{server.server_port}/index.html')
-            wait_until(page,'window.XTYF?.compatible')
+            wait_until(page,'window.AURORA?.compatible')
             frame=page.frame_locator('#page-host iframe')
             frame.locator('input[name=username]').fill('admin')
             frame.locator('input[name=password]').fill('ci-test-password-only')
             frame.locator('button[type=submit]').click()
-            wait_until(page,"window.XTYF.route==='/' && window.XTYF.bootstrap.authenticated")
+            wait_until(page,"window.AURORA.route==='/' && window.AURORA.bootstrap.authenticated")
             frame.locator('h1').first.wait_for();page.wait_for_timeout(500)
             results.append('JSON login and dashboard through native bridge')
             print(results[-1],flush=True)
@@ -116,7 +116,7 @@ def run():
             results.append('local skip link keeps packaged page and keyboard focus')
             pages=[('/tasks','任务中心'),('/tasks?type=daily','任务中心'),('/manage','任务管理'),('/members','成员管理'),('/discussions/','协作'),('/funds/','资金'),('/invoices/','发票'),('/account','账户'),('/admin/mail','邮件'),('/admin/security','权限')]
             for path,label in pages:
-                page.evaluate('(path)=>XTYF.navigate(path)',path)
+                page.evaluate('(path)=>AURORA.navigate(path)',path)
                 frame.locator('h1').first.wait_for();page.wait_for_timeout(400)
                 text=frame.locator('body').inner_text()
                 assert label in text,(path,text[:200])
@@ -129,7 +129,7 @@ def run():
                     state['drop_funds_response']=True
                     frame.locator('#addF [type=submit]').click()
                     frame.locator('#funds-create-status').filter(has_text='结果待确认').wait_for()
-                    page.evaluate("XTYF.navigate('/funds/',true)")
+                    page.evaluate("AURORA.navigate('/funds/',true)")
                     frame.locator('[data-bs-target="#t-add"]').click()
                     frame.locator('#funds-create-retry').wait_for()
                     assert frame.locator('#aNotes').input_value()=='synthetic native funds recovery'
@@ -155,7 +155,7 @@ def run():
                     results.append('local schedule chooser loads preview through authenticated native transport')
                 results.append('local route '+path)
                 print(results[-1],flush=True)
-            page.evaluate("XTYF.navigate('/discussions/')")
+            page.evaluate("AURORA.navigate('/discussions/')")
             frame.locator('#intro-edit').click()
             frame.locator('#intro-form [name=bio]').fill('合成客户端简介')
             frame.locator('#intro-add-profile').click()
@@ -166,7 +166,7 @@ def run():
             frame.locator('#intro-save').click()
             frame.locator('#intro-save-result').filter(has_text='简介已保存').wait_for()
             frame.locator('#intro-close').click()
-            page.evaluate("XTYF.navigate('/account')")
+            page.evaluate("AURORA.navigate('/account')")
             frame.locator('#intro-edit').click()
             frame.locator('#intro-dialog[open]').wait_for()
             assert frame.locator('#intro-form [name=bio]').input_value()=='合成客户端简介'
@@ -175,24 +175,24 @@ def run():
             assert frame.locator('#intro-preview a').count()==2
             assert '合成仓库介绍' in frame.locator('#intro-preview').inner_text()
             results.append('shared introduction editor and link preview persist through authenticated native transport')
-            page.evaluate("XTYF.navigate('/account/email/verify#token=test')")
+            page.evaluate("AURORA.navigate('/account/email/verify#token=test')")
             page.get_by_role('heading',name='本地页面不存在').wait_for()
             results.append('removed legacy email-link template uses the local unavailable-page message')
-            page.evaluate("XTYF.navigate('/account')")
+            page.evaluate("AURORA.navigate('/account')")
             wait_theme_initialized(page)
             frame.locator('[data-theme-toggle]').first.click()
-            wait_until(page,"window.XTYF.bootstrap.me.theme_mode==='dark'")
+            wait_until(page,"window.AURORA.bootstrap.me.theme_mode==='dark'")
             assert frame.locator('html').get_attribute('data-theme')=='dark'
-            page.evaluate("XTYF.navigate('/tasks')")
+            page.evaluate("AURORA.navigate('/tasks')")
             frame.locator('h1').first.wait_for()
             assert frame.locator('html').get_attribute('data-theme')=='dark'
-            assert page.evaluate('()=>XTYFClient.back()')
+            assert page.evaluate('()=>AURORAClient.back()')
             wait_theme_initialized(page)
             frame.locator('[data-theme-toggle]').first.click()
-            wait_until(page,"window.XTYF.bootstrap.me.theme_mode==='light'")
+            wait_until(page,"window.AURORA.bootstrap.me.theme_mode==='light'")
             assert frame.locator('html').get_attribute('data-theme')=='light'
             results.append('theme persists across local routes and native back restores previous page')
-            page.evaluate("XTYF.navigate('/invoices/')")
+            page.evaluate("AURORA.navigate('/invoices/')")
             frame.locator('#fileInput').wait_for(state='attached')
             frame.locator('#fileInput').evaluate("el=>{el.onchange=null;el.click();}")
             wait_until(page,"document.querySelector('#page-host iframe').contentDocument.getElementById('fileInput').files.length===1")
@@ -204,24 +204,24 @@ def run():
             page.wait_for_timeout(100)
             assert any(a=='open_external' and b['url']=='https://example.com/help' for a,b in state['calls'])
             results.append('external link routed to isolated native view')
-            page.evaluate("()=>XTYF.preview('/__preview.pdf','测试 PDF')")
+            page.evaluate("()=>AURORA.preview('/__preview.pdf','测试 PDF')")
             pdf_frame=page.frame_locator('#preview-content iframe')
             pdf_frame.locator('canvas').wait_for();pdf_frame.locator('#status').wait_for(state='hidden')
             assert pdf_frame.locator('#page-number').inner_text()=='1 / 1'
             page.locator('#preview-close').click()
             results.append('bundled PDF.js renders authenticated PDF under production CSP')
-            page.evaluate("XTYF.navigate('/tasks')")
+            page.evaluate("AURORA.navigate('/tasks')")
             frame.locator('h1').first.wait_for();page.wait_for_timeout(400)
             page.screenshot(path=str(output/'desktop-tasks.png'),full_page=True)
             page.set_viewport_size({'width':390,'height':844});page.wait_for_timeout(200)
             page.screenshot(path=str(output/'mobile-tasks.png'),full_page=True)
             assert frame.locator('body').evaluate('()=>document.documentElement.scrollWidth<=innerWidth+1')
             results.append('desktop and 390px mobile layout')
-            page.evaluate("XTYF.navigate('/account')")
+            page.evaluate("AURORA.navigate('/account')")
             frame.locator('h1').first.wait_for();page.wait_for_timeout(150)
             frame.locator('[data-ws-menu]').click()
             frame.locator('form[action="/logout"] button').click()
-            wait_until(page,"window.XTYF.route.startsWith('/login') && !window.XTYF.bootstrap.authenticated")
+            wait_until(page,"window.AURORA.route.startsWith('/login') && !window.AURORA.bootstrap.authenticated")
             results.append('JSON logout returns local login')
             state['offline']=True;page.reload();frame.locator('#login-form').wait_for()
             page.locator('#connection-status').wait_for(state='visible')
@@ -248,16 +248,16 @@ def run():
             delayed.on('pageerror',lambda error:errors.append(str(error)))
             delayed.expose_function('__nativeTest',native)
             old={'ok':True,'protocolVersion':1,'authenticated':True,'me':{'id':999,'name':'OLD SERVER','role':'admin','ui_theme':'dark'},'user':{'id':999},'permissions':{'manage_security':True},'statuses':['OLD OPTION'],'priorities':['OLD PRIORITY']}
-            delayed.add_init_script("let held=false;window.XTYFNative={invoke:(action,args)=>{if(action==='request'&&args.path==='/api/client/bootstrap'&&!held){held=true;return new Promise(resolve=>{window.__releaseOld=()=>resolve({status:200,headers:{'Content-Type':'application/json'},body:"+json.dumps(json.dumps(old))+",encoding:'text'});});}return window.__nativeTest(action,args);}};")
+            delayed.add_init_script("let held=false;window.AURORANative={invoke:(action,args)=>{if(action==='request'&&args.path==='/api/client/bootstrap'&&!held){held=true;return new Promise(resolve=>{window.__releaseOld=()=>resolve({status:200,headers:{'Content-Type':'application/json'},body:"+json.dumps(json.dumps(old))+",encoding:'text'});});}return window.__nativeTest(action,args);}};")
             delayed.goto(f'http://127.0.0.1:{server.server_port}/index.html')
             wait_until(delayed,"typeof window.__releaseOld==='function'")
             delayed.locator('#client-settings-open').click();delayed.locator('#server-url').fill('https://replacement.invalid')
             delayed.locator('#server-form button[type=submit]').click()
-            wait_until(delayed,"XTYF.compatible && XTYF.config.serverUrl==='https://replacement.invalid'")
+            wait_until(delayed,"AURORA.compatible && AURORA.config.serverUrl==='https://replacement.invalid'")
             delayed.evaluate('()=>window.__releaseOld()');delayed.wait_for_timeout(200)
-            assert delayed.evaluate('()=>XTYF.bootstrap.me') is None
-            assert delayed.evaluate('()=>XTYF.bootstrap.authenticated') is False
-            assert 'OLD OPTION' not in delayed.evaluate('()=>XTYF.bootstrap.statuses')
+            assert delayed.evaluate('()=>AURORA.bootstrap.me') is None
+            assert delayed.evaluate('()=>AURORA.bootstrap.authenticated') is False
+            assert 'OLD OPTION' not in delayed.evaluate('()=>AURORA.bootstrap.statuses')
             assert delayed.frame_locator('#page-host iframe').locator('#login-form').is_visible()
             delayed.close();results.append('server switch supersedes pending bootstrap and ignores late old user/options')
             assert not remote_requests,remote_requests

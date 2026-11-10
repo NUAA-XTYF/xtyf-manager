@@ -38,9 +38,9 @@ def main():
     target=plan["nextVersion"]
     if not STABLE.fullmatch(target):raise ValueError("Invalid nextVersion")
     if args.command=="apply":
-        version=args.version or os.environ.get("XTYF_VERSION","")
+        version=args.version or os.environ.get("AURORA_VERSION","")
         code=version_code(version)
-        if os.environ.get("XTYF_CODE") and int(os.environ["XTYF_CODE"])!=code:raise ValueError("Android code mismatch")
+        if os.environ.get("AURORA_CODE") and int(os.environ["AURORA_CODE"])!=code:raise ValueError("Android code mismatch")
         if version.split("-")[0]!=target and version!=config["version"]:
             raise ValueError("Build version outside approved plan")
         sync_versions(ROOT,{**config,"version":version,"versionCode":code})

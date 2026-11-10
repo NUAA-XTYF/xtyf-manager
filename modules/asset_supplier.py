@@ -100,7 +100,7 @@ def lookup_lcsc(code):
     result = {"configured": True, "status": "unavailable", "product": None,
               "url": url, "cached": False, "fetched_at": datetime.now(timezone.utc).isoformat()}
     try:
-        request = Request(url, headers={"User-Agent": "xtyf-manager/1.0 (public product lookup)",
+        request = Request(url, headers={"User-Agent": "aurora-manager/1.0 (public product lookup)",
                                        "Accept": "text/html", "Accept-Encoding": "identity"})
         with build_opener(_NoRedirect()).open(request, timeout=LOOKUP_TIMEOUT) as response:
             size = response.headers.get("Content-Length", "")

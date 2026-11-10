@@ -107,7 +107,7 @@ def migrate_security(db):
         if "must_change_password" not in cols:
             db.execute("ALTER TABLE members ADD COLUMN must_change_password INTEGER NOT NULL DEFAULT 0")
         if not db.execute("SELECT 1 FROM security_migrations WHERE version=1").fetchone():
-            reviewers = {name.strip() for name in os.environ.get("FUNDS_REVIEWERS", "chy").split(",") if name.strip()}
+            reviewers = {name.strip() for name in os.environ.get("FUNDS_REVIEWERS", "").split(",") if name.strip()}
             for member_id, username in db.execute(
                 "SELECT id,username FROM members WHERE role IN ('admin','manager') "
                 "AND is_active=1 AND deleted_at IS NULL"
@@ -262,7 +262,7 @@ def init_security(app):
                 return _error("请求必须是 JSON 对象", "invalid_payload", 400)
         if getattr(g, 'audit_id', None) and request.is_json:
             g.audit_details = _audit_details(request.get_json(silent=True))
-        native_client = request.headers.get("X-XTYF-Client-Protocol") == "1"
+        native_client = request.headers.get("X-AURORA-Client-Protocol") == "1"
         if native_client and user is None and request.endpoint not in {
             "client_api.bootstrap", "client_api.login", "client_api.logout", "security.get_csrf",
             "password_recovery.request_reset", "password_recovery.confirm_reset",

@@ -126,7 +126,7 @@ def _save(member_id: int, as_admin: bool):
         relations = {}
         for field, label, table in (
             ("group_ids", "专业组", "groups"),
-            ("project_ids", "造车组别", "projects"),
+            ("project_ids", "所属项目", "projects"),
         ):
             if field in data:
                 values, error = normalize_ids(data[field], label)

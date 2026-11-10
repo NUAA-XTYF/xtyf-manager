@@ -22,7 +22,7 @@ def generate(destination):
     public = destination / "public.pem"
     public.write_bytes(key.public_key().public_bytes(serialization.Encoding.PEM,
                                                     serialization.PublicFormat.SubjectPublicKeyInfo))
-    with tempfile.TemporaryDirectory(prefix="xtyf-cross-language-") as temporary:
+    with tempfile.TemporaryDirectory(prefix="aurora-cross-language-") as temporary:
         root = Path(temporary)
         private = root / "test-private.pem"
         private.write_bytes(key.private_bytes(serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8,

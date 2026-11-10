@@ -96,7 +96,7 @@ def main(data_path=None):
             group_ids = _catalog(db, 'groups', group_name)
             project_ids = _catalog(db, 'projects', project)
             if len(project_ids) > 1:
-                raise RuntimeError('每个任务只能选择一个造车组别')
+                raise RuntimeError('每个任务只能选择一个所属项目')
             task_id, version, error, status_code = create_task(db, dict(actor), {
                 'title': title, 'detail': detail, 'owner_id': owner['id'],
                 'project_id': project_ids[0] if project_ids else None,

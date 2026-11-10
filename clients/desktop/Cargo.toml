@@ -1,9 +1,9 @@
 [package]
-name = "xtyf-manager"
+name = "aurora-manager"
 version = "1.2.0"
 edition = "2021"
-description = "巡天御风管理系统本地客户端"
-authors = ["巡天御风 <1546742976@qq.com>"]
+description = "极光团队工作台本地客户端"
+authors = ["极光 <maintainer@example.com>"]
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }

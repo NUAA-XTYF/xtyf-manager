@@ -19,5 +19,5 @@
   }
   const api = {classify};
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
-  if (typeof window !== 'undefined') window.XTYFConnection = api;
+  if (typeof window !== 'undefined') window.AURORAConnection = api;
 })();

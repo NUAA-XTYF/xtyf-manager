@@ -122,13 +122,13 @@ async function main(){
     // Reloading the page must not lose a committed-but-unacknowledged request.
     await page.reload();await page.locator('#asset-pending-retry').waitFor({state:'visible'});
     await page.locator('#asset-pending-retry').click();
-    const pendingBefore=await page.evaluate(()=>Object.entries(sessionStorage).find(([k])=>k.startsWith('xtyf.assets.unconfirmed.v1:'))[1]);
+    const pendingBefore=await page.evaluate(()=>Object.entries(sessionStorage).find(([k])=>k.startsWith('aurora.assets.unconfirmed.v1:'))[1]);
     for(const [status,data] of [[401,{ok:false,error:'synthetic expired login'}],[403,{ok:false,error:'synthetic permission change'}],[200,{ok:true}],[200,{ok:true,event_id:1,request_id:'wrong-request'}]]){
       failedRetry={status,body:JSON.stringify(data)};
       await page.getByRole('button',{name:'重试原请求',exact:true}).click();
       await page.locator('#asset-form-status').filter({hasText:'结果尚未确认'}).waitFor();
       await page.waitForFunction(()=>!document.getElementById('asset-save').disabled);
-      assert.equal(await page.evaluate(()=>Object.entries(sessionStorage).find(([k])=>k.startsWith('xtyf.assets.unconfirmed.v1:'))[1]),pendingBefore);
+      assert.equal(await page.evaluate(()=>Object.entries(sessionStorage).find(([k])=>k.startsWith('aurora.assets.unconfirmed.v1:'))[1]),pendingBefore);
     }
     failedRetry=null;
     await page.getByRole('button',{name:'重试原请求',exact:true}).click();
@@ -278,7 +278,7 @@ async function main(){
       if(action==='cancel'||action==='ui_ready')return {};
       if(action!=='request'&&action!=='read_resource')throw Error('unexpected native action '+action);
       if(state.offline)throw Error('离线测试');
-      const response=await api.fetch(args.path,{method:args.method||'GET',headers:{...args.headers,'X-XTYF-Client-Protocol':'1','X-CSRF-Token':csrf},...(args.body!==undefined?{data:args.body}:{})});
+      const response=await api.fetch(args.path,{method:args.method||'GET',headers:{...args.headers,'X-AURORA-Client-Protocol':'1','X-CSRF-Token':csrf},...(args.body!==undefined?{data:args.body}:{})});
       const headers=response.headers();csrf=headers['x-csrf-token']||csrf;
       let body=await response.text();
       if(state.old&&args.path==='/api/client/bootstrap'){
@@ -286,7 +286,7 @@ async function main(){
       }
       return {status:response.status(),headers,body,encoding:'text'};
     });
-    await page.addInitScript(()=>{if(window===window.top)window.XTYFNative={invoke:(action,args)=>window.__assetsNative(action,args)};});
+    await page.addInitScript(()=>{if(window===window.top)window.AURORANative={invoke:(action,args)=>window.__assetsNative(action,args)};});
     await page.goto(local+'/#/assets');
     let frame=page.frameLocator('#page-host iframe');
     // The shell host ID is stable; fail clearly if it changes.
@@ -309,7 +309,7 @@ async function main(){
     assert.deepEqual(remoteHtml,[],'local view must use native API bridge, not remote HTML');
     state.old=true;await page.goto(local+'/#/');await page.reload();await frame.locator('#workspace-sidebar').waitFor();
     assert.equal(await frame.locator('#workspace-sidebar a[href="/assets"]').count(),0,'old server hides navigation');
-    await page.evaluate(()=>window.XTYF.navigate('/assets'));
+    await page.evaluate(()=>window.AURORA.navigate('/assets'));
     await page.getByRole('heading',{name:'服务器暂未启用资产管理'}).waitFor();
     passed.push(label+': packaged routes, native API simulation, offline draft and retry, old-server capability gate');
     await browser.close();browser=null;

@@ -309,7 +309,7 @@ window.ImageViewer = (() => {
   }
   document.addEventListener("click", event => {
     // The packaged clients keep their existing native attachment transport.
-    if (window.XTYF?.invoke) return;
+    if (window.AURORA?.invoke) return;
     if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
     const target = event.target?.closest?.("a[href],img[data-image-preview]");
     const resource = sourceFor(target);

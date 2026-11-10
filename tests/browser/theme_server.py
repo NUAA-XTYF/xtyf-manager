@@ -6,7 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-with tempfile.TemporaryDirectory(prefix='xtyf-theme-demo-') as root:
+with tempfile.TemporaryDirectory(prefix='aurora-theme-demo-') as root:
     for key, relative in {
         'PROGRESS_DB':'data.db', 'FUNDS_DIR':'funds', 'INVOICES_DIR':'invoices',
         'TASK_ATTACHMENTS_DIR':'attachments', 'PROGRESS_SECRET_PATH':'secret.key',
@@ -31,7 +31,7 @@ with tempfile.TemporaryDirectory(prefix='xtyf-theme-demo-') as root:
     post('/login', {'username':'admin','password':'theme-demo-initial'})
     post('/api/password', {'old':'theme-demo-initial','new':'theme-demo-password'})
     groups = {row['name']:row['id'] for row in client.get('/api/groups').get_json()['groups']}
-    project = next(row['id'] for row in client.get('/api/projects').get_json()['projects'] if row['name']=='哨兵')
+    project = next(row['id'] for row in client.get('/api/projects').get_json()['projects'] if row['name']=='官网')
     for stage, name, tasks in (
         ('机械','机械负责人', [('底盘结构设计','2026-10-14','2026-10-22','未开始'),('云台结构装配','2026-10-14','2026-10-22','进行中'),('机械设计评审','2026-10-22','2026-10-22','未开始')]),
         ('电控','电控负责人', [('底盘控制调试','2026-10-22','2026-10-24','进行中'),('云台控制联调','2026-10-22','2026-10-26','阻塞')]),

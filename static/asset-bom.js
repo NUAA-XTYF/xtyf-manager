@@ -71,7 +71,7 @@
     updateSummary();
   }
   function header(){return raw.find(r=>r.row_no===headerAt)?.cells||[];}
-  function mapCacheKey(){return 'xtyf.assets.bom.mapping.v1:'+header().map(normalize).join('|');}
+  function mapCacheKey(){return 'aurora.assets.bom.mapping.v1:'+header().map(normalize).join('|');}
   function readMapping(){
     const heads=header(),used=new Set(),guessed={};
     heads.forEach((h,i)=>{

@@ -16,7 +16,7 @@ function fixture({native = false, imageURL, isLocal, protocol = 'https:', url = 
   });
   let ready;
   const context = {URL, location:{href:protocol+'//team.example/account', origin:protocol+'//team.example'},
-    window:native ? {XTYF:{invoke(){}, imageURL, isLocal}} : {},
+    window:native ? {AURORA:{invoke(){}, imageURL, isLocal}} : {},
     Image:class {
       constructor() { this.dataset = {}; this.events = {}; images.push(this); }
       addEventListener(name, listener) { this.events[name] = listener; }

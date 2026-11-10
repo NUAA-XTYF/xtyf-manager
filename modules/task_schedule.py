@@ -44,7 +44,7 @@ def _date(value: object) -> date | None:
 def _load(db: sqlite3.Connection, project_id: int) -> dict:
     project = db.execute("SELECT id,name,deleted_at FROM projects WHERE id=?", (project_id,)).fetchone()
     if project is None or project["deleted_at"] is not None:
-        raise ScheduleError("造车组别不存在或已删除", 404)
+        raise ScheduleError("所属项目不存在或已删除", 404)
     # Traverse all referenced ancestors, including external and deleted tasks.
     # Their fields and edges belong to the signed snapshot too.
     catalog = {row["id"]: dict(row) for row in db.execute(
@@ -212,7 +212,7 @@ def _plan(source: dict, request: object) -> dict:
             predecessor = effective.get(pid)
             if (predecessor is None or predecessor["deleted_at"] is not None or predecessor["status"] == "已取消"
                     or predecessor["project_deleted_at"] is not None):
-                problem(tid, f"前置 #{pid} 不存在、已删除、已取消或所属车组已归档")
+                problem(tid, f"前置 #{pid} 不存在、已删除、已取消或所属项目已归档")
                 continue
             if pid in invalid:
                 problem(tid, f"前置 #{pid} 尚有排期冲突，请先解决其问题")
@@ -304,7 +304,7 @@ def _plan(source: dict, request: object) -> dict:
                 if c and d and c <= d and max(a, c) <= min(b, d):
                     overlap_start, overlap_end = max(a, c).isoformat(), min(b, d).isoformat()
                     related = [{"id": item["id"], "title": item["title"], "project_id": item["project_id"],
-                                "project_name": item["project_name"] or "未归属造车组别",
+                                "project_name": item["project_name"] or "未归属项目",
                                 "external": item["id"] not in rows, **item["after"]} for item in (left, right)]
                     warning(left["id"], f"同一负责人任务 #{left['id']} 与 #{right['id']} 日期重叠"
                             f"（{overlap_start} 至 {overlap_end}，含首尾），请核对工作量",
@@ -343,12 +343,12 @@ def apply_schedule(db: sqlite3.Connection, actor: dict, project_id: int, snapsho
     except BadSignature as exc:
         raise ScheduleError("排期规则或预览已失效，请刷新页面并重新预览") from exc
     if not isinstance(expected, dict) or expected.get("project_id") != project_id:
-        raise ScheduleError("排期预览与造车组别不匹配")
+        raise ScheduleError("排期预览与所属项目不匹配")
     db.execute("BEGIN IMMEDIATE")
     try:
         source = _load(db, project_id)
         if expected.get("digest") != _digest(source):
-            raise ScheduleError("任务、前置或负责人跨车组任务信息已变化，请重新预览；本次未保存任何调整", 409)
+            raise ScheduleError("任务、前置或负责人跨项目任务信息已变化，请重新预览；本次未保存任何调整", 409)
         result = _plan(source, expected.get("parameters"))
         if not result["can_apply"]:
             raise ScheduleError("排期条件不完整，请重新预览")
@@ -370,7 +370,7 @@ def apply_schedule(db: sqlite3.Connection, actor: dict, project_id: int, snapsho
             _revision(db, row["id"], actor, {key: before[key] for key in changed},
                       {key: after[key] for key in changed}, version)
             db.execute("INSERT INTO logs(task_id,member_id,member_name,note,changes,created_at) VALUES(?,?,?,?,?,?)",
-                       (row["id"], actor["id"], actor["name"], f"造车组别依赖排期：{result['project']['name']}",
+                       (row["id"], actor["id"], actor["name"], f"所属项目依赖排期：{result['project']['name']}",
                         "；".join(changed), stamp))
         db.commit()
         return {"changed_count": result["changed_count"]}

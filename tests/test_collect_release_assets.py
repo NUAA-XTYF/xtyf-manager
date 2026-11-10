@@ -43,7 +43,7 @@ class ReleaseCollectionTests(unittest.TestCase):
         self.assertEqual(report["channel"], "stable")
 
     def test_mismatched_binary_rejected(self):
-        target = self.artifacts / "xtyf-client-windows-x64" / "XTYF-Manager-Setup-1.1.0-x64.exe"
+        target = self.artifacts / "aurora-client-windows-x64" / "Aurora-Workspace-Setup-1.1.0-x64.exe"
         target.write_bytes(target.read_bytes() + b"tamper")
         with self.assertRaisesRegex(ValueError, "Checksum mismatch"):
             collect(self.artifacts, self.root / "out", version="1.1.0",
@@ -51,7 +51,7 @@ class ReleaseCollectionTests(unittest.TestCase):
 
     def test_missing_platform_rejected(self):
         import shutil
-        shutil.rmtree(self.artifacts / "xtyf-client-linux-arm64")
+        shutil.rmtree(self.artifacts / "aurora-client-linux-arm64")
         with self.assertRaisesRegex(ValueError, "Missing or unexpected"):
             collect(self.artifacts, self.root / "out", version="1.1.0",
                     tag="v1.1.0", channel="stable")
@@ -62,7 +62,7 @@ class ReleaseCollectionTests(unittest.TestCase):
                     tag="v1.1.1", channel="stable")
 
     def test_unknown_checksum_rejected(self):
-        manifest = self.artifacts / "xtyf-client-windows-x64" / "SHA256SUMS.txt"
+        manifest = self.artifacts / "aurora-client-windows-x64" / "SHA256SUMS.txt"
         manifest.write_text(manifest.read_text() + "0" * 64 + "  hidden.exe\n")
         with self.assertRaisesRegex(ValueError, "Unexpected files"):
             collect(self.artifacts, self.root / "out", version="1.1.0",
@@ -84,7 +84,7 @@ class ExistingReleaseGuardTests(unittest.TestCase):
         validate_existing_release(self.release, "v1.1.0")
 
     def test_release_with_binary_is_rejected(self):
-        self.release["assets"] = [{"name": "XTYF-Manager-1.1.0.apk"}]
+        self.release["assets"] = [{"name": "Aurora-Workspace-1.1.0.apk"}]
         with self.assertRaisesRegex(ValueError, "Refusing to overwrite"):
             validate_existing_release(self.release, "v1.1.0")
 

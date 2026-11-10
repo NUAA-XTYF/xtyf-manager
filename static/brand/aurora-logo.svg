@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240" role="img" aria-label="Aurora">
+  <path d="M28 176c30-10 44-58 92-58s62 48 92 58" fill="none" stroke="#15263f" stroke-width="18" stroke-linecap="round"/>
+  <path d="M56 130c20-26 38-46 64-46s44 20 64 46" fill="none" stroke="#3b62bc" stroke-width="10" stroke-linecap="round" opacity="0.9"/>
+  <circle cx="120" cy="50" r="12" fill="#d54443"/>
+  <circle cx="120" cy="50" r="4.5" fill="#ffffff"/>
+</svg>

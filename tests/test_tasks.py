@@ -14,7 +14,7 @@ os.environ["PROGRESS_SECRET_PATH"] = os.path.join(_TEMP.name, "secret.key")
 os.environ["PROGRESS_INITIAL_ADMIN_PASSWORD"] = "ci-test-password-only"
 
 import app as app_module  # noqa: E402
-if os.environ.get('XTYF_TEST_AUTH_TRACE') == '1':
+if os.environ.get('AURORA_TEST_AUTH_TRACE') == '1':
     from auth_diagnostics import install
     install(app_module.app)
 # Queue recovery tests claim jobs explicitly against their own patched DB paths.
@@ -107,7 +107,7 @@ class TestManagementAPI(unittest.TestCase):
     def test_invoice_page_from_template(self):
         response = self.client.get("/invoices/")
         self.assertEqual(response.status_code, 200)
-        self.assertIn("巡天御风管理系统", response.get_data(as_text=True))
+        self.assertIn("极光团队工作台", response.get_data(as_text=True))
 
 
 if __name__ == "__main__":

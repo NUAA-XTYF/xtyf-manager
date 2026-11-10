@@ -3,7 +3,7 @@
   'use strict';
   function create({storage, fetch, server, uuid}) {
     let scope = null, busy = false;
-    const prefix = () => 'xtyf:funds:create:v1:' + encodeURIComponent(scope.server) + ':' + scope.member + ':';
+    const prefix = () => 'aurora:funds:create:v1:' + encodeURIComponent(scope.server) + ':' + scope.member + ':';
     async function capability() {
       const response = await fetch('/funds/api/capabilities');
       const data = await response.json();

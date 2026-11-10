@@ -53,7 +53,7 @@ class TestFeatureContracts(unittest.TestCase):
         self.assertTrue(created_task.get_json()["ok"])
         for path, payload in (
             ("/api/groups", {"name": "新专业组"}),
-            ("/api/projects", {"name": "新造车组别"}),
+            ("/api/projects", {"name": "新所属项目"}),
         ):
             with self.subTest(path=path):
                 self.assertEqual(member.post(path, json=payload).status_code, 403)

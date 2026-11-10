@@ -3,7 +3,7 @@ const test=require('node:test'),assert=require('node:assert/strict'),fs=require(
 function fixture(){
   const requests=[],events={},nodes=new Map(),messages=[];
   const get=id=>{if(!nodes.has(id))nodes.set(id,{value:'',style:{},hidden:true,attributes:{},setAttribute(name,value){this.attributes[name]=value;},innerHTML:'',textContent:''});return nodes.get(id);};
-  const c={URLSearchParams,AbortController,XTYF_USER:{name:'Synthetic'},Money:{format:String},
+  const c={URLSearchParams,AbortController,AURORA_USER:{name:'Synthetic'},Money:{format:String},
     addEventListener:(name,f)=>events[name]=f,
     document:{addEventListener(){},getElementById:get},
     BusinessUI:{escape:String,guard:f=>f,fetch:(url,options)=>new Promise((resolve,reject)=>requests.push({url,options,resolve,reject}))}};

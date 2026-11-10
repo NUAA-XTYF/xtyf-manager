@@ -24,9 +24,9 @@ VERSION_FILES = (
     'clients/android/AndroidManifest.xml',
 )
 INSTALLERS = {
-    'windows': re.compile(r'XTYF-Manager-Setup-(\d+\.\d+\.\d+)-(?:x64|arm64)\.exe(?:\.blockmap)?'),
-    'android': re.compile(r'XTYF-Manager-(\d+\.\d+\.\d+)\.apk'),
-    'linux': re.compile(r'XTYF-Manager-(\d+\.\d+\.\d+)-(?:(?:arm64|amd64)\.deb|(?:aarch64|x86_64)\.rpm)'),
+    'windows': re.compile(r'Aurora-Workspace-Setup-(\d+\.\d+\.\d+)-(?:x64|arm64)\.exe(?:\.blockmap)?'),
+    'android': re.compile(r'Aurora-Workspace-(\d+\.\d+\.\d+)\.apk'),
+    'linux': re.compile(r'Aurora-Workspace-(\d+\.\d+\.\d+)-(?:(?:arm64|amd64)\.deb|(?:aarch64|x86_64)\.rpm)'),
 }
 ANDROID_NS = 'http://schemas.android.com/apk/res/android'
 
@@ -102,7 +102,7 @@ def rebuild_config(root, requested):
             raise ValueError(f'Version metadata does not match the current release: {relative}')
     for relative, pattern in (
         ('clients/desktop/Cargo.toml', r'(?m)^version\s*=\s*"([^"]+)"'),
-        ('clients/desktop/Cargo.lock', r'\[\[package\]\]\s*name = "xtyf-manager"\s*version = "([^"]+)"'),
+        ('clients/desktop/Cargo.lock', r'\[\[package\]\]\s*name = "aurora-manager"\s*version = "([^"]+)"'),
     ):
         match = re.search(pattern, (root / relative).read_text(encoding='utf-8'))
         if not match or match[1] != requested:
@@ -167,7 +167,7 @@ def sync_versions(root, config):
     lock_path = root / 'clients/desktop/Cargo.lock'
     if lock_path.exists():
         lock = lock_path.read_text(encoding='utf-8')
-        lock, count = re.subn(r'(\[\[package\]\]\s*name = "xtyf-manager"\s*version = ")[^"]+(".*?)(?=\n\[\[package\]\]|\Z)', lambda m: m[1] + config['version'] + m[2], lock, count=1, flags=re.S)
+        lock, count = re.subn(r'(\[\[package\]\]\s*name = "aurora-manager"\s*version = ")[^"]+(".*?)(?=\n\[\[package\]\]|\Z)', lambda m: m[1] + config['version'] + m[2], lock, count=1, flags=re.S)
         if count != 1:
             raise RuntimeError('Cargo.lock has no client package')
         lock_path.write_text(lock, encoding='utf-8')
@@ -269,7 +269,7 @@ def verify_shared_frontend(root, staging, version, windows, linux, windows_arm64
     ):
         if actual != digest:
             raise RuntimeError(f'Shared frontend manifest mismatch: {platform}')
-    with zipfile.ZipFile(staging / f'android/XTYF-Manager-{version}.apk') as apk:
+    with zipfile.ZipFile(staging / f'android/Aurora-Workspace-{version}.apk') as apk:
         if apk.read('assets/frontend/asset-manifest.json') != manifest_bytes:
             raise RuntimeError('Shared frontend manifest mismatch: android')
         for name, expected in manifest['files'].items():
@@ -284,7 +284,7 @@ def android_verification(staging, config, previous, allow_signer_change=False):
         raise RuntimeError('Android 构建器未生成验签报告。')
     report = read_json(path)
     fingerprint = report.get('certificateSha256', '')
-    apk = staging / f'android/XTYF-Manager-{config["version"]}.apk'
+    apk = staging / f'android/Aurora-Workspace-{config["version"]}.apk'
     if (not re.fullmatch(r'[0-9a-f]{64}', fingerprint)
             or report.get('version') != config['version']
             or report.get('versionCode') != config['versionCode']
@@ -331,13 +331,13 @@ def release(root=ROOT, runner=run_command, requested_version=None, rebuild_curre
             runner([sys.executable, root / 'clients/build_android.py', '--skip-frontend-build', '--output-dir', staging / 'android'], root)
             runner([sys.executable, root / 'clients/build_linux.py', '--output-dir', staging / 'linux'], root)
             names = [
-                f'windows/XTYF-Manager-Setup-{version}-x64.exe',
-                f'windows/XTYF-Manager-Setup-{version}-arm64.exe',
-                f'android/XTYF-Manager-{version}.apk',
-                f'linux/XTYF-Manager-{version}-arm64.deb',
-                f'linux/XTYF-Manager-{version}-x86_64.rpm',
-                f'linux/XTYF-Manager-{version}-aarch64.rpm',
-                f'linux/XTYF-Manager-{version}-amd64.deb',
+                f'windows/Aurora-Workspace-Setup-{version}-x64.exe',
+                f'windows/Aurora-Workspace-Setup-{version}-arm64.exe',
+                f'android/Aurora-Workspace-{version}.apk',
+                f'linux/Aurora-Workspace-{version}-arm64.deb',
+                f'linux/Aurora-Workspace-{version}-x86_64.rpm',
+                f'linux/Aurora-Workspace-{version}-aarch64.rpm',
+                f'linux/Aurora-Workspace-{version}-amd64.deb',
             ]
             artifacts = []
             for relative in names:
@@ -364,7 +364,7 @@ def release(root=ROOT, runner=run_command, requested_version=None, rebuild_curre
                 'source': source_info,
                 'previousReleaseBackup': backup.relative_to(output).as_posix() if backup else None,
                 'windows': windows, 'windowsArm64': windows_arm64,
-                'android': {**android, 'package': 'online.skywalker.manager', 'signatureAndAlignmentVerified': android['signatureVerified'] and android['alignmentVerified'], 'localResourcesVerified': True, 'frontendManifestSha256': frontend_digest, 'runtimeUiVerified': False},
+                'android': {**android, 'package': 'com.example.aurora', 'signatureAndAlignmentVerified': android['signatureVerified'] and android['alignmentVerified'], 'localResourcesVerified': True, 'frontendManifestSha256': frontend_digest, 'runtimeUiVerified': False},
                 'linux': linux,
                 'frontend': {'delivery': 'bundled-local-assets', 'protocolVersion': 1,
                              'manifestSha256': frontend_digest, 'identicalAcrossPackages': True},

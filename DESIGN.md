@@ -1,4 +1,4 @@
-# 巡天御风工作台设计系统
+# 极光工作台设计系统
 
 ## 1. Product and users
 
@@ -10,7 +10,7 @@ This is an internal operations workstation for team members, project managers, a
 - The final palette tokens live in `static/themes.css`, loaded after `static/apple.css` on base, funds, and invoice templates. Both `--ux-*` and collaboration tokens map to this theme. Background `#f5f5f7`, surface white, text `#1d1d1f`, secondary text `#68686d`, primary `#0071e3`. Sidebar and top bar use translucent neutral surfaces with solid-color fallbacks.
 - The black theme uses background `#0b0b0c`, surface `#1c1c1e`, text `#f5f5f7`, secondary text `#a1a1a6`, and accent `#0a84ff`. Status surfaces, control boundaries and focus states have separate dark values. Bright blue primary buttons use dark text for contrast in this theme.
 - Spacing follows a 4px base. Normal control gaps are 12px; panel padding is 20–28px; page gutters are 16px mobile and 40px desktop. Cards use 16px corners and controls 10px.
-- Depth uses one quiet shadow (`--shadow`) plus borders. Dialogs use a stronger shadow and blurred scrim. Use restrained, static gradients only for the approved RM armor and soft pink glass themes; avoid hover movement.
+- Depth uses one quiet shadow (`--shadow`) plus borders. Dialogs use a stronger shadow and blurred scrim. Use restrained, static gradients only for the approved classic armor and soft pink glass themes; avoid hover movement.
 
 ## 3. Layout and responsiveness
 
@@ -79,7 +79,7 @@ This is an internal operations workstation for team members, project managers, a
 | Mode | ID | Name | Visual identity |
 | --- | --- | --- | --- |
 | Light | silver | Mistral 暖橙 | Warm ivory surfaces, orange actions |
-| Light | rm-light | RM 机甲红蓝 | Broad red sidebar, blue banner, light metal cards, armor seams/rivets |
+| Light | rm-light | 经典红蓝 | Broad red sidebar, blue banner, light metal cards, armor seams/rivets |
 | Light | mist | 云雾绿 | Mist-white background, restrained green accent |
 | Light | paw | 奶霜猫爪粉 | Cream/blush surfaces, pink controls, furry cat-paw details |
 | Dark | space | GitHub 暗黑 | Black surfaces, restrained neutral borders |

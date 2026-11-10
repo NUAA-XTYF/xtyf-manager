@@ -14,7 +14,9 @@ Thumbs.db
 *.db-journal
 secret.key
 initial-admin-password.txt
-data/
+# Runtime data stays untracked; the synthetic demo generator is source.
+data/*
+!data/seed_demo.py
 
 .venv/
 venv/
@@ -39,11 +41,11 @@ clients/desktop/target/
 clients/desktop/gen/schemas/
 clients/android/build/
 clients/frontend/dist/
-# Icons are compiled from clients/assets/xtyf-logo.svg, not committed rasters.
+# Icons are compiled from clients/assets/aurora-logo.svg, not committed rasters.
 clients/desktop/icons/icon.ico
 clients/desktop/icons/128x128.png
 clients/desktop/icons/256x256.png
-clients/android/res/drawable-nodpi/xtyf_launcher.png
+clients/android/res/drawable-nodpi/aurora_launcher.png
 # Restored on demand from npm tarballs pinned in vendor-lock.json.
 clients/frontend/vendor/
 client-ui-release/

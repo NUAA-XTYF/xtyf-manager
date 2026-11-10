@@ -96,7 +96,7 @@ def _catalog_id(db: sqlite3.Connection, table: str, raw_name: str) -> int | None
 
 
 DEFAULT_GROUPS = ("视觉", "电控", "机械", "硬件", "宣传", "运营")
-DEFAULT_VEHICLE_GROUPS = ("步兵", "哨兵", "重装", "飞镖")
+DEFAULT_VEHICLE_GROUPS = ("官网", "移动端", "数据平台", "基础设施")
 
 
 def _upgrade_composite_groups(db: sqlite3.Connection) -> None:

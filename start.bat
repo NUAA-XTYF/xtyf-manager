@@ -6,12 +6,12 @@ REM 线上部署不经过本脚本（见 deploy/deploy.sh）
 REM ============================================
 chcp 65001 >nul 2>&1
 set "PYTHONUTF8=1"
-title RoboMaster Progress Tracker (Local Dev)
+title Aurora Workspace (Local Dev)
 pushd "%~dp0"
 
 echo.
 echo ============================================================
-echo   RoboMaster XunTian YuFeng -- Progress Tracker V1.0
+echo   Aurora Workspace -- Local Dev
 echo ============================================================
 if not defined PORT set "PORT=8520"
 echo   Local HTTP: http://127.0.0.1:%PORT%

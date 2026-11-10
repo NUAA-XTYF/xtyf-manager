@@ -6,7 +6,7 @@
 
 `modules/pwa.py` 提供公开的 `/manifest.webmanifest`（`application/manifest+json`）与根作用域 `/sw.js`（`text/javascript`、`Service-Worker-Allowed: /`）。二者 `no-cache` 且不创建会话/CSRF Cookie，在登录页和首次改密前也能访问。其他业务响应维持 `no-store`。公共头部接入 base、资金、发票、错误页；客户端本地模板编译器只排除网页 PWA 入口，不改变其桥接或更新生命周期。
 
-独立 PNG 图标来自 `clients/assets/xtyf-logo.svg` 的原始路径与颜色，保持比例；普通 192/512 与 Apple 180 图标加 6% 边距和浅色背景。maskable 512 将标志置于中央 280×296 区域，非背景像素完整落入直径 80% 的安全圆内，由像素测试验证。没有外部 CDN 图标。
+独立 PNG 图标来自 `clients/assets/aurora-logo.svg` 的原始路径与颜色，保持比例；普通 192/512 与 Apple 180 图标加 6% 边距和浅色背景。maskable 512 将标志置于中央 280×296 区域，非背景像素完整落入直径 80% 的安全圆内，由像素测试验证。没有外部 CDN 图标。
 
 精确许可的缓存资源只有：
 
@@ -18,7 +18,7 @@
 
 缓存采用网络优先，仅网络异常时对许可的精确版本读取缓存；HTTP 4xx/5xx 原样返回。写入前检查 200、无重定向、许可 MIME（脚本兼容 text/javascript 与 application/javascript）、无 `no-store/private`、无 Cookie/认证 Vary、无 CSRF 响应头，并逐字节校验受限长度和 SHA-256。公共读取使用 `credentials: omit`；浏览器可能过滤 Set-Cookie，因此安全性同时依赖精确路径、无凭据请求与内容校验，不能只依赖该头的可见性。gzip/br 传输长度与解码后长度分别处理。缓存配额错误不会破坏成功的网络响应。
 
-上限为 7 个固定键，每个 ≤512 KiB，全部 ≤2 MiB，实际资源约 80 KiB；上线构建超限会失败。缓存名 `xtyf-pwa-public-<内容哈希>` 同时覆盖许可资源和 SW 策略源码的变化，不依赖生产目录保留 Git。安装阶段完整校验并预缓存这组小型公共资源，失败删除本版本半成品；运行时只读缓存、不创建或写入命名缓存，避免退役期间在途请求重新创建已删除缓存；激活只清理本前缀旧缓存。正常升级没有 `skipWaiting`、强制刷新或 Cookie/本地存储清空。
+上限为 7 个固定键，每个 ≤512 KiB，全部 ≤2 MiB，实际资源约 80 KiB；上线构建超限会失败。缓存名 `aurora-pwa-public-<内容哈希>` 同时覆盖许可资源和 SW 策略源码的变化，不依赖生产目录保留 Git。安装阶段完整校验并预缓存这组小型公共资源，失败删除本版本半成品；运行时只读缓存、不创建或写入命名缓存，避免退役期间在途请求重新创建已删除缓存；激活只清理本前缀旧缓存。正常升级没有 `skipWaiting`、强制刷新或 Cookie/本地存储清空。
 
 仅列出的业务页面导航可在断网时返回离线说明；API、附件、PDF 等即便以顶层导航打开也只走网络，不会用 HTML 冒充下载结果。动态 HTML 从不写入 Cache Storage。站点原本的 `no-store` 继续约束浏览器 HTTP 缓存。
 
@@ -36,11 +36,11 @@
 以下为**上线后由维护者执行**的只读检查，本次没有改生产配置：
 
 ```bash
-curl -I http://manager.skywalker-rm.online/
-curl -I https://manager.skywalker-rm.online/manifest.webmanifest
-curl -I https://manager.skywalker-rm.online/sw.js
-curl -fsS https://manager.skywalker-rm.online/manifest.webmanifest | python3 -m json.tool
-openssl s_client -connect manager.skywalker-rm.online:443 -servername manager.skywalker-rm.online -verify_return_error </dev/null
+curl -I http://workspace.example.com/
+curl -I https://workspace.example.com/manifest.webmanifest
+curl -I https://workspace.example.com/sw.js
+curl -fsS https://workspace.example.com/manifest.webmanifest | python3 -m json.tool
+openssl s_client -connect workspace.example.com:443 -servername workspace.example.com -verify_return_error </dev/null
 ```
 
 还需在浏览器 Network/Application 中检查证书、作用域、Content-Type、资源 200、无混合内容及实际 Cookie 的 Secure/HttpOnly/SameSite。部署阶段在 `rm-progress` 的现有环境配置中添加 `PROGRESS_COOKIE_SECURE=1`，重启后重新登录验收；本地回归不强制 Secure Cookie。
@@ -53,7 +53,7 @@ openssl s_client -connect manager.skywalker-rm.online:443 -servername manager.sk
 
 常规升级：按现有发布/备份流程部署同一个 HEAD，打开账户页；有旧窗口时新版 Worker 保持 waiting。保存草稿并关闭所有该浏览器配置文件中的本站窗口后重开，确认新缓存版本且旧前缀缓存已删除。不同浏览器配置文件分别验收。
 
-出现缓存问题时，先保留当前 `/sw.js` 处理能力，再在服务环境配置中设置 `PROGRESS_PWA_ENABLED=0` 并重启业务服务。该脚本立即接管、不强制刷新，**仅删除 `xtyf-pwa-public-` 缓存并注销自己的注册**，保留 Cookie、其他 Cache Storage 和 localStorage。已打开页面的脚本不会被撤回；保存工作后重新打开。可通过开发者控制台主动检查退役版本：
+出现缓存问题时，先保留当前 `/sw.js` 处理能力，再在服务环境配置中设置 `PROGRESS_PWA_ENABLED=0` 并重启业务服务。该脚本立即接管、不强制刷新，**仅删除 `aurora-pwa-public-` 缓存并注销自己的注册**，保留 Cookie、其他 Cache Storage 和 localStorage。已打开页面的脚本不会被撤回；保存工作后重新打开。可通过开发者控制台主动检查退役版本：
 
 ```javascript
 navigator.serviceWorker.getRegistration('/').then(registration => registration?.update())

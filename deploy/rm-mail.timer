@@ -1,5 +1,5 @@
 [Unit]
-Description=Check XTYF mail queue promptly after each worker finishes
+Description=Check AURORA mail queue promptly after each worker finishes
 # Morning/evening windows are enforced in the worker (Asia/Shanghai).
 # Verification/test jobs have priority and can be sent at any hour.
 

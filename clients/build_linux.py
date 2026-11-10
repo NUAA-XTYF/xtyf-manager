@@ -66,7 +66,7 @@ def arm_environment(env, cache):
 def linux_environment(setup=False):
     if platform.machine() not in ('x86_64', 'amd64'):
         raise RuntimeError('The Linux builder requires an x86_64 host; ARM64 is cross-compiled.')
-    cache = Path.home() / '.cache/xtyf-manager-build'
+    cache = Path.home() / '.cache/aurora-manager-build'
     node_dir = cache / f'node-v{NODE_VERSION}-linux-x64'
     if setup:
         run(['sh', ROOT / 'clients/setup_linux.sh'])
@@ -83,7 +83,7 @@ def linux_environment(setup=False):
     env.update(PATH=f'{node_dir}/bin:{toolchain}/bin:{cache}/cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
                LC_ALL='C.UTF-8', CARGO_HOME=str(cache / 'cargo'), RUSTUP_HOME=str(cache / 'rustup'),
                RUSTUP_TOOLCHAIN=RUST_VERSION, npm_config_cache=str(cache / 'npm'),
-               CARGO_BUILD_JOBS=os.environ.get('XTYF_BUILD_JOBS', '4'))
+               CARGO_BUILD_JOBS=os.environ.get('AURORA_BUILD_JOBS', '4'))
     for key in ('PKG_CONFIG_SYSROOT_DIR', 'PKG_CONFIG_LIBDIR', 'PKG_CONFIG_PATH'):
         env.pop(key, None)
     missing = [tool for tool in ('node', 'npm', 'cargo', 'rustc', 'rpm', 'rpmbuild', 'bsdtar',
@@ -132,7 +132,7 @@ def verify_package(package, target, config, source, executable_source, env, cach
         release = capture(['rpm', '-qp', '--queryformat', '%{RELEASE}', package], env=env)
         if release != "1":
             raise RuntimeError(f"Incorrect stable RPM release: {release}")
-    if metadata != ['xtyf-manager', metadata_version, package_arch]:
+    if metadata != ['aurora-manager', metadata_version, package_arch]:
         raise RuntimeError(f'Incorrect {target} package metadata: {metadata}')
     settings = json.loads((source / 'tauri.conf.json').read_text(encoding='utf-8'))
     expected_dependencies = settings['bundle']['linux'][target]['depends']
@@ -144,15 +144,15 @@ def verify_package(package, target, config, source, executable_source, env, cach
             run(['dpkg-deb', '--extract', package, extracted], env=env)
         else:
             run(['bsdtar', '--extract', '--file', package, '--directory', extracted], env=env)
-        desktop = extracted / 'usr/share/applications/xtyf-manager.desktop'
+        desktop = extracted / 'usr/share/applications/aurora-manager.desktop'
         desktop_text = desktop.read_text(encoding='utf-8')
         if any(required not in desktop_text for required in (
-            'Exec=xtyf-manager', 'Name=巡天御风管理系统', 'Type=Application', 'Icon=xtyf-manager',
+            'Exec=aurora-manager', 'Name=极光团队工作台', 'Type=Application', 'Icon=aurora-manager',
         )) or '--no-sandbox' in desktop_text:
             raise RuntimeError('Invalid Linux desktop entry')
-        if not list((extracted / 'usr/share/icons').rglob('xtyf-manager.png')):
+        if not list((extracted / 'usr/share/icons').rglob('aurora-manager.png')):
             raise RuntimeError('Missing desktop icon')
-        executable = extracted / 'usr/bin/xtyf-manager'
+        executable = extracted / 'usr/bin/aurora-manager'
         if not executable.is_file() or not executable.stat().st_mode & 0o111:
             raise RuntimeError('Missing executable or execute permissions')
         compiled = executable_source.read_bytes()
@@ -184,13 +184,13 @@ def verify_package(package, target, config, source, executable_source, env, cach
             raise RuntimeError(f'Ubuntu 22.04 GLIBC 2.35 is insufficient: {required_glibc}')
         if not {'libwebkit2gtk-4.1.so.0', 'libgtk-3.so.0'}.issubset(needed):
             raise RuntimeError('Expected system WebKitGTK/GTK dependencies not found in executable')
-        manifest = extracted / 'usr/lib/xtyf-manager/asset-manifest.json'
+        manifest = extracted / 'usr/lib/aurora-manager/asset-manifest.json'
         frontend = source.parent / 'frontend/dist'
         if not manifest.is_file() or manifest.read_bytes() != (frontend / 'asset-manifest.json').read_bytes():
             raise RuntimeError('Packaged frontend manifest does not match the shared local frontend')
         if manifest.stat().st_mode & 0o022:
             raise RuntimeError('Packaged frontend manifest must not be group/world writable')
-        if b'X-XTYF-Client-Protocol' not in binary_data:
+        if b'X-AURORA-Client-Protocol' not in binary_data:
             raise RuntimeError('Native client protocol implementation missing from executable')
         if manifest.read_bytes() not in binary_data:
             raise RuntimeError('Frontend manifest is not embedded in the Tauri executable')
@@ -271,8 +271,8 @@ def build(root, output, cache, env):
         packages = list((release / 'bundle' / target).glob(f'*{config["version"]}*.{target}'))
         if len(packages) != 1:
             raise RuntimeError(f'Expected one current {target} package, found {packages}')
-        report[key] = verify_package(packages[0], target, config, source, release / 'xtyf-manager', env, cache, architecture='arm64' if triple == ARM_TARGET else 'x86_64')
-        artifacts.append((packages[0], f'XTYF-Manager-{config["version"]}-{suffix}'))
+        report[key] = verify_package(packages[0], target, config, source, release / 'aurora-manager', env, cache, architecture='arm64' if triple == ARM_TARGET else 'x86_64')
+        artifacts.append((packages[0], f'Aurora-Workspace-{config["version"]}-{suffix}'))
     report['builder'] = {
         'environment': platform.freedesktop_os_release()['PRETTY_NAME'] + ' ' + platform.machine(),
         'nodeVersion': capture(['node', '--version'], env=env),

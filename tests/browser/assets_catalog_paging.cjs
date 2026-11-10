@@ -48,7 +48,7 @@ async function main(){
     assert.equal(query.get('kind'),'item');
     assert.deepEqual(query.get('ids').split(',').map(Number).sort((a,b)=>a-b),[...selected].sort((a,b)=>a-b));
     let downloaded;
-    if(await ui.locator('#asset-label-download').evaluate(()=>!!window.XTYF)){
+    if(await ui.locator('#asset-label-download').evaluate(()=>!!window.AURORA)){
       let timeout;
       const saved=new Promise((resolve,reject)=>{saveResolve=resolve;timeout=setTimeout(()=>reject(Error('native PDF save timed out')),15000);});
       try{await ui.locator('#asset-label-download').click();downloaded=Array.from(await saved);}
@@ -58,7 +58,7 @@ async function main(){
     const metadata=await ui.locator('#asset-label-download').evaluate(async (_a,downloaded)=>{
       const pdf=await import('/vendor/pdfjs/pdf.mjs');
       // Match the product: static CMaps load in the worker, not the native business fetch adapter.
-      const doc=await pdf.getDocument({data:new Uint8Array(downloaded),isEvalSupported:false,useWorkerFetch:true,cMapUrl:new URL('/vendor/pdfjs/cmaps/',window.XTYFLocation?.href||location.href).href,cMapPacked:true}).promise;
+      const doc=await pdf.getDocument({data:new Uint8Array(downloaded),isEvalSupported:false,useWorkerFetch:true,cMapUrl:new URL('/vendor/pdfjs/cmaps/',window.AURORALocation?.href||location.href).href,cMapPacked:true}).promise;
       try{
         let text='';for(let p=1;p<=doc.numPages;p++)text+=(await(await doc.getPage(p)).getTextContent()).items.map(i=>i.str).join(' ');
         return {pages:doc.numPages,text};
@@ -169,7 +169,7 @@ async function main(){
       }
       if(['cancel','ui_ready'].includes(action))return {};
       if(!['request','read_resource'].includes(action))throw Error('unexpected native action '+action);
-      const r=await api.fetch(args.path,{method:args.method||'GET',headers:{...args.headers,'X-XTYF-Client-Protocol':'1','X-CSRF-Token':csrf},...(args.body!==undefined?{data:args.body}:{})});
+      const r=await api.fetch(args.path,{method:args.method||'GET',headers:{...args.headers,'X-AURORA-Client-Protocol':'1','X-CSRF-Token':csrf},...(args.body!==undefined?{data:args.body}:{})});
       const headers=r.headers();csrf=headers['x-csrf-token']||csrf;
       if(action==='read_resource'){
         const body=await r.body();
@@ -178,7 +178,7 @@ async function main(){
       }
       return {status:r.status(),headers,body:await r.text(),encoding:'text'};
     });
-    await page.addInitScript(()=>{if(window===window.top)window.XTYFNative={invoke:(action,args)=>window.__catalogNative(action,args)};});
+    await page.addInitScript(()=>{if(window===window.top)window.AURORANative={invoke:(action,args)=>window.__catalogNative(action,args)};});
     await page.goto('http://127.0.0.1:'+uiServer.address().port+'/#/assets');const frame=page.frameLocator('#page-host iframe');await ready(frame);await query(frame,'分页合成');await organize(frame);await checkPager(frame);
     await frame.locator('[data-category-item="'+ids[1]+'"]').check();await frame.locator('[data-action=category-assign]').click();await frame.locator('#asset-form [name=category_id]').selectOption(String(category));await frame.locator('#asset-save').click();await frame.locator('#asset-dialog').waitFor({state:'hidden'});await ready(frame);
     await checkBulkPdf(frame,label+'-local');

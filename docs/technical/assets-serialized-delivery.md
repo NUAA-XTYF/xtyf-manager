@@ -88,7 +88,7 @@ node --test clients/frontend/test_bridge.cjs
 python -m unittest discover -s clients/frontend -p test_frontend.py -v
 
 # .ci-main-baseline 必须是准确的 PR 基准，脚本核对 HEAD，不能用任意旧 main。
-$env:XTYF_UPGRADE_BASE_SHA='c3a20f75f4804acec57087abe5b972cf51cf691b'
+$env:AURORA_UPGRADE_BASE_SHA='c3a20f75f4804acec57087abe5b972cf51cf691b'
 python tests/upgrade_from_main.py
 
 # NODE_PATH 指向本次固定的 Playwright 1.57.0；REVIEW_PYTHON 指向测试 Python。

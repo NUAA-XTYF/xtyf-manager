@@ -190,7 +190,7 @@ def digest_content(db, mid, at, kind='daily'):
     overdue = sum(item['remaining'].startswith('已逾期') for item in tasks + projects)
     summary = f'需更新进度 {nudges} 处' if morning else f'已逾期 {overdue} 项'
     lines = [title, local_time.strftime('%Y-%m-%d'),
-             f'造车任务 {len(tasks)} 项｜日常项目 {len(projects)} 项｜{summary}', '', '造车任务']
+             f'项目任务 {len(tasks)} 项｜日常项目 {len(projects)} 项｜{summary}', '', '项目任务']
 
     def progress_time(item, baseline_label):
         if item['last_progress']:
@@ -206,7 +206,7 @@ def digest_content(db, mid, at, kind='daily'):
         return text
 
     if not tasks:
-        lines.append('暂无您负责或参与且符合提醒条件的造车任务' if morning else '暂无团队符合提醒条件的造车任务')
+        lines.append('暂无您负责或参与且符合提醒条件的项目任务' if morning else '暂无团队符合提醒条件的项目任务')
     for task in tasks:
         text = f'{task["title"]}｜{task["status"]}｜{task["progress"]}%｜{task["remaining"]}'
         if task['due']:
@@ -360,7 +360,7 @@ def process_job(db, job, at, transport=None):
         message = EmailMessage()
         message['From'] = settings()['sender'] or 'preview@example.invalid'
         message['To'] = member['address']
-        message['Message-ID'] = f'<xtyf-{job["id"]}-{job["generation"]}@{message["From"].split("@")[-1]}>'
+        message['Message-ID'] = f'<aurora-{job["id"]}-{job["generation"]}@{message["From"].split("@")[-1]}>'
         if job['kind'] == 'password_recovery':
             recovery = db.execute(
                 'SELECT nonce,email_generation,session_version,expires_at,attempts '
@@ -373,8 +373,8 @@ def process_job(db, job, at, transport=None):
                     or recovery['expires_at'] <= epoch or recovery['attempts'] >= 5):
                 raise DeliveryError('找回密码请求已失效', 'skipped')
             code = verification_code('recovery:' + recovery['nonce'])
-            message['Subject'] = '巡天御风｜重置登录密码验证码'
-            text = ('您正在申请重置巡天御风账号密码。\n'
+            message['Subject'] = '极光｜重置登录密码验证码'
+            text = ('您正在申请重置极光账号密码。\n'
                     f'验证码：{code}\n'
                     '请在登录页面输入此验证码并设置新密码，15 分钟内有效，最多尝试 5 次。'
                     '如非本人操作请忽略，切勿将验证码转发给他人。')
@@ -383,7 +383,7 @@ def process_job(db, job, at, transport=None):
             if member['verified'] or not member['token_hash'] or member['verify_attempts'] >= 5 or member['expires_at'] <= epoch:
                 raise DeliveryError('验证已完成或过期', 'skipped')
             code = verification_code(member['generation'])
-            message['Subject'] = '巡天御风｜邮箱验证码'
+            message['Subject'] = '极光｜邮箱验证码'
             text = f'您的邮箱验证码是：{code}\n请在网站的个人账户页面输入验证码，30 分钟内有效。请勿转发给他人。\n验证后可在个人账户中设置个人、团队及倒计时邮件的提醒频率；无符合提醒条件的事项时将跳过汇总邮件。如非本人操作请忽略。'
             markup = render_verification_html(code)
         else:
@@ -412,7 +412,7 @@ def process_job(db, job, at, transport=None):
                 if skip_reason:
                     raise DeliveryError(skip_reason, 'skipped')
                 text, markup = content
-                message['Subject'] = '巡天御风｜任务指派'
+                message['Subject'] = '极光｜任务指派'
             elif job['kind'] == 'countdown':
                 target, days = countdown
                 title = html_escape(target['title'])
@@ -423,15 +423,15 @@ def process_job(db, job, at, transport=None):
                 markup = (f'<html><body><h2>首页目标倒计时</h2><p>{title}</p>'
                           f'<p>目标日期：{target["target_date"]} · 剩余 {days} 天</p>'
                           f'<p><a href="{url}">查看工作台</a></p></body></html>')
-                message['Subject'] = '巡天御风｜目标倒计时｜' + job['day']
+                message['Subject'] = '极光｜目标倒计时｜' + job['day']
             else:
                 digest_kind = 'morning' if job['kind'].startswith('morning') else job['kind']
                 content = digest_content(db, job['member_id'], at, kind=digest_kind)
                 if not content and job['kind'] in ('morning', 'morning_pm', 'daily'):
                     raise DeliveryError('个人范围没有符合提醒条件的事项' if job['kind'].startswith('morning') else '全团队没有符合提醒条件的事项', 'skipped')
                 text, markup = content or ('测试邮件：当前没有团队符合提醒条件的事项。', render_test_html())
-                subjects = {'morning': '巡天御风｜个人任务早报｜', 'daily': '巡天御风｜团队项目晚报｜'}
-                message['Subject'] = subjects.get(digest_kind, '巡天御风｜测试邮件｜') + job['day']
+                subjects = {'morning': '极光｜个人任务早报｜', 'daily': '极光｜团队项目晚报｜'}
+                message['Subject'] = subjects.get(digest_kind, '极光｜测试邮件｜') + job['day']
         message.set_content(text)
         message.add_alternative(markup, subtype='html')
         if transport:

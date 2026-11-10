@@ -32,10 +32,10 @@ function taskReadOnly(task) {
       .join("、") || "未指定";
   const predecessors =
     (task.predecessor_ids || []).map((id) => state.tasks.find((item) => Number(item.id) === Number(id))?.title || `任务 #${id}`).join("、") || "无";
-  return `<div class="readonly-settings"><p class="permission-note">你可以查看此任务，但不在编辑参与范围内。</p><dl><div><dt>负责人及参与成员</dt><dd>${esc(participants)}</dd></div><div><dt>造车组别</dt><dd>${esc(taskProjectName(task) || "未选择")}</dd></div><div><dt>优先级 / 状态</dt><dd>${esc(task.priority)} / ${esc(task.status)}</dd></div><div><dt>计划日期</dt><dd>${esc(task.start_date || "未设置")} 至 ${esc(task.due_date || "未设置")}</dd></div><div><dt>前置任务</dt><dd>${esc(predecessors)}</dd></div></dl>${task.detail ? `<div class="task-detail">${esc(task.detail)}</div>` : ""}${task.suggested_start_date ? `<p class="advisory">根据主前置任务日期，建议开始日期：<strong>${esc(task.suggested_start_date)}</strong>（不会自动填写）</p>` : ""}${(task.dependency_warnings || []).length ? `<div class="warning-box" role="status"><strong>依赖提醒</strong><ul>${task.dependency_warnings.map((item) => `<li>${esc(item)}</li>`).join("")}</ul></div>` : ""}</div>`;
+  return `<div class="readonly-settings"><p class="permission-note">你可以查看此任务，但不在编辑参与范围内。</p><dl><div><dt>负责人及参与成员</dt><dd>${esc(participants)}</dd></div><div><dt>所属项目</dt><dd>${esc(taskProjectName(task) || "未选择")}</dd></div><div><dt>优先级 / 状态</dt><dd>${esc(task.priority)} / ${esc(task.status)}</dd></div><div><dt>计划日期</dt><dd>${esc(task.start_date || "未设置")} 至 ${esc(task.due_date || "未设置")}</dd></div><div><dt>前置任务</dt><dd>${esc(predecessors)}</dd></div></dl>${task.detail ? `<div class="task-detail">${esc(task.detail)}</div>` : ""}${task.suggested_start_date ? `<p class="advisory">根据主前置任务日期，建议开始日期：<strong>${esc(task.suggested_start_date)}</strong>（不会自动填写）</p>` : ""}${(task.dependency_warnings || []).length ? `<div class="warning-box" role="status"><strong>依赖提醒</strong><ul>${task.dependency_warnings.map((item) => `<li>${esc(item)}</li>`).join("")}</ul></div>` : ""}</div>`;
 }
 function taskForm(task) {
-  // 归属字段（负责人/参与成员/造车组别/主前置任务）只有超级管理员或项管可改；
+  // 归属字段（负责人/参与成员/所属项目/主前置任务）只有超级管理员或项管可改；
   // 参与者仍可更新标题、说明、优先级、状态和日期。
   const ownershipLocked = !isManagement();
   const editable = canEdit(task),
@@ -47,7 +47,7 @@ function taskForm(task) {
   if (!editable) return taskReadOnly(task);
   return `<form id="task-form" class="task-settings"><input type="hidden" name="version" value="${Number(task.version || 0)}">
     <label>标题<input name="title" maxlength="200" value="${esc(task.title)}" required></label>
-    <div class="grid-2"><label>负责人（主负责人）<select name="owner_id"${ownershipLocked ? " disabled" : ""}>${memberOptions(members, task.owner_id)}</select></label><label>造车组别<select name="project_id"${ownershipLocked ? " disabled" : ""}>${options(state.projects, task.project_id, "未选择")}</select></label></div>
+    <div class="grid-2"><label>负责人（主负责人）<select name="owner_id"${ownershipLocked ? " disabled" : ""}>${memberOptions(members, task.owner_id)}</select></label><label>所属项目<select name="project_id"${ownershipLocked ? " disabled" : ""}>${options(state.projects, task.project_id, "未选择")}</select></label></div>
     <fieldset${ownershipLocked ? " disabled" : ""}><legend>参与成员（可多选）</legend><p class="field-help">${ownershipLocked ? "负责人和参与成员由超级管理员或项管调整。" : "负责人和参与成员都可编辑任务设置。"}</p>${choiceGrid("participant_ids", members, task.participant_ids || [], memberLabel)}</fieldset>
     <div class="grid-2"><label>优先级<select name="priority">${state.priorities.map((value) => `<option ${value === task.priority ? "selected" : ""}>${esc(value)}</option>`).join("")}</select></label><label>状态<select name="status">${state.statuses.map((value) => `<option ${value === task.status ? "selected" : ""}>${esc(value)}</option>`).join("")}</select></label></div>
     <label data-task-reopen hidden>重新打开后的实际进度（0～99%）<input name="progress" type="number" min="0" max="99" step="1" disabled></label>
@@ -100,7 +100,7 @@ function bindTaskBlocker(task, generation, navigation) {
 function taskModalShell(task, navigation = {}) {
   const lead = memberById(task.owner_id);
   return `<div class="modal-head"><div><p class="ux-eyebrow">TASK #${Number(task.id)}</p><h2>${esc(task.title)}</h2></div><button class="btn ghost sm" type="button" data-close>${navigation.returnToList ? "返回任务列表" : "关闭"}</button></div>
-    <div class="modal-info">${badge(task.status, STATUS_CLASS[task.status] || "gray")}${badge(`负责人 ${lead?.name || "未指定"}`, "outline")}<span class="muted">${esc(taskProjectName(task) || "未归属造车组别")} · 版本 ${Number(task.version || 0)}</span></div>
+    <div class="modal-info">${badge(task.status, STATUS_CLASS[task.status] || "gray")}${badge(`负责人 ${lead?.name || "未指定"}`, "outline")}<span class="muted">${esc(taskProjectName(task) || "未归属项目")} · 版本 ${Number(task.version || 0)}</span></div>
     ${taskForm(task)}
     ${progressSection(task)}
     ${taskBlockerSection(task)}
@@ -300,7 +300,7 @@ function taskPreviewShell(task) {
   </div>
   <div class="readonly-settings">
     <dl>
-      <div><dt>造车组别</dt><dd>${esc(taskProjectName(task) || "未归属")}</dd></div>
+      <div><dt>所属项目</dt><dd>${esc(taskProjectName(task) || "未归属")}</dd></div>
       <div><dt>负责人及参与者</dt><dd>${esc(people)}</dd></div>
       <div><dt>开始日期</dt><dd>${esc(task.start_date || "未设置")}</dd></div>
       <div><dt>截止日期</dt><dd>${esc(task.due_date || "未设置")}</dd></div>

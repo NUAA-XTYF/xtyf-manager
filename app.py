@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-巡天御风管理系统 - 主程序（进度系统 + 应用总入口）
+极光团队工作台 - 主程序（进度系统 + 应用总入口）
 
 职责：
   1. 创建 Flask 应用，注册子模块蓝图：资金 /funds、发票 /invoices
@@ -551,7 +551,7 @@ def export_members_csv():
     ).fetchall()
     output = io.StringIO(newline="")
     writer = csv.writer(output)
-    writer.writerow(["ID", "姓名", "用户名", "专业组", "造车组别", "角色", "账号状态", "专业组ID", "造车组别ID"])
+    writer.writerow(["ID", "姓名", "用户名", "专业组", "所属项目", "角色", "账号状态", "专业组ID", "所属项目ID"])
     def cell(value):
         # Prevent spreadsheet formula injection for untrusted directory strings.
         value = str(value or "")

@@ -1,4 +1,4 @@
-package online.skywalker.manager;
+package com.example.aurora;
 
 import android.app.*;
 import android.content.*;
@@ -114,7 +114,7 @@ public class MainActivity extends Activity {
         settings.setAllowFileAccess(false); settings.setAllowContentAccess(false); settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         settings.setJavaScriptCanOpenWindowsAutomatically(false); settings.setSupportMultipleWindows(false);
         settings.setSupportZoom(true); settings.setBuiltInZoomControls(true); settings.setDisplayZoomControls(false); settings.setUseWideViewPort(true); settings.setLoadWithOverviewMode(true);
-        settings.setUserAgentString(settings.getUserAgentString() + " XTYFManager/" + BuildConfig.VERSION); CookieManager.getInstance().setAcceptThirdPartyCookies(view, false);
+        settings.setUserAgentString(settings.getUserAgentString() + " AURORAManager/" + BuildConfig.VERSION); CookieManager.getInstance().setAcceptThirdPartyCookies(view, false);
     }
     private WebResourceResponse asset(Uri uri, String method, File resourceRoot) {
         if (!isLocal(uri) || !"GET".equals(method)) return denied(403, "Forbidden");
@@ -156,7 +156,7 @@ public class MainActivity extends Activity {
                 } catch (Exception error) { message("无效的本地请求：" + error.getMessage()); }
             }
         });
-        web.postWebMessage(new WebMessage("xtyf-native-port", new WebMessagePort[]{pair[1]}), Uri.parse(LOCAL_ORIGIN));
+        web.postWebMessage(new WebMessage("aurora-native-port", new WebMessagePort[]{pair[1]}), Uri.parse(LOCAL_ORIGIN));
     }
     private void reply(Pending request, Object result, Exception error) {
         runOnUiThread(() -> {
@@ -230,7 +230,7 @@ public class MainActivity extends Activity {
         Map<String, String> headers = new LinkedHashMap<>(); JSONObject given = args.optJSONObject("headers");
         if (given != null) for (Iterator<String> names = given.keys(); names.hasNext();) { String name = names.next(); headers.put(name, given.getString(name)); }
         NativeHttpClient.Body body = null; JSONObject multipart = args.optJSONObject("multipart");
-        if (multipart != null) { String boundary = "xtyf-" + UUID.randomUUID(); headers.put("Content-Type", "multipart/form-data; boundary=" + boundary); body = output -> writeMultipart(output, multipart, boundary); }
+        if (multipart != null) { String boundary = "aurora-" + UUID.randomUUID(); headers.put("Content-Type", "multipart/form-data; boundary=" + boundary); body = output -> writeMultipart(output, multipart, boundary); }
         else if (args.has("body") && !args.isNull("body")) { byte[] bytes = args.getString("body").getBytes(StandardCharsets.UTF_8); body = output -> output.write(bytes); }
         final JSONObject[] response = new JSONObject[1];
         request.client.request(path, method, headers, body, args.optString("requestId", request.id.toString()), (status, responseHeaders, input) -> {
@@ -339,7 +339,7 @@ public class MainActivity extends Activity {
                         String type = headers.getOrDefault("content-type", "");
                         if (status < 200 || status >= 300 || type.contains("text/html") || type.contains("application/json")) throw new IOException("服务器拒绝下载，请检查登录状态（" + status + "）");
                         if (request.args.has("expectedSha256")) {
-                            File staged = File.createTempFile("xtyf-installer-", ".tmp", getCacheDir());
+                            File staged = File.createTempFile("aurora-installer-", ".tmp", getCacheDir());
                             try {
                                 String expected = request.args.optString("expectedSha256"), path = request.args.optString("path"); request.updates.validateInstaller(path, expected);
                                 try (OutputStream output = new FileOutputStream(staged)) { NativeHttpClient.copy(input, output); }
@@ -418,12 +418,12 @@ public class MainActivity extends Activity {
                 catch (ActivityNotFoundException error) { websiteDownload = null; throw new IOException("无法打开保存窗口", error); }
             }
         }, workers, client.effectiveServer());
-        website.show(); web.evaluateJavascript("window.dispatchEvent(new CustomEvent('xtyf-foreground',{detail:{active:false}}))", null);
+        website.show(); web.evaluateJavascript("window.dispatchEvent(new CustomEvent('aurora-foreground',{detail:{active:false}}))", null);
     }
     private void returnLocal(String intent) {
         if (website != null) { website.close(); website = null; }
         if (!Arrays.asList("settings", "retry", "return").contains(intent)) intent = "return";
-        web.evaluateJavascript("window.dispatchEvent(new CustomEvent('xtyf-website-return',{detail:{intent:" + JSONObject.quote(intent) + "}}));window.dispatchEvent(new CustomEvent('xtyf-foreground',{detail:{active:true}}))", null);
+        web.evaluateJavascript("window.dispatchEvent(new CustomEvent('aurora-website-return',{detail:{intent:" + JSONObject.quote(intent) + "}}));window.dispatchEvent(new CustomEvent('aurora-foreground',{detail:{active:true}}))", null);
     }
     private void openExternal(String value) {
         Uri uri = Uri.parse(value);
@@ -455,8 +455,8 @@ public class MainActivity extends Activity {
     }
     @Override public void onBackPressed() {
         if (externalDialog != null) { externalDialog.dismiss(); return; }
-        web.evaluateJavascript("Boolean(window.XTYFClient && window.XTYFClient.back && window.XTYFClient.back())", handled -> {
-            if (!"true".equals(handled)) new AlertDialog.Builder(this).setMessage("退出巡天御风管理系统？").setPositiveButton("退出", (d,w) -> finish()).setNegativeButton("取消", null).show();
+        web.evaluateJavascript("Boolean(window.AURORAClient && window.AURORAClient.back && window.AURORAClient.back())", handled -> {
+            if (!"true".equals(handled)) new AlertDialog.Builder(this).setMessage("退出极光团队工作台？").setPositiveButton("退出", (d,w) -> finish()).setNegativeButton("取消", null).show();
         });
     }
     @Override public void onRequestPermissionsResult(int code, String[] permissions, int[] results) {
@@ -464,12 +464,12 @@ public class MainActivity extends Activity {
         if (code == CameraAccess.REQUEST) camera.finish(results.length == 1 && results[0] == android.content.pm.PackageManager.PERMISSION_GRANTED);
     }
     @Override protected void onPause() {
-        super.onPause(); if (web != null) { web.evaluateJavascript("window.dispatchEvent(new CustomEvent('xtyf-foreground',{detail:{active:false}}))", null); web.onPause(); }
+        super.onPause(); if (web != null) { web.evaluateJavascript("window.dispatchEvent(new CustomEvent('aurora-foreground',{detail:{active:false}}))", null); web.onPause(); }
         if (externalWeb != null) externalWeb.onPause();
         if (website != null) website.pause();
     }
     @Override protected void onResume() {
-        super.onResume(); if (web != null) { web.onResume(); web.evaluateJavascript("window.dispatchEvent(new CustomEvent('xtyf-foreground',{detail:{active:" + (website == null) + "}}))", null); }
+        super.onResume(); if (web != null) { web.onResume(); web.evaluateJavascript("window.dispatchEvent(new CustomEvent('aurora-foreground',{detail:{active:" + (website == null) + "}}))", null); }
         if (externalWeb != null) externalWeb.onResume();
         if (website != null) website.resume();
     }

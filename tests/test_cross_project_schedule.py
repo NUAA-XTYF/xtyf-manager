@@ -70,7 +70,7 @@ class TestCrossProjectSchedule(unittest.TestCase):
         self.task(external=True, owner_id=None)
         warning, = self.overlaps(self.preview())
         self.assertEqual(warning['related_task_ids'], [local, ungrouped])
-        self.assertEqual(warning['related_tasks'][1]['project_name'], '未归属造车组别')
+        self.assertEqual(warning['related_tasks'][1]['project_name'], '未归属项目')
 
     def test_terminal_deleted_invalid_dates_and_different_owners_do_not_warn(self):
         local = self.task()

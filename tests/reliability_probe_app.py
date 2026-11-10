@@ -2,7 +2,7 @@
 import os
 from pathlib import Path
 
-root = Path(os.environ["XTYF_RELIABILITY_ROOT"]).resolve()
+root = Path(os.environ["AURORA_RELIABILITY_ROOT"]).resolve()
 if not (root / ".synthetic-only").is_file():
     raise RuntimeError("A newly created synthetic fixture directory is required")
 for key, relative in {

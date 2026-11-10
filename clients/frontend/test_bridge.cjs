@@ -13,7 +13,7 @@ function loadBridge(nativeInvoke, existing = false) {
     addEventListener: (name, callback) => listeners.set(name, callback),
   });
   context.window = context;
-  if (existing) context.XTYFNative = { invoke: nativeInvoke };
+  if (existing) context.AURORANative = { invoke: nativeInvoke };
   else context.__TAURI_INTERNALS__ = { invoke: nativeInvoke };
   vm.runInContext(source('bridge.js'), context, { filename: 'bridge.js' });
   return { context, listeners };
@@ -31,7 +31,7 @@ for (const [label, failure, expected] of [
       assert.equal(payload.action, 'request');
       throw failure;
     });
-    await assert.rejects(context.XTYFNative.invoke('request', { path: '/api/client/bootstrap' }), error => {
+    await assert.rejects(context.AURORANative.invoke('request', { path: '/api/client/bootstrap' }), error => {
       assert.ok(error instanceof Error);
       assert.equal(error.message, expected);
       if (failure instanceof Error) assert.equal(error, failure);
@@ -42,13 +42,13 @@ for (const [label, failure, expected] of [
 
 test('existing native transport receives the same error normalization', async () => {
   const { context } = loadBridge(async () => { throw '本地请求失败'; }, true);
-  await assert.rejects(context.XTYFNative.invoke('request'), error => error instanceof Error && error.message === '本地请求失败');
+  await assert.rejects(context.AURORANative.invoke('request'), error => error instanceof Error && error.message === '本地请求失败');
 });
 
 test('native success response is preserved', async () => {
   const response = { status: 200, body: '{}' };
   const { context } = loadBridge(async () => response);
-  assert.equal(await context.XTYFNative.invoke('request'), response);
+  assert.equal(await context.AURORANative.invoke('request'), response);
 });
 
 function element(tag = 'div') {
@@ -75,7 +75,7 @@ async function startShell(bootstrap, readyState = 'complete') {
     document: { readyState, getElementById: get, createElement: element, addEventListener() {} },
     location: { protocol: 'https:', host: 'tauri.localhost', hash: '' },
     history: { replaceState() {}, pushState() {} },
-    XTYFTemplates: { render: () => '<html><head></head><body></body></html>' },
+    AURORATemplates: { render: () => '<html><head></head><body></body></html>' },
   });
   vm.runInContext(source('update-runtime.js'), context, { filename: 'update-runtime.js' });
   vm.runInContext(source('connection-runtime.js'), context, { filename: 'connection-runtime.js' });
@@ -110,15 +110,15 @@ test('old-server 404 still shows local server-update page', async () => {
 
 test('server UI protocol rejection blocks business transport but preserves local settings', async () => {
   const { context, get } = await startShell(async () => ({status:200, body:JSON.stringify({ok:true,protocolVersion:1,uiCompatibility:{protocolMin:2,protocolMax:2}})}));
-  await assert.rejects(context.XTYF.request('/api/tasks'), /服务器协议不兼容/);
-  assert.equal(typeof context.XTYF.openSettings, 'function');
+  await assert.rejects(context.AURORA.request('/api/tasks'), /服务器协议不兼容/);
+  assert.equal(typeof context.AURORA.openSettings, 'function');
   assert.equal(get('page-host').children[0].children[0].textContent, '服务器需要更新');
 });
 
 test('absolute links recognize the verified effective origin as well as the saved origin', async () => {
   const { context } = await startShell(async () => ({status:200,body:JSON.stringify({ok:true,protocolVersion:1,authenticated:false})}));
-  context.XTYF.config.effectiveServerUrl = 'https://effective.invalid';
-  assert.equal(context.XTYF.isServer(new URL('https://effective.invalid/account')),true);
-  assert.equal(context.XTYF.isServer(new URL('https://server.invalid/account')),true);
-  assert.equal(context.XTYF.isServer(new URL('https://other.invalid/account')),false);
+  context.AURORA.config.effectiveServerUrl = 'https://effective.invalid';
+  assert.equal(context.AURORA.isServer(new URL('https://effective.invalid/account')),true);
+  assert.equal(context.AURORA.isServer(new URL('https://server.invalid/account')),true);
+  assert.equal(context.AURORA.isServer(new URL('https://other.invalid/account')),false);
 });

@@ -33,7 +33,7 @@ def archive_head(commit):
 
 def build_ui_from_head(files, commit, private_key, installers=None):
     """Execute the archived builder so website and UI always represent one commit."""
-    with tempfile.TemporaryDirectory(prefix='xtyf-release-head-') as temporary:
+    with tempfile.TemporaryDirectory(prefix='aurora-release-head-') as temporary:
         source = Path(temporary).resolve()
         for name, content in files.items():
             target = source / name
@@ -70,7 +70,7 @@ def build_ui_from_head(files, commit, private_key, installers=None):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--ui-signing-key', type=Path,
-                        default=Path(os.environ.get('XTYF_UI_SIGNING_KEY', ROOT / 'clients/signing/ui-update-private.pem')))
+                        default=Path(os.environ.get('AURORA_UI_SIGNING_KEY', ROOT / 'clients/signing/ui-update-private.pem')))
     parser.add_argument('--installers', type=Path, help='Reviewed map of already published installer paths and hashes')
     args = parser.parse_args()
     commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
@@ -98,7 +98,7 @@ def main():
                 'files': {name: hashlib.sha256(data).hexdigest() for name, data in files.items()}}
     output = ROOT / 'dist'
     output.mkdir(exist_ok=True)
-    archive = output / ('xtyf-manager-' + commit[:12] + '.tar.gz')
+    archive = output / ('aurora-manager-' + commit[:12] + '.tar.gz')
     prefix = archive.name.removesuffix('.tar.gz')
     with archive.open('xb') as stream, tarfile.open(fileobj=stream, mode='w:gz') as tar:
         for name, data in {**files, 'release-manifest.json': json.dumps(manifest, indent=2).encode()}.items():

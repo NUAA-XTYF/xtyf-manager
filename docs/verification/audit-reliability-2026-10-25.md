@@ -3,7 +3,7 @@
 ## 范围与交付
 
 - 基线：`9f04d244272db5b1076c2a99e20e45ee37453640`。
-- 分支：`codex/audit-reliability-fixes`；独立工作区：`D:/缓存/audit-reliability-fixes/xtyf-manager`。
+- 分支：`codex/audit-reliability-fixes`；独立工作区：`D:/缓存/audit-reliability-fixes/aurora-manager`。
 - 保留原开发分支、其他源码工作区及手工验收站点。没有推送、部署、打包、改版本或调整历史业务数据。
 - 测试只使用临时数据库、合成账户、生成的图片/PDF，以及禁止实际投递的邮件测试。恢复实验复制的是刚创建的合成测试库，不是业务库。
 - 沿用现有依赖；Linux 验证环境按仓库 requirements 安装，没有增加运行依赖。
@@ -71,7 +71,7 @@ git diff 9f04d24..HEAD
 | Ubuntu WSL Python 3.13.16 最终完整回归 | 660 项全部通过，无跳过；591.749 秒；分支覆盖率 80%，超过 65% 门槛 |
 | 编译 / Ruff | Python 编译检查与 `ruff check --no-cache app.py common.py modules deploy tests` 通过 |
 | JavaScript / Node 22 | 全部 135 项通过 |
-| 精确旧库升级 | `XTYF_UPGRADE_BASE_SHA=9f04d244272db5b1076c2a99e20e45ee37453640`，1 项实际旧代码建库升级测试通过 |
+| 精确旧库升级 | `AURORA_UPGRADE_BASE_SHA=9f04d244272db5b1076c2a99e20e45ee37453640`，1 项实际旧代码建库升级测试通过 |
 | Windows Playwright 1.57.0 | 原有 21 组 + `funds_recovery`，最终逐项通过；包含 Chromium 和现有 WebKit 场景 |
 | Linux Playwright 1.57.0 | 同样 22 组最终逐项通过；WSL WebKit 使用测试进程的软件渲染设置，非远端 CI 容器验收 |
 | 客户端模板 | Windows、Linux 均构建 27 个模板、290 个资源；未生成安装包 |

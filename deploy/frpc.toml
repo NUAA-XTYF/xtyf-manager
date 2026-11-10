@@ -18,7 +18,7 @@ auth.token = "（真实 token 见服务器 /opt/frp/frpc.toml，勿外传）"
 
 # ---- 映射 1：域名入口（云服务器 nginx: MANAGER_DOMAIN → 配置的映射端口）
 [[proxies]]
-name = "xtyf-progress-http"
+name = "aurora-progress-http"
 type = "tcp"
 localIP = "127.0.0.1"
 localPort = 80
@@ -26,7 +26,7 @@ remotePort = 0 # 部署时填写分配的域名入口端口
 
 # ---- 映射 2：IP 直连入口（http://FRP_SERVER_HOST:REMOTE_PORT）
 [[proxies]]
-name = "xtyf-progress-tcp"
+name = "aurora-progress-tcp"
 type = "tcp"
 localIP = "127.0.0.1"
 localPort = 80

@@ -109,8 +109,8 @@ class Compiler:
 
 def adapt_script(text):
     # Route state belongs to the shell; WebView location remains the packaged URL.
-    text = re.sub(r"(?<![\w.])(?:window\.)?location\.", "window.XTYFLocation.", text)
-    text = re.sub(r"(?<![\w.])history\.", "window.XTYFHistory.", text)
+    text = re.sub(r"(?<![\w.])(?:window\.)?location\.", "window.AURORALocation.", text)
+    text = re.sub(r"(?<![\w.])history\.", "window.AURORAHistory.", text)
     text = text.replace("请在新标签页重新登录。", "请在应用内重新登录。")
     return text
 
@@ -148,13 +148,13 @@ def build(output=DIST):
             content = adapt_script(path.read_text(encoding="utf-8-sig"))
             if path.name == "business-ui.js":
                 start, end = content.index('  async function download('), content.index('  document.addEventListener("click"')
-                content = content[:start] + '  async function download(url,filename="download"){return action("download:"+url,[],()=>window.XTYF.download(url,filename));}\n' + content[end:]
+                content = content[:start] + '  async function download(url,filename="download"){return action("download:"+url,[],()=>window.AURORA.download(url,filename));}\n' + content[end:]
             if path.name == "invoices.js":
-                content = content.replace("handleFiles(e.dataTransfer.files)", "window.XTYF.pickInvoiceFiles()")
+                content = content.replace("handleFiles(e.dataTransfer.files)", "window.AURORA.pickInvoiceFiles()")
             if path.name == "discussions.js":
-                content = content.replace("url.origin===window.XTYFLocation.origin&&", "window.XTYF.isLocal(url)&&")
+                content = content.replace("url.origin===window.AURORALocation.origin&&", "window.AURORA.isLocal(url)&&")
                 start = "const native=document.createElement('a');native.href=link.href;native.download=link.download;document.body.append(native);native.click();native.remove();feedback.textContent='下载已开始，请查看浏览器下载列表。';"
-                content = content.replace(start,"const saved=await window.XTYF.download(link.href,link.download);feedback.textContent=saved.cancelled?'已取消保存。':'附件已保存。';")
+                content = content.replace(start,"const saved=await window.AURORA.download(link.href,link.download);feedback.textContent=saved.cancelled?'已取消保存。':'附件已保存。';")
             destination.write_text(content, encoding="utf-8")
         else: shutil.copyfile(path, destination)
     for name in ("index.html", "shell.css", "shell.js", "update-runtime.js", "connection-runtime.js", "bridge.js", "page-runtime.js", "pdf-viewer.html", "pdf-viewer.js", "external.html"):

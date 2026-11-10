@@ -60,7 +60,7 @@ async function main() {
       });
       await page.addInitScript(()=>{
         window.__websiteOpened=0;
-        window.XTYFNative={invoke:async(action,args)=>{
+        window.AURORANative={invoke:async(action,args)=>{
           const result=await window.__connectionNative(action,args);
           if(action==='open_website')window.__websiteOpened++;
           return result;
@@ -74,12 +74,12 @@ async function main() {
       await page.waitForFunction(()=>window.__websiteOpened===1);
       assert.equal(state.opened,1);
       assert.ok(state.calls.includes('ui_ready'),'API absence does not quarantine a healthy local resource');
-      await page.evaluate(()=>window.dispatchEvent(new CustomEvent('xtyf-website-return',{detail:{intent:'settings'}})));
+      await page.evaluate(()=>window.dispatchEvent(new CustomEvent('aurora-website-return',{detail:{intent:'settings'}})));
       await page.locator('#client-settings').waitFor({state:'visible'});
       assert.equal(await page.locator('#server-url').inputValue(),state.saved,'entered URL is retained');
       assert.ok((await page.locator('#effective-server-url').innerText()).includes(apiUrl));
       await page.locator('#settings-cancel').click();
-      await page.evaluate(()=>window.dispatchEvent(new CustomEvent('xtyf-website-return',{detail:{intent:'retry'}})));
+      await page.evaluate(()=>window.dispatchEvent(new CustomEvent('aurora-website-return',{detail:{intent:'retry'}})));
       await page.locator('#connection-status').filter({hasText:'当前输入已保留'}).waitFor();
       assert.equal(state.opened,1,'return/retry never creates an automatic fallback loop');
       await context.close();
@@ -98,10 +98,10 @@ async function main() {
     }
     {
       const {page,context,state}=await fixture('compatible');
-      await page.waitForFunction(()=>window.XTYF?.compatible);
+      await page.waitForFunction(()=>window.AURORA?.compatible);
       const input=page.frameLocator('#page-host iframe').locator('input[name=username]');
       await input.fill('unsaved-login-draft');
-      await page.evaluate(async()=>{window.__draftImage=await XTYF.imageURL('/api/avatar');});
+      await page.evaluate(async()=>{window.__draftImage=await AURORA.imageURL('/api/avatar');});
       state.scenario='503';
       await page.evaluate(()=>document.getElementById('connection-retry').onclick());
       await page.locator('#connection-status').filter({hasText:'暂时无法连接服务器'}).waitFor();
@@ -118,12 +118,12 @@ async function main() {
       assert.equal(state.opened,0);assert.equal(await input.inputValue(),'unsaved-login-draft');
       page.once('dialog',dialog=>dialog.accept());await page.locator('#connection-website').click();
       await page.waitForFunction(()=>window.__websiteOpened===1);
-      await page.evaluate(()=>window.dispatchEvent(new CustomEvent('xtyf-website-return',{detail:{intent:'settings'}})));
+      await page.evaluate(()=>window.dispatchEvent(new CustomEvent('aurora-website-return',{detail:{intent:'settings'}})));
       assert.equal(await input.inputValue(),'unsaved-login-draft','website return preserves local draft');
       assert.equal(await page.evaluate(async()=>(await fetch(window.__draftImage)).ok),true,'website handoff does not revoke retained local image URLs');
       await page.locator('#server-url').fill('https://new-server.invalid');
       await page.locator('#server-form [type=submit]').click();
-      await page.waitForFunction(()=>window.XTYF?.compatible);
+      await page.waitForFunction(()=>window.AURORA?.compatible);
       assert.equal(state.saved,'https://new-server.invalid');assert.equal(state.opened,1);
       await context.close();passed.push(label+' compatible local UI, draft protection, manual fallback and server change');
     }

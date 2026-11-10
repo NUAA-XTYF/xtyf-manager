@@ -1,18 +1,18 @@
 /* Compatibility boundary for packaged legacy business modules. No network in this view. */
 (() => {
   'use strict';
-  const app=parent.XTYF,OriginalFormData=window.FormData,selected=new WeakMap(),localOrigin=app.localBase;
+  const app=parent.AURORA,OriginalFormData=window.FormData,selected=new WeakMap(),localOrigin=app.localBase;
   const own=app.generation,controllers=new Set();
   let failedLocally=false;
   window.addEventListener('error',event=>{if(event.error)failedLocally=true;});
   const current=()=>new URL(app.route,localOrigin);
-  window.XTYFLocation={
+  window.AURORALocation={
     get href(){return current().href;},set href(value){app.navigate(value);},
     get origin(){return localOrigin;},get pathname(){return current().pathname;},get search(){return current().search;},get hash(){return current().hash;},
     assign:value=>app.navigate(value),replace:value=>app.navigate(value,true),reload:()=>app.navigate(app.route,true)
   };
-  window.XTYFHistory={replaceState:(_state,_title,url)=>app.replaceRoute(url),pushState:(_state,_title,url)=>app.navigate(url),back:()=>parent.XTYFClient.back()};
-  window.XTYF={...app,pickInvoiceFiles:async()=>{
+  window.AURORAHistory={replaceState:(_state,_title,url)=>app.replaceRoute(url),pushState:(_state,_title,url)=>app.navigate(url),back:()=>parent.AURORAClient.back()};
+  window.AURORA={...app,pickInvoiceFiles:async()=>{
     const files=await app.invoke('pick_files',{multiple:true,accept:'.pdf'});if(files.length)window.handleFiles(files.map(file=>({...file,type:file.mime})));
   }};
   window.fetch=async(input,options={})=>{
@@ -75,7 +75,7 @@
     }
     close(){this.closed=true;clearTimeout(this.timer);this.controller?.abort();}
   }
-  window.XTYFJobPoller=JobPoller;
+  window.AURORAJobPoller=JobPoller;
   const inputValue=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value');
   function fileInput(input){
     if(selected.has(input))return;selected.set(input,[]);
@@ -99,7 +99,7 @@
       if(target){target.scrollIntoView();if(!target.hasAttribute('tabindex'))target.tabIndex=-1;target.focus({preventScroll:true});}
       return;
     }
-    let url;try{url=new URL(raw,window.XTYFLocation.href);}catch(_){return;}
+    let url;try{url=new URL(raw,window.AURORALocation.href);}catch(_){return;}
     if(url.protocol==='blob:')return;
     event.preventDefault();event.stopImmediatePropagation();
     if(!['http:','https:','tauri:'].includes(url.protocol)){app.notify('此链接类型无法在应用内打开，可长按复制链接。');return;}
@@ -123,7 +123,7 @@
     const images=[...(root.querySelectorAll?.('img[src]')||[])];if(root.matches?.('img[src]'))images.push(root);
     for(const img of images){
       const src=img.getAttribute('src');if(!src||/^(data:|blob:)/.test(src)||src.startsWith('/static/')||img.dataset.nativeLoading===src)continue;
-      const u=new URL(src,window.XTYFLocation.href);
+      const u=new URL(src,window.AURORALocation.href);
       if(!app.isLocal(u)&&!app.isServer(u)){img.removeAttribute('src');img.alt+='（外部图片未加载）';continue;}
       img.dataset.nativeLoading=src;
       app.imageURL(u.pathname+u.search).then(url=>{if(own===app.generation&&img.isConnected)img.src=url;}).catch(error=>{if(error.name!=='AbortError'){img.alt+='（点击重试）';img.onclick=()=>{delete img.dataset.nativeLoading;loadImages(img);};}});
@@ -136,7 +136,7 @@
   document.addEventListener('DOMContentLoaded',()=>{
     loadImages(document);
     // Keep client settings reachable without introducing a second navigation toolbar.
-    if(window.XTYFLocation.pathname==='/login'){
+    if(window.AURORALocation.pathname==='/login'){
       const form=document.getElementById('login-form'),link=document.createElement('button');link.type='button';link.className='btn block';link.textContent='服务器地址设置';link.onclick=app.openSettings;form?.append(link);
     }
     if(!failedLocally)app.pageReady?.(own);

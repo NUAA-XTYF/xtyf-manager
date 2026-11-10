@@ -5,7 +5,7 @@
 /* Keep textarea width owned by its form/grid cell. Vertical-only dragging cannot
    resize adjacent columns, controls, or the surrounding dialog. */
 textarea{--textarea-max-height:360px;--textarea-resize-max-height:800px;resize:vertical;max-height:min(75dvh,var(--textarea-resize-max-height));overflow-y:auto}
-/* XTYF Design System v2 — shared across progress, finance and invoices */
+/* AURORA Design System v2 — shared across progress, finance and invoices */
 :root {
   color-scheme: light;
   --ux-bg: #f2f5fb; --ux-surface:#ffffff; --ux-text:#15243b;

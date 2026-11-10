@@ -45,7 +45,7 @@ class TestPWA(unittest.TestCase):
         data = app_module.app.test_client().get('/manifest.webmanifest').get_json()
         # Flask recognizes application/*+json.
         self.assertEqual((data['id'], data['start_url'], data['scope'], data['display']), ('/', '/', '/', 'standalone'))
-        self.assertEqual(data['name'], '巡天御风管理系统')
+        self.assertEqual(data['name'], '极光团队工作台')
         self.assertEqual([i['sizes'] for i in data['icons']], ['192x192', '512x512', '512x512'])
         for icon in data['icons']:
             with app_module.app.test_client().get(icon['src']) as response:
@@ -130,7 +130,7 @@ class TestPWA(unittest.TestCase):
         with patch.dict(app.config, PWA_ENABLED=False):
             response = client.get('/sw.js')
             self.assertIn('registration.unregister()', response.text)
-            self.assertIn("name.startsWith('xtyf-pwa-public-')", response.text)
+            self.assertIn("name.startsWith('aurora-pwa-public-')", response.text)
             self.assertNotIn('fetch', response.text)
             self.assertNotIn('rel="manifest"', client.get('/login').text)
         worker = client.get('/sw.js').text

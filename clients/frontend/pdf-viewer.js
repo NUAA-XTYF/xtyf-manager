@@ -18,7 +18,7 @@ async function show(){
 document.getElementById('previous').onclick=()=>{if(index>1){index--;show().catch(error=>status.textContent=error.message);}};
 document.getElementById('next').onclick=()=>{if(index<pdf.numPages){index++;show().catch(error=>status.textContent=error.message);}};
 try{
-  const task=pdfjsLib.getDocument({data:parent.XTYFPreview.data.slice(),isEvalSupported:false,enableXfa:false,useSystemFonts:true,cMapUrl:'/vendor/pdfjs/cmaps/',cMapPacked:true,standardFontDataUrl:'/vendor/pdfjs/standard_fonts/',wasmUrl:'/vendor/pdfjs/wasm/'});
+  const task=pdfjsLib.getDocument({data:parent.AURORAPreview.data.slice(),isEvalSupported:false,enableXfa:false,useSystemFonts:true,cMapUrl:'/vendor/pdfjs/cmaps/',cMapPacked:true,standardFontDataUrl:'/vendor/pdfjs/standard_fonts/',wasmUrl:'/vendor/pdfjs/wasm/'});
   task.onPassword=(updatePassword,reason)=>{const password=prompt(reason===1?'此 PDF 需要密码':'密码不正确，请重试');if(password===null)task.destroy();else updatePassword(password);};
   pdf=await task.promise;await show();window.addEventListener('pagehide',()=>pdf.destroy());
 }catch(error){status.hidden=false;status.textContent='PDF 预览失败：'+error.message+'。可使用“另存为”保存文件。';}

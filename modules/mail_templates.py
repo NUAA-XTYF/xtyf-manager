@@ -175,7 +175,7 @@ def _document(title, eyebrow, subtitle, contents, preheader):
         '<tr><td class="mail-pad" bgcolor="#162b4b" style="padding:29px 34px;'
         'background:#162b4b;color:#ffffff">'
         '<p style="margin:0 0 16px;font-size:13px;font-weight:700;'
-        'letter-spacing:2px;color:#a9c5ed">巡天御风 <span style="font-weight:400;'
+        'letter-spacing:2px;color:#a9c5ed">极光 <span style="font-weight:400;'
         'letter-spacing:1px">/ TEAM</span></p>'
         f'<p style="margin:0 0 7px;font-size:11px;letter-spacing:2px;'
         f'color:#b5c8e2">{_e(eyebrow)}</p>'
@@ -190,7 +190,7 @@ def _document(title, eyebrow, subtitle, contents, preheader):
         '</td></tr><tr><td class="mail-pad" style="padding:20px 34px;'
         'border-top:1px solid #e5eaf2;background:#ffffff">'
         '<p style="margin:0;font-size:12px;line-height:1.8;color:#78869a">'
-        '巡天御风团队管理平台 · 此邮件由系统自动发送，请勿直接回复。'
+        '极光团队管理平台 · 此邮件由系统自动发送，请勿直接回复。'
         '</p></td></tr></table>'
         '</td></tr></table></body></html>'
     )
@@ -212,27 +212,27 @@ def render_digest_html(title, at, tasks, projects, morning, footer, progress_tim
     stats = ('<table role="presentation" width="100%" cellpadding="0" cellspacing="0" '
              'style="width:100%;border-collapse:collapse;border:1px solid #e2e9f3;'
              'border-radius:7px;background:#ffffff"><tr>'
-             + _stat('造车任务', len(tasks)) + _stat('日常项目', len(projects))
+             + _stat('项目任务', len(tasks)) + _stat('日常项目', len(projects))
              + _stat(third_label, third) + '</tr></table>')
     task_html = ''.join(_task_card(task, morning, progress_time) for task in tasks)
     project_html = ''.join(_project_card(project, morning, progress_time) for project in projects)
     if not tasks:
-        task_html = _empty('暂无您负责或参与且符合提醒条件的造车任务' if morning else
-                           '暂无团队符合提醒条件的造车任务')
+        task_html = _empty('暂无您负责或参与且符合提醒条件的项目任务' if morning else
+                           '暂无团队符合提醒条件的项目任务')
     if not projects:
         project_html = _empty('暂无您负责且符合提醒条件的日常项目' if morning else
                               '暂无团队符合提醒条件的日常项目')
     details = (stats
                + (_notice(f'有 {nudges} 处您负责的事项超过 48 小时未更新，请及时检查进度。')
                   if nudges else '')
-               + _section('造车任务', len(tasks), task_html)
+               + _section('项目任务', len(tasks), task_html)
                + _section('日常项目', len(projects), project_html)
                + f'<p style="margin:25px 0 0;font-size:12px;'
                f'color:#73829b;line-height:1.8">{_e(footer)}</p>')
     subtitle = ('您的待办与进度概览' if morning else '全团队进行中、阻塞与逾期未开始事项')
     date = at.strftime('%Y-%m-%d')
     return _document(title, '每日项目进度 / 北京时间', f'{date} · {subtitle}', details,
-                     f'{title}｜造车任务 {len(tasks)} 项，日常项目 {len(projects)} 项')
+                     f'{title}｜项目任务 {len(tasks)} 项，日常项目 {len(projects)} 项')
 
 
 def render_verification_html(code):
@@ -273,7 +273,7 @@ def render_password_recovery_html(code):
     )
     return _document('重置登录密码', '账户安全 / 密码找回',
                      '请在原登录页面输入验证码并设置新密码', details,
-                     '巡天御风密码重置验证码，15 分钟内有效')
+                     '极光密码重置验证码，15 分钟内有效')
 
 
 def render_test_html():
@@ -285,4 +285,4 @@ def render_test_html():
                '请留意 SMTP 接受并不等于最终送达。</p>')
     return _document('邮件服务测试', '邮件通知 / 测试',
                      '用于检查邮箱显示效果', details,
-                     '巡天御风邮件服务测试')
+                     '极光邮件服务测试')

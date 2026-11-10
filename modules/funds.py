@@ -212,7 +212,7 @@ def sync_txt():
         finally:
             conn.close()
         stats = summarize_records(records)
-        lines = ['=' * 70, '  RoboMaster 巡天御风 | 资金管理记录',
+        lines = ['=' * 70, '  极光工作台 | 资金管理记录',
                  f'  更新时间: {datetime.now():%Y-%m-%d %H:%M:%S}',
                  f"  总进账:   ￥{format_cents(stats['total_in']):>12}",
                  f"  总支出:   ￥{format_cents(stats['total_out']):>12}",

@@ -20,7 +20,7 @@
   const host=document.getElementById('page-host'),settings=document.getElementById('client-settings'),previewDialog=document.getElementById('resource-preview');
   function notify(text){const el=document.getElementById('client-notice');el.textContent=text;el.hidden=false;clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>el.hidden=true,6000);}
   function connection(text=''){const el=document.getElementById('connection-status');el.querySelector('span').textContent=text;el.hidden=!text;}
-  function supports(capability){return XTYFUpdates.supports(config,capability);}
+  function supports(capability){return AURORAUpdates.supports(config,capability);}
   function updateStatus(value){
     updateState=value||{status:'unavailable'};
     const labels={current:'当前页面已是最新版本。',pending:'新页面已下载，将在下次启动生效。',unavailable:'服务器暂未发布页面更新。',incompatible:'此更新需要升级客户端。',failed:'页面更新失败，可手动重试。'};
@@ -31,11 +31,11 @@
     document.getElementById('updates-installer').hidden=!updateState.installer;
     if(updateState.status==='incompatible'&&!updateState.installer)document.getElementById('update-status').textContent+=' 暂无此平台的正式安装包。';
   }
-  const updates=XTYFUpdates.create({invoke:(action,args)=>XTYFNative.invoke(action,args),visible:()=>!document.hidden&&nativeForeground&&!websiteActive,changed:updateStatus});
+  const updates=AURORAUpdates.create({invoke:(action,args)=>AURORANative.invoke(action,args),visible:()=>!document.hidden&&nativeForeground&&!websiteActive,changed:updateStatus});
   function markHealthy(){
     if(!nativeInitialized||!locallyReady||healthySent||!supports('ui_updates'))return;
     healthySent=true;
-    XTYFNative.invoke('ui_ready',{viewToken:window.__XTYF_VIEW_TOKEN__||null}).catch(error=>notify('页面已打开，但更新确认失败：'+error.message));
+    AURORANative.invoke('ui_ready',{viewToken:window.__AURORA_VIEW_TOKEN__||null}).catch(error=>notify('页面已打开，但更新确认失败：'+error.message));
   }
   function pathFor(value){
     const url=new URL(value,localBase+route);
@@ -59,7 +59,7 @@
     const headers=Object.fromEntries(new Headers(options.headers||{}));
     // Session cookies and CSRF are always owned by the native transport.
     for(const key of Object.keys(headers))if(/^(cookie|authorization|x-csrf-token)$/i.test(key))delete headers[key];
-    headers['X-XTYF-Client-Protocol']='1';
+    headers['X-AURORA-Client-Protocol']='1';
     const args={path,method,headers,requestId:id};
     if(options.body?._nativeMultipart){
       const fields=[],files=[];
@@ -73,12 +73,12 @@
     if(path==='/api/client/logout'){delete args.multipart;args.body='{}';headers['Content-Type']='application/json';}
     const controller=new AbortController();requests.set(id,controller);
     let abort;
-    const aborted=new Promise((_,reject)=>{abort=()=>{controller.abort();XTYFNative.invoke('cancel',{requestId:id}).catch(()=>{});reject(new DOMException('请求已取消','AbortError'));};});
+    const aborted=new Promise((_,reject)=>{abort=()=>{controller.abort();AURORANative.invoke('cancel',{requestId:id}).catch(()=>{});reject(new DOMException('请求已取消','AbortError'));};});
     if(options.signal?.aborted){requests.delete(id);throw new DOMException('请求已取消','AbortError');}
     options.signal?.addEventListener('abort',abort,{once:true});controller.signal.addEventListener('abort',()=>{}, {once:true});
     requests.set(id,{abort});
     try{
-      const response=asResponse(await Promise.race([XTYFNative.invoke('request',args),aborted]));
+      const response=asResponse(await Promise.race([AURORANative.invoke('request',args),aborted]));
       if(server!==serverGeneration)throw new DOMException('服务器已切换','AbortError');
       if(response.status===401&&path!=='/api/client/login'&&path!=='/api/client/bootstrap'&&route.split('?')[0]!=='/login'){
         bootstrap=anonymousBootstrap();setTimeout(()=>{if(server===serverGeneration)navigate('/login?next='+encodeURIComponent(route),true);},0);
@@ -96,15 +96,15 @@
   async function refreshBootstrap(server=serverGeneration,probe=false){
     const attempt=++bootstrapSequence;
     const reply=probe&&supports('website_fallback')
-      ?await XTYFNative.invoke('probe_connection',{})
-      :await XTYFNative.invoke('request',{path:'/api/client/bootstrap',method:'GET',headers:{'X-XTYF-Client-Protocol':'1'},requestId:'bootstrap-'+(++sequence)});
+      ?await AURORANative.invoke('probe_connection',{})
+      :await AURORANative.invoke('request',{path:'/api/client/bootstrap',method:'GET',headers:{'X-AURORA-Client-Protocol':'1'},requestId:'bootstrap-'+(++sequence)});
     if(server!==serverGeneration||attempt!==bootstrapSequence)throw Object.assign(new DOMException('初始化已被替换','AbortError'),{superseded:true});
     if(probe&&supports('website_fallback')){
       config.effectiveServerUrl=reply.effectiveServerUrl;
       document.getElementById('effective-server-url').textContent='实际连接：'+(config.effectiveServerUrl||config.serverUrl);
     }
     const result=probe&&supports('website_fallback')?reply.response:reply;
-    const outcome=XTYFConnection.classify(result,XTYFUpdates.compatibleServer);
+    const outcome=AURORAConnection.classify(result,AURORAUpdates.compatibleServer);
     if(outcome.mode==='website'){compatible=false;compatibilityRejected=true;throw Object.assign(new Error(outcome.message),{incompatible:true});}
     if(outcome.mode==='error')throw new Error(outcome.message);
     bootstrap=outcome.data;compatible=true;compatibilityRejected=false;connection('');return bootstrap;
@@ -113,12 +113,12 @@
   function setRoute(value,replace=false,render=true){
     route=normalized(value);const url='#'+route;
     if(!replace)historyIndex++;
-    if(replace)history.replaceState({xtyf:true,index:historyIndex},'',url);else history.pushState({xtyf:true,index:historyIndex},'',url);
+    if(replace)history.replaceState({aurora:true,index:historyIndex},'',url);else history.pushState({aurora:true,index:historyIndex},'',url);
     if(render)renderRoute();
   }
   function navigate(value,replace=false){
     const u=new URL(value,localBase+route);
-    if(!isLocal(u)&&!isServer(u))return XTYFNative.invoke('open_external',{url:u.href}).catch(error=>notify(error.message));
+    if(!isLocal(u)&&!isServer(u))return AURORANative.invoke('open_external',{url:u.href}).catch(error=>notify(error.message));
     setRoute(u.pathname+u.search+u.hash,replace);
   }
   function localError(title,message){
@@ -150,15 +150,15 @@
     if(entry[2]&&!bootstrap.permissions[entry[2]])return localError('没有访问权限','当前账户不能访问此页面。');
     const taskType=url.searchParams.get('type')==='daily'?'daily':'vehicle',project=url.searchParams.get('project')||'';
     const context={...bootstrap,page:entry[1],task_type:taskType,project_id:taskType==='daily'&&/^[1-9]\d{0,18}$/.test(project)?project:''};
-    const html=XTYFTemplates.render(entry[0],context);
+    const html=AURORATemplates.render(entry[0],context);
     cancelPage();generation++;locallyReady=false;
     if(frame)frame.remove();
-    frame=document.createElement('iframe');frame.title='巡天御风工作空间';
+    frame=document.createElement('iframe');frame.title='极光工作空间';
     frame.setAttribute('referrerpolicy','no-referrer');
     frame.setAttribute('allow',"camera 'self'");
     // Both template and scripts are packaged. All server strings were escaped by the compiler.
     frame.srcdoc=html.replace('<head>','<head><base href="'+localBase+'/"><script src="/page-runtime.js"></script>');
-    host.replaceChildren(frame);document.title='巡天御风管理系统';
+    host.replaceChildren(frame);document.title='极光团队工作台';
   }
   async function openWebsite(automatic=false){
     if(websiteOpening||websiteActive||!supports('website_fallback'))return;
@@ -166,11 +166,11 @@
     websiteOpening=true;
     const server=serverGeneration;
     try{
-      await XTYFNative.invoke('open_website',{});
+      await AURORANative.invoke('open_website',{});
       if(server!==serverGeneration)return;
       websiteActive=true;cancelRequests();updates.visibility();if(settings.open)settings.close();
       // Manual recovery may discover an HTTPS root even when bootstrap failed.
-      const current=await XTYFNative.invoke('get_config',{}).catch(()=>null);
+      const current=await AURORANative.invoke('get_config',{}).catch(()=>null);
       if(server!==serverGeneration)return;
       if(current){config={...config,...current};document.getElementById('effective-server-url').textContent='实际连接：'+(config.effectiveServerUrl||config.serverUrl);}
       connection('已在客户端内打开网站。返回后可调整地址或重新尝试本地界面。');
@@ -184,7 +184,7 @@
     const identity=value=>JSON.stringify([!!value.authenticated,value.me?.id,!!value.me?.must_change_password,value.permissions||{}]);
     const previousIdentity=identity(bootstrap);
     try{
-      const nextConfig=await XTYFNative.invoke('get_config',{});
+      const nextConfig=await AURORANative.invoke('get_config',{});
       if(server!==serverGeneration||attempt!==bootSequence)return;
       config=nextConfig;document.getElementById('server-url').value=config.serverUrl;
       document.getElementById('client-version').textContent='客户端 '+config.version;
@@ -217,12 +217,12 @@
   function openSettings(){document.getElementById('server-url').value=config.serverUrl;document.getElementById('settings-error').textContent='';settings.showModal();}
   async function download(value,filename='download'){
     if(compatibilityRejected)throw new Error('服务器协议不兼容，请先检查更新。');
-    return XTYFNative.invoke('download',{path:pathFor(value),filename});
+    return AURORANative.invoke('download',{path:pathFor(value),filename});
   }
   async function readResource(value){
     if(compatibilityRejected)throw new Error('服务器协议不兼容，请先检查更新。');
     const server=serverGeneration;
-    const result=await XTYFNative.invoke('read_resource',{path:pathFor(value)});
+    const result=await AURORANative.invoke('read_resource',{path:pathFor(value)});
     if(server!==serverGeneration)throw new DOMException('服务器已切换','AbortError');
     if(result.status!==200)throw new Error('附件读取失败（'+result.status+'）');
     return result;
@@ -233,14 +233,14 @@
     if(!blob.type.startsWith('image/'))throw new Error('附件不是图片');
     const url=URL.createObjectURL(blob);resourceURLs.add(url);return url;
   }
-  function closePreview(){previewDialog.close();preview=null;window.XTYFPreview=null;document.getElementById('preview-content').replaceChildren();}
+  function closePreview(){previewDialog.close();preview=null;window.AURORAPreview=null;document.getElementById('preview-content').replaceChildren();}
   async function previewResource(value,filename='附件'){
     const result=await readResource(value),response=asResponse(result),blob=await response.blob();
     if(blob.type!=='application/pdf'&&!blob.type.startsWith('image/'))return download(value,filename);
     preview={path:value,filename};document.getElementById('preview-title').textContent=filename;
     const container=document.getElementById('preview-content');container.replaceChildren();
     if(blob.type==='application/pdf'){
-      window.XTYFPreview={data:new Uint8Array(await blob.arrayBuffer()),filename};const child=document.createElement('iframe');child.title='PDF 预览';child.src='/pdf-viewer.html';container.append(child);
+      window.AURORAPreview={data:new Uint8Array(await blob.arrayBuffer()),filename};const child=document.createElement('iframe');child.title='PDF 预览';child.src='/pdf-viewer.html';container.append(child);
     }else{const img=document.createElement('img'),url=URL.createObjectURL(blob);resourceURLs.add(url);img.src=url;img.alt=filename;container.append(img);}
     previewDialog.showModal();
   }
@@ -255,17 +255,17 @@
     if(historyIndex>0){history.back();return true;}
     if(route!=='/'&&!route.startsWith('/login')){navigate('/',true);return true;}return false;
   }
-  window.XTYF={request,download,readResource,imageURL,preview:previewResource,navigate,notify,openSettings,localBase,isLocal,isServer,
+  window.AURORA={request,download,readResource,imageURL,preview:previewResource,navigate,notify,openSettings,localBase,isLocal,isServer,
     supports,pageReady:own=>{if(own===generation){locallyReady=true;markHealthy();}},
-    invoke:(action,args)=>XTYFNative.invoke(action,args),get route(){return route;},get bootstrap(){return bootstrap;},get config(){return config;},get generation(){return generation;},
+    invoke:(action,args)=>AURORANative.invoke(action,args),get route(){return route;},get bootstrap(){return bootstrap;},get config(){return config;},get generation(){return generation;},
     replaceRoute:value=>setRoute(value,true,false),isPage:value=>Object.hasOwn(routes,new URL(value,localBase).pathname.replace(/\/$/,'')||'/'),
-    openExternal:url=>XTYFNative.invoke('open_external',{url}),get compatible(){return compatible;}};
-  window.XTYFClient={back};
+    openExternal:url=>AURORANative.invoke('open_external',{url}),get compatible(){return compatible;}};
+  window.AURORAClient={back};
   document.getElementById('client-settings-open').onclick=openSettings;document.getElementById('settings-cancel').onclick=()=>settings.close();
   document.getElementById('connection-retry').onclick=()=>boot();
   document.getElementById('connection-website').onclick=()=>openWebsite();
   document.getElementById('settings-website').onclick=()=>openWebsite();
-  window.addEventListener('xtyf-website-return',event=>{
+  window.addEventListener('aurora-website-return',event=>{
     websiteActive=false;updates.visibility();
     connection(compatible?'':'已返回本地界面。可重试连接、调整地址或再次打开网站。');
     if(event.detail?.intent==='settings')openSettings();
@@ -275,7 +275,7 @@
   document.getElementById('updates-apply').onclick=async()=>{
     if(updateState.status!=='pending'||!window.confirm('立即重载页面？未保存的表单、头像裁剪及上传状态可能丢失。'))return;
     const button=document.getElementById('updates-apply');button.disabled=true;
-    try{await XTYFNative.invoke('apply_update',{});}catch(error){notify('无法启用新页面：'+error.message);}finally{button.disabled=false;}
+    try{await AURORANative.invoke('apply_update',{});}catch(error){notify('无法启用新页面：'+error.message);}finally{button.disabled=false;}
   };
   document.getElementById('updates-installer').onclick=async()=>{
     const path=updateState.installer?.url;
@@ -284,12 +284,12 @@
     const suffix=extensions[config.platform];if(!suffix)return notify('暂无此平台的正式安装包。');
     const button=document.getElementById('updates-installer');button.disabled=true;
     try{
-      const result=await XTYFNative.invoke('download',{path,filename:'xtyf-manager.'+suffix,expectedSha256:updateState.installer.sha256});
+      const result=await AURORANative.invoke('download',{path,filename:'aurora-manager.'+suffix,expectedSha256:updateState.installer.sha256});
       notify(result.cancelled?'已取消保存安装包。':'安装包已保存，请按系统安装步骤完成升级。');
     }catch(error){notify('安装包保存失败：'+error.message);}finally{button.disabled=false;}
   };
   document.addEventListener('visibilitychange',()=>updates.visibility());
-  window.addEventListener('xtyf-foreground',event=>{nativeForeground=event.detail?.active!==false;updates.visibility();});
+  window.addEventListener('aurora-foreground',event=>{nativeForeground=event.detail?.active!==false;updates.visibility();});
   window.addEventListener('focus',()=>updates.visibility());
   window.addEventListener('pagehide',()=>updates.dispose());
   document.getElementById('preview-close').onclick=closePreview;previewDialog.addEventListener('cancel',closePreview);
@@ -299,7 +299,7 @@
     // Supersede a pending initial boot before invoking native server replacement.
     serverGeneration++;bootSequence++;bootstrapSequence++;booting=false;updates.dispose();updatesServer=null;
     try{
-      const result=await XTYFNative.invoke('set_server',{serverUrl:document.getElementById('server-url').value.trim()});
+      const result=await AURORANative.invoke('set_server',{serverUrl:document.getElementById('server-url').value.trim()});
       config={...config,...result};cancelPage();bootstrap=anonymousBootstrap();compatible=false;compatibilityRejected=false;historyIndex=0;websiteActive=false;
       if(previewDialog.open)closePreview();
       settings.close();navigate('/login',true);await boot();

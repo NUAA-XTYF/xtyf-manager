@@ -57,5 +57,5 @@
   }
   const api = {supports, compatibleServer, create};
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
-  if (typeof window !== 'undefined') window.XTYFUpdates = api;
+  if (typeof window !== 'undefined') window.AURORAUpdates = api;
 })();

@@ -26,7 +26,7 @@ self.addEventListener('install', event => event.waitUntil(self.skipWaiting()));
 self.addEventListener('activate', event => event.waitUntil((async () => {
   await self.clients.claim();
   for (const name of await caches.keys()) {
-    if (name.startsWith('xtyf-pwa-public-')) await caches.delete(name);
+    if (name.startsWith('aurora-pwa-public-')) await caches.delete(name);
   }
   await self.registration.unregister();
 })()));
@@ -65,10 +65,10 @@ def init_pwa(app):
 def manifest():
     version = current_app.extensions['pwa']['version']
     data = {
-        'id': '/', 'name': '巡天御风管理系统', 'short_name': '巡天御风',
+        'id': '/', 'name': '极光团队工作台', 'short_name': '极光',
         'lang': 'zh-CN', 'start_url': '/', 'scope': '/', 'display': 'standalone',
         'background_color': '#f5f5f7', 'theme_color': '#f5f5f7',
-        'description': '巡天御风团队管理工作台；业务操作需联网。',
+        'description': '极光团队管理工作台；业务操作需联网。',
         'icons': [
             {'src': f'/static/pwa/icon-{size}.png?v={version}', 'sizes': f'{size}x{size}',
              'type': 'image/png', 'purpose': 'any'} for size in (192, 512)

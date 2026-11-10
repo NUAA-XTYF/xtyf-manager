@@ -5,7 +5,7 @@ const {chromium} = require('playwright');
 const {recordFailure} = require('./diagnostics.cjs');
 const root = path.resolve(__dirname,'../..'), output = path.join(root,'.build-tools/pwa-check');
 fs.mkdirSync(output,{recursive:true});
-const profile = fs.mkdtempSync(path.join(os.tmpdir(),'xtyf-pwa-profile-'));
+const profile = fs.mkdtempSync(path.join(os.tmpdir(),'aurora-pwa-profile-'));
 const server = spawn(process.env.REVIEW_PYTHON||'python',['-B','tests/browser/pwa_server.py'],{cwd:root,env:process.env,stdio:['ignore','pipe','pipe']});
 const launch = {headless:true,...(process.env.REVIEW_CHROMIUM_PATH?{executablePath:process.env.REVIEW_CHROMIUM_PATH}:{}),args:['--no-sandbox']};
 let context, browser, other, page, log='', phase='startup';
@@ -138,7 +138,7 @@ async function cacheSnapshot(target) {
 
   phase='private-cache isolation and offline navigation';
   await page.goto(base+'/tasks');
-  const before=await cacheSnapshot(page);const owned=Object.keys(before).filter(name=>name.startsWith('xtyf-pwa-public-'));
+  const before=await cacheSnapshot(page);const owned=Object.keys(before).filter(name=>name.startsWith('aurora-pwa-public-'));
   assert.equal(owned.length,1);assert.ok(before[owned[0]].length>=2);
   for(const rows of Object.values(before))for(const row of rows){
    assert.match(new URL(row.url).pathname,/^\/static\/(pwa\/|pwa\.(js|css)$)/);
@@ -167,7 +167,7 @@ async function cacheSnapshot(target) {
   await page.locator('#pwa-status').filter({hasText:'更新已准备好'}).waitFor();
   await context.close();context=await open();page=context.pages()[0]||await context.newPage();await page.goto(base+'/account');await controlled(page);
   await until(()=>page.evaluate(async version=>{
-   const names=(await caches.keys()).filter(n=>n.startsWith('xtyf-pwa-public-'));return names.length===1&&names[0].endsWith(version);
+   const names=(await caches.keys()).filter(n=>n.startsWith('aurora-pwa-public-'));return names.length===1&&names[0].endsWith(version);
   },release.version),'new cache activation');
   passed.push('new worker waits with draft intact; closing all windows activates new content version and removes old owned cache');
 
@@ -188,7 +188,7 @@ async function cacheSnapshot(target) {
   // Unregister visibility can change while the activate event is still running.
   // Wait for both observable parts of the asynchronous retirement to finish.
   await until(()=>page.evaluate(async()=>!(await navigator.serviceWorker.getRegistration())&&
-    !(await caches.keys()).some(name=>name.startsWith('xtyf-pwa-public-'))),'complete retirement');
+    !(await caches.keys()).some(name=>name.startsWith('aurora-pwa-public-'))),'complete retirement');
   const retired=await page.evaluate(async()=>({names:await caches.keys(),value:localStorage.getItem('pwa-test-preserved')}));
   assert.deepEqual(retired.names,['unrelated-test-cache']);assert.equal(retired.value,'yes');
   await page.reload();assert.equal(new URL(page.url()).pathname,'/account');

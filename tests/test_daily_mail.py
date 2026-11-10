@@ -204,7 +204,7 @@ class DailyMailTest(unittest.TestCase):
         self.assertEqual(process_job(self.db,job,morning,transport),'skipped');transport.assert_not_called()
         evening=self.queue_job('daily',self.at,job['generation'])|{'attempts':1}
         sent=[];self.assertEqual(process_job(self.db,evening,self.at,sent.append),'sent')
-        self.assertEqual(sent[0]['Subject'],'巡天御风｜团队项目晚报｜2026-10-15')
+        self.assertEqual(sent[0]['Subject'],'极光｜团队项目晚报｜2026-10-15')
         self.assertIn('其他同事仍需处理的任务',sent[0].get_body(preferencelist=('plain',)).get_content())
 
     def test_morning_send_subject_single_recipient_and_window_recheck(self):
@@ -212,7 +212,7 @@ class DailyMailTest(unittest.TestCase):
         job=self.job('morning');morning=self.at.replace(hour=8);sent=[]
         self.assertEqual(process_job(self.db,job,morning,sent.append),'sent')
         message=sent[0]
-        self.assertEqual(message['Subject'],'巡天御风｜个人任务早报｜2026-10-15')
+        self.assertEqual(message['Subject'],'极光｜个人任务早报｜2026-10-15')
         self.assertEqual(message['To'],'member@example.com');self.assertIsNone(message['Cc']);self.assertIsNone(message['Bcc'])
         self.assertEqual([part.get_content_type() for part in message.iter_parts()],['text/plain','text/html'])
         transport=MagicMock()
@@ -412,12 +412,12 @@ class DailyMailTest(unittest.TestCase):
         sent=[]
         self.assertEqual(process_job(db,jobs['test'],self.at,sent.append),'sent')
         self.assertEqual(len(sent),1)
-        self.assertEqual(sent[0]['Subject'],'巡天御风｜测试邮件｜2026-10-15')
+        self.assertEqual(sent[0]['Subject'],'极光｜测试邮件｜2026-10-15')
         self.assertIn('测试邮件',sent[0].get_body(preferencelist=('plain',)).get_content())
         self.assertIn('邮件模板预览成功',sent[0].get_body(preferencelist=('html',)).get_content())
 
     def test_digest_status_deadline_and_deleted_matrix(self):
-        tid=self.task(title='筛选矩阵造车任务',owner_id=self.mid)
+        tid=self.task(title='筛选矩阵项目任务',owner_id=self.mid)
         pid=self.project(title='筛选矩阵日常项目')
         db=self.isolated_digest_db()
         for kind in ('morning','daily','test'):
@@ -439,7 +439,7 @@ class DailyMailTest(unittest.TestCase):
                             content=digest_content(db,self.mid,at,kind=kind)
                             if included:
                                 for body in content:
-                                    self.assertIn('筛选矩阵造车任务',body)
+                                    self.assertIn('筛选矩阵项目任务',body)
                                     self.assertIn('筛选矩阵日常项目',body)
                                     self.assertNotIn('今日完成',body)
                             else:
@@ -472,7 +472,7 @@ class DailyMailTest(unittest.TestCase):
         job=self.job('daily');sent=[]
         self.assertEqual(process_job(self.db,job,self.at,sent.append),'sent')
         message=sent[0];text=message.get_body(preferencelist=('plain',)).get_content()
-        self.assertEqual(message['Subject'],'巡天御风｜团队项目晚报｜2026-10-15')
+        self.assertEqual(message['Subject'],'极光｜团队项目晚报｜2026-10-15')
         self.assertEqual(message['To'],'member@example.com');self.assertIsNone(message['Cc']);self.assertIsNone(message['Bcc'])
         for title in ('其他成员负责的底盘','尚未分配的任务','其他成员的项目'):
             self.assertIn(title,text)
@@ -669,7 +669,7 @@ class DailyMailTest(unittest.TestCase):
         self.db.execute('UPDATE daily_groups SET enabled_at=? WHERE project_id=?',(old,pid))
         self.db.commit()
         text,markup=digest_content(self.db,self.mid,morning,kind='morning')
-        for expected in ('个人任务早报','造车任务','日常项目','需更新进度',
+        for expected in ('个人任务早报','项目任务','日常项目','需更新进度',
                          '您的角色','截止日期','查看任务详情','查看项目详情',
                          '进度 35%','请更新进度：','2026-10-15'):
             self.assertIn(expected,markup)
@@ -705,8 +705,8 @@ class DailyMailTest(unittest.TestCase):
             self.assertIn(expected,markup)
         stats=dict((label,int(number)) for number,label in re.findall(
             r'<p class="mail-stat-number"[^>]*>(\d+)</p><p[^>]*>([^<]+)</p>',markup))
-        self.assertEqual(stats,{'造车任务':2,'日常项目':2,'已逾期':2})
-        for expected in ('造车任务 2 项','日常项目 2 项','已逾期 2 项'):
+        self.assertEqual(stats,{'项目任务':2,'日常项目':2,'已逾期':2})
+        for expected in ('项目任务 2 项','日常项目 2 项','已逾期 2 项'):
             self.assertIn(expected,text)
         for body in (text,markup):
             self.assertNotIn('今日完成',body)
@@ -722,7 +722,7 @@ class DailyMailTest(unittest.TestCase):
         self.assertIn('123456',verification)
         self.assertIn('30 分钟',verification)
         self.assertIn('发送频率',verification)
-        self.assertIn('巡天御风',test_message)
+        self.assertIn('极光',test_message)
         self.assertIn('邮件模板预览成功',test_message)
         for body in (verification,test_message):
             self.assertIn('<!doctype html>',body)

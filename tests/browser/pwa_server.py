@@ -8,7 +8,7 @@ import tempfile
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-with tempfile.TemporaryDirectory(prefix='xtyf-pwa-browser-') as directory:
+with tempfile.TemporaryDirectory(prefix='aurora-pwa-browser-') as directory:
     root = Path(directory)
     for key, name in {
         'PROGRESS_DB': 'data.db', 'FUNDS_DIR': 'funds', 'INVOICES_DIR': 'invoices',

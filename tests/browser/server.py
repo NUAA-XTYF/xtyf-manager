@@ -6,7 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-with tempfile.TemporaryDirectory(prefix='xtyf-browser-review-') as root:
+with tempfile.TemporaryDirectory(prefix='aurora-browser-review-') as root:
     for key, relative in {
         'PROGRESS_DB': 'data.db', 'FUNDS_DIR': 'funds', 'INVOICES_DIR': 'invoices',
         'TASK_ATTACHMENTS_DIR': 'attachments', 'PROGRESS_SECRET_PATH': 'secret.key',

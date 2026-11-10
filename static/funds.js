@@ -14,8 +14,8 @@ function fundsToast(message, kind) {
 }
 var API = '/funds/api/records', sort = {by:'record_date',order:'DESC'}, edM, ct=null;
 var chartRequest = 0, chartAbort = null, chartPalette = '', chartDirty = false;
-var ME_NAME = window.XTYF_USER.name, ME_USERNAME = window.XTYF_USER.username;
-var CAN_REVIEW = window.XTYF_USER.canReview;
+var ME_NAME = window.AURORA_USER.name, ME_USERNAME = window.AURORA_USER.username;
+var CAN_REVIEW = window.AURORA_USER.canReview;
 var fundsCreate = null, fundsCreateBusy = false, fundsFormRequest = null;
 var recordsRequest = 0, recordsAbort = null, recordsInactive = false;
 window.addEventListener('pagehide', function(){
@@ -54,7 +54,7 @@ function renderFundsCreate(message) {
 async function initializeFundsCreate() {
   try {
     fundsCreate = FundsCreate.create({storage:localStorage, fetch:BusinessUI.fetch,
-      server:()=>window.XTYF ? (parent.XTYF || window.XTYF).config.serverUrl : location.origin,
+      server:()=>window.AURORA ? (parent.AURORA || window.AURORA).config.serverUrl : location.origin,
       uuid:()=>Array.from(crypto.getRandomValues(new Uint8Array(16)), x=>x.toString(16).padStart(2,'0')).join('')});
     var entries = await fundsCreate.connect();
     if (entries.length) {

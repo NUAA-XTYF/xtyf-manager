@@ -57,7 +57,7 @@
     try{const data=await api('/api/collaboration/profiles?'+query);if(ticket!==sequence)return;profiles=data.profiles;canModerate=data.can_moderate;$('intro-hidden-filter').hidden=!canModerate;
       $('intro-list').innerHTML=profiles.map(p=>`<article class="intro-card"><div class="intro-identity"><span class="intro-initial">${esc(p.name.slice(0,1))}</span>${p.avatar_url?`<img data-profile-avatar="${esc(p.avatar_url)}" hidden alt="${esc(p.name)}的头像">`:''}<strong>${esc(p.name)}</strong></div><p>${esc(p.groups||'未分组')}</p>${profileContent(p)}${p.hidden?`<p>已隐藏：${esc(p.moderation_reason)}</p>`:''}${canModerate?`<button class="btn" type="button" data-moderate="${p.member_id}">${p.hidden?'恢复展示':'隐藏简介'}</button>`:''}</article>`).join('')||'<p>暂无符合条件的成员简介。</p>';
       for(const img of $('intro-list').querySelectorAll('[data-profile-avatar]')){img.onload=()=>{img.hidden=false;img.previousElementSibling.hidden=true;};img.onerror=()=>img.remove();const url=img.dataset.profileAvatar;
-        if(window.XTYF?.invoke){if(window.XTYF.imageURL)window.XTYF.imageURL(url).then(src=>{if(img.isConnected)img.src=src;}).catch(()=>img.remove());}else img.src=url;
+        if(window.AURORA?.invoke){if(window.AURORA.imageURL)window.AURORA.imageURL(url).then(src=>{if(img.isConnected)img.src=src;}).catch(()=>img.remove());}else img.src=url;
       }
       $('intro-page').textContent=`第 ${page} 页 · 共 ${data.total} 人`;$('intro-prev').disabled=page<=1;$('intro-next').disabled=!data.has_more;$('intro-status').textContent='成员简介已更新';
     }catch(error){if(ticket===sequence)$('intro-status').textContent=error.message;}

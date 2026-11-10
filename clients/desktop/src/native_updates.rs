@@ -107,7 +107,7 @@ pub fn create_view(app: &tauri::AppHandle) -> Result<(), String> {
     let csp: Value = serde_json::from_str(include_str!("../tauri.conf.json")).map_err(|e|e.to_string())?;
     let csp = csp["app"]["security"]["csp"].as_str().unwrap_or("").to_string();
     let mut builder = tauri::webview::WebviewBuilder::new("main", WebviewUrl::App("index.html".into()))
-        .initialization_script(format!("Object.defineProperty(window,'__XTYF_VIEW_TOKEN__',{{value:{},writable:false,configurable:false}});",json!(view_id)))
+        .initialization_script(format!("Object.defineProperty(window,'__AURORA_VIEW_TOKEN__',{{value:{},writable:false,configurable:false}});",json!(view_id)))
         .on_permission_request(|view, kind| crate::camera::request(view, kind, None))
         .on_navigation(local_url).on_new_window(|_,_|tauri::webview::NewWindowResponse::Deny)
         .on_web_resource_request(move |request, response| {

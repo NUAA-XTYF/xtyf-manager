@@ -62,7 +62,7 @@ def build(output):
         raise RuntimeError("Missing/mismatched pinned frontend; build it before packaging")
     if not (desktop / "node_modules/.bin/tauri").is_file():
         raise RuntimeError("Install pinned Tauri CLI with npm ci --prefix clients/desktop")
-    executable = desktop / "target/release/xtyf-manager"
+    executable = desktop / "target/release/aurora-manager"
     cli = desktop / "node_modules/.bin/tauri"
     output.mkdir(parents=True, exist_ok=True)
     results = {}
@@ -91,7 +91,7 @@ def build(output):
         if beta and target=="deb":
             source=normalize_debian_version(source,output/"repacked-beta.deb",config["version"])
         result=verify_package(source,target,config,desktop,executable,os.environ.copy(),output,arch)
-        destination=output/f"XTYF-Manager-{config['version']}-{suffix}"
+        destination=output/f"Aurora-Workspace-{config['version']}-{suffix}"
         shutil.copy2(source,destination)
         if source.name=="repacked-beta.deb":source.unlink()
         digest=hashlib.sha256(destination.read_bytes()).hexdigest()

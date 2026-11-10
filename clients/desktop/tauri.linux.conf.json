@@ -1,9 +1,9 @@
 {
-  "productName": "xtyf-manager",
+  "productName": "aurora-manager",
   "bundle": {
     "linux": {
-      "deb": {"desktopTemplate": "linux/xtyf-manager.desktop"},
-      "rpm": {"desktopTemplate": "linux/xtyf-manager.desktop"}
+      "deb": {"desktopTemplate": "linux/aurora-manager.desktop"},
+      "rpm": {"desktopTemplate": "linux/aurora-manager.desktop"}
     }
   }
 }

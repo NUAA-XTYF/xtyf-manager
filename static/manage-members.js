@@ -31,7 +31,7 @@ function renderMemberChoices() {
   const filter = document.getElementById("m-filter-group");
   if (filter) filter.innerHTML = options(state.groups, memberFilters.group, "全部专业组");
   const projectFilter = document.getElementById("m-filter-project");
-  if (projectFilter) projectFilter.innerHTML = options(state.projects, memberFilters.project, "全部造车组别");
+  if (projectFilter) projectFilter.innerHTML = options(state.projects, memberFilters.project, "全部所属项目");
 }
 
 function renderGroupCatalog() {
@@ -59,7 +59,7 @@ function renderVehicleCatalog() {
     return `<li><span>${esc(project.name)}${project.is_active === 0 ? "（已删除）" : ""}</span><small>${count} 人</small>${project.is_active === 0
       ? admin ? `<button class="btn ghost sm" type="button" data-restore-member-project="${Number(project.id)}">恢复</button>` : ""
       : `<button class="btn ghost sm" type="button" data-rename-member-project="${Number(project.id)}">重命名</button>${admin ? `<button class="btn ghost sm" type="button" data-delete-member-project="${Number(project.id)}">删除</button>` : ""}`}</li>`;
-  }).join("") || '<li class="muted">暂无造车组别</li>';
+  }).join("") || '<li class="muted">暂无所属项目</li>';
 }
 
 function renderMemberTable() {
@@ -76,7 +76,7 @@ function renderMemberTable() {
             ? admin ? `<button class="btn ghost sm" type="button" data-member-restore="${Number(member.id)}">恢复账号</button>` : ""
             : admin
               ? `<button class="btn ghost sm" type="button" data-member-profile="${Number(member.id)}">编辑资料</button>${Number(member.id) !== Number(state.me?.id) ? `<button class="btn ghost sm" type="button" data-member-delete="${Number(member.id)}">删除</button>` : ""}`
-              : `<button class="btn ghost sm" type="button" data-member-groups="${Number(member.id)}">专业组</button><button class="btn ghost sm" type="button" data-member-projects="${Number(member.id)}">造车组别</button><button class="btn ghost sm" type="button" data-reset="${Number(member.id)}">重置密码</button><button class="btn ghost sm" type="button" data-toggle="${Number(member.id)}">${member.is_active ? "停用" : "启用"}</button>`}</td></tr>`,
+              : `<button class="btn ghost sm" type="button" data-member-groups="${Number(member.id)}">专业组</button><button class="btn ghost sm" type="button" data-member-projects="${Number(member.id)}">所属项目</button><button class="btn ghost sm" type="button" data-reset="${Number(member.id)}">重置密码</button><button class="btn ghost sm" type="button" data-toggle="${Number(member.id)}">${member.is_active ? "停用" : "启用"}</button>`}</td></tr>`,
       )
       .join("") || '<tr><td colspan="8" class="empty">没有符合条件的成员</td></tr>';
 }
@@ -115,7 +115,7 @@ function editMemberProfile(member) {
            <label>账号状态<select name="is_active"><option value="1" ${member.is_active ? "selected" : ""}>启用</option><option value="0" ${!member.is_active ? "selected" : ""}>停用</option></select></label>
            <label class="span-2">重设密码（留空保持不变）<input name="new_password" type="password" minlength="8" autocomplete="new-password" placeholder="至少 8 位"></label>`}
       <fieldset class="span-2"><legend>专业组（可多选）</legend>${catalogChoices("group_ids", state.groups, member.group_ids || [])}</fieldset>
-      <fieldset class="span-2"><legend>造车组别（可多选）</legend>${catalogChoices("project_ids", state.projects, member.project_ids || [])}</fieldset>
+      <fieldset class="span-2"><legend>所属项目（可多选）</legend>${catalogChoices("project_ids", state.projects, member.project_ids || [])}</fieldset>
       <p class="form-message span-2" role="alert"></p>
       <div class="modal-actions span-2"><button class="btn primary" type="submit">保存全部修改</button></div>
     </form>`,
@@ -151,8 +151,8 @@ function editMemberProfile(member) {
 
 function editMemberProjects(member) {
   showModal(
-    `<div class="modal-head"><h2>编辑 ${esc(member.name)} 的造车组别</h2><button class="btn ghost sm" type="button" data-close>关闭</button></div><form id="member-projects-form"><fieldset><legend>参加的造车组别（可多选）</legend>${catalogChoices("project_ids", state.projects, member.project_ids || [])}</fieldset><p class="form-message" role="alert"></p><div class="modal-actions"><button class="btn primary">保存组别</button></div></form>`,
-    `编辑 ${member.name} 的造车组别`,
+    `<div class="modal-head"><h2>编辑 ${esc(member.name)} 的所属项目</h2><button class="btn ghost sm" type="button" data-close>关闭</button></div><form id="member-projects-form"><fieldset><legend>参加的所属项目（可多选）</legend>${catalogChoices("project_ids", state.projects, member.project_ids || [])}</fieldset><p class="form-message" role="alert"></p><div class="modal-actions"><button class="btn primary">保存组别</button></div></form>`,
+    `编辑 ${member.name} 的所属项目`,
   );
   document.querySelector("[data-close]").addEventListener("click", hideModal);
   document.getElementById("member-projects-form").addEventListener("submit", async (event) => {
@@ -301,9 +301,9 @@ function bindVehicleCatalog() {
       const project = projectById((erase || restore).dataset[erase ? "deleteMemberProject" : "restoreMemberProject"]);
       if (!project) return;
       if (erase) {
-        const entered = prompt(`删除造车组别“${project.name}”后无法再新分配，历史任务关联保留。请输入组别名称确认：`, "");
+        const entered = prompt(`删除所属项目“${project.name}”后无法再新分配，历史任务关联保留。请输入组别名称确认：`, "");
         if (entered !== project.name) return;
-      } else if (!confirm(`恢复造车组别：${project.name}？`)) return;
+      } else if (!confirm(`恢复所属项目：${project.name}？`)) return;
       const result = await api(`/api/projects/${Number(project.id)}/${erase ? "delete" : "restore"}`,
         erase ? { confirm_name: project.name } : {});
       if (!result?.ok) return alert(result?.error || "操作失败");
@@ -315,7 +315,7 @@ function bindVehicleCatalog() {
     if (!button) return;
     const project = projectById(button.dataset.renameMemberProject);
     if (!project) return;
-    const name = prompt("重命名造车组别（成员与任务关联不变）", project.name);
+    const name = prompt("重命名所属项目（成员与任务关联不变）", project.name);
     if (name === null || !name.trim() || name.trim() === project.name) return;
     const result = await api(`/api/projects/${Number(project.id)}`, { name: name.trim() });
     if (!result?.ok) return alert(result?.error || "重命名失败");

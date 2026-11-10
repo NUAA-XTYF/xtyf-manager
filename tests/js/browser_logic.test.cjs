@@ -32,7 +32,7 @@ test("timeline axis ignores row filters and other vehicle groups; missing dates 
   state.tasks = [{id:1,project_id:10,title:"<svg>",owner_stage:"机械",start_date:"2026-10-14",due_date:"2026-10-22",status:"未开始"},
     {id:2,project_id:10,title:"电控",owner_stage:"电控",start_date:"2026-10-22",due_date:"2026-10-26"},
     {id:3,project_id:10,title:"待补日期",owner_stage:null,start_date:"",due_date:"2026-10-29"},
-    {id:4,project_id:11,title:"其他车组",start_date:"2030-01-01",due_date:"2030-01-02"}];
+    {id:4,project_id:11,title:"其他项目",start_date:"2030-01-01",due_date:"2030-01-02"}];
   const render = page.value("renderSpecialtyTimeline");
   const full = render(state.tasks.filter(task=>task.project_id===10));
   const filtered = render([state.tasks[0]]);

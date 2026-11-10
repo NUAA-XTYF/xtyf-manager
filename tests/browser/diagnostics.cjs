@@ -21,7 +21,7 @@ async function recordFailure(error, {output, page, engine, phase, passed, pageEr
     await attempt('screenshot', () => page.screenshot({path: path.join(output, 'failure.png')}));
     await attempt('shell state', async () => {
       result.shell = await page.evaluate(() => ({
-        route: window.XTYF?.route, compatible: window.XTYF?.compatible,
+        route: window.AURORA?.route, compatible: window.AURORA?.compatible,
         heading: document.querySelector('h1')?.textContent,
       }));
     });

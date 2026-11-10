@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=极光团队工作台
+Comment=极光本地工作空间客户端
+Exec={{exec}}
+Icon={{icon}}
+Terminal=false
+Categories=Office;
+StartupWMClass=aurora-manager

@@ -42,7 +42,7 @@ async function main() {
   api=await request.newContext({baseURL:base});
   let csrf='';
   async function transport(args) {
-    const options={method:args.method||'GET',headers:{...args.headers,'X-XTYF-Client-Protocol':'1',...(csrf?{'X-CSRF-Token':csrf}:{})}};
+    const options={method:args.method||'GET',headers:{...args.headers,'X-AURORA-Client-Protocol':'1',...(csrf?{'X-CSRF-Token':csrf}:{})}};
     if(args.multipart){
       options.multipart=Object.fromEntries(args.multipart.fields.map(field=>[field.name,field.value]));
       for(const item of args.multipart.files){assert.equal(item.handle,file.handle,'must upload original selected handle');options.multipart[item.field]={name:file.name,mimeType:file.mime,buffer:fixture};}
@@ -82,8 +82,8 @@ async function main() {
       throw Error('Unexpected native action '+action);
     });
     await context.addInitScript(()=>{
-      Object.defineProperty(window,'__XTYF_VIEW_TOKEN__',{value:'fixture-view-token',writable:false,configurable:false});
-      window.XTYFNative={invoke:(action,args)=>window.__testNative(action,args)};
+      Object.defineProperty(window,'__AURORA_VIEW_TOKEN__',{value:'fixture-view-token',writable:false,configurable:false});
+      window.AURORANative={invoke:(action,args)=>window.__testNative(action,args)};
     });
     // The native A/B UI update starts with a new WebView, not a reload of an
     // existing WebKit document holding canvas/image decoders and detached frames.
@@ -102,13 +102,13 @@ async function main() {
     activePhase='avatar and update operations';
     console.log(label+' packaged account startup');
     await account().locator('#avatar-change').waitFor({state:'visible'});
-    await page.waitForFunction(()=>XTYF.compatible);
+    await page.waitForFunction(()=>AURORA.compatible);
     assert.ok(state.calls.some(call=>call.action==='ui_ready'&&call.args.viewToken==='fixture-view-token'),'readiness belongs to native-injected view token');
     await page.locator('#client-settings-open').click();
     await page.locator('#updates-apply').waitFor({state:'visible'});
     assert.equal(state.current,'A');assert.equal(state.applies,0);
     await page.locator('#updates-installer').click();await page.waitForFunction(()=>!document.getElementById('updates-installer').disabled);
-    assert.deepEqual(state.calls.find(call=>call.action==='download').args,{path:'/api/client/installers/test',filename:'xtyf-manager.'+(label==='webkit'?'apk':'exe'),expectedSha256:'a'.repeat(64)});
+    assert.deepEqual(state.calls.find(call=>call.action==='download').args,{path:'/api/client/installers/test',filename:'aurora-manager.'+(label==='webkit'?'apk':'exe'),expectedSha256:'a'.repeat(64)});
     await page.locator('#settings-cancel').click();
     const draft=account().locator('#account-profile-form [name=username]');
     await draft.fill('unsaved-avatar-draft');
@@ -125,7 +125,7 @@ async function main() {
     await account().locator('#avatar-save').click();
     await account().locator('#avatar-crop-dialog').waitFor({state:'hidden'});await loaded(3);
     assert.equal(await draft.inputValue(),'unsaved-avatar-draft');
-    assert.ok(await page.evaluate(()=>XTYF.bootstrap.me.avatar_url));
+    assert.ok(await page.evaluate(()=>AURORA.bootstrap.me.avatar_url));
     const uploads=state.calls.filter(call=>call.action==='request'&&call.args.path==='/api/account/avatar'&&call.args.method==='POST');
     assert.deepEqual(uploads[0].args.multipart,uploads[1].args.multipart,'retry keeps original handle and crop');
     await page.locator('#client-settings-open').click();
@@ -136,26 +136,26 @@ async function main() {
     await page.waitForFunction(()=>!document.getElementById('updates-apply').disabled);
     assert.equal(state.applies,1);assert.equal(state.current,'B');
     await restartDocument();await account().locator('#avatar-change').waitFor({state:'visible'});await loaded(3);
-    for(const route of ['/invoices/','/funds/']){await page.evaluate(route=>XTYF.navigate(route),route);await account().locator('h1').first().waitFor();await loaded(2);}
-    await page.evaluate(()=>XTYF.navigate('/account'));await account().locator('#avatar-remove').waitFor({state:'visible'});
+    for(const route of ['/invoices/','/funds/']){await page.evaluate(route=>AURORA.navigate(route),route);await account().locator('h1').first().waitFor();await loaded(2);}
+    await page.evaluate(()=>AURORA.navigate('/account'));await account().locator('#avatar-remove').waitFor({state:'visible'});
     await account().locator('#avatar-remove').click();await account().locator('#avatar-result').filter({hasText:'已恢复'}).waitFor();
-    assert.equal(await account().locator('[data-avatar-image]').count(),0);assert.equal(await page.evaluate(()=>XTYF.bootstrap.me.avatar_url),null);
+    assert.equal(await account().locator('[data-avatar-image]').count(),0);assert.equal(await page.evaluate(()=>AURORA.bootstrap.me.avatar_url),null);
     await page.screenshot({path:path.join(output,label+'-account.png'),fullPage:true});
     activePhase='packaged asset PDF';
     const itemReply=await transport({path:'/api/assets/catalog/items',method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({request_id:crypto.randomUUID(),name:'客户端中文标签 '+label,kind:'consumable',unit:'颗'})});
     assert.equal(itemReply.status,200);const material=JSON.parse(itemReply.body);
-    await page.evaluate(()=>XTYF.navigate('/assets'));await account().locator('#asset-status').filter({hasText:'数据已更新'}).waitFor();
+    await page.evaluate(()=>AURORA.navigate('/assets'));await account().locator('#asset-status').filter({hasText:'数据已更新'}).waitFor();
     await page.evaluate(async id=>{await document.querySelector('#page-host iframe').contentWindow.AssetLabels.open([{id,name:'客户端中文标签'}]);},material.id);
     const pdfSaved=new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('PDF native save not invoked')),15000);state.onPdfSave=()=>{clearTimeout(timer);resolve();};});
     await account().locator('#asset-label-download').click();await pdfSaved;
     assert(state.calls.some(c=>c.action==='read_resource'&&c.args.path.startsWith('/api/assets/labels.pdf?')));
     assert(state.calls.some(c=>c.action==='download'&&c.args.pdfBody&&Buffer.from(c.args.pdfBody,'base64').subarray(0,5).toString()==='%PDF-'));
     assert(!state.calls.some(c=>c.action==='request'&&c.args.path.startsWith('/vendor/pdfjs/')),'PDF resources must stay local');
-    await account().locator('#asset-label-close').click();await page.evaluate(()=>XTYF.navigate('/account'));await account().locator('h1').waitFor();
-    activePhase='capability reload';state.capable=false;await restartDocument();await account().locator('h1').waitFor();await page.waitForFunction(()=>XTYF.compatible);
+    await account().locator('#asset-label-close').click();await page.evaluate(()=>AURORA.navigate('/account'));await account().locator('h1').waitFor();
+    activePhase='capability reload';state.capable=false;await restartDocument();await account().locator('h1').waitFor();await page.waitForFunction(()=>AURORA.compatible);
     assert.equal(await account().locator('#avatar-editor').isVisible(),false);
     activePhase='incompatible bootstrap reload';state.incompatible=true;await restartDocument();await page.getByRole('heading',{name:'服务器需要更新'}).waitFor();
-    assert.match(await page.evaluate(()=>XTYF.request('/api/tasks').then(()=>'',error=>error.message)),/协议不兼容/);
+    assert.match(await page.evaluate(()=>AURORA.request('/api/tasks').then(()=>'',error=>error.message)),/协议不兼容/);
     await page.locator('#client-settings-open').click();await page.locator('#updates-check').waitFor({state:'visible'});await page.locator('#settings-cancel').click();
     activePhase='offline reload';state.incompatible=false;state.offline=true;const before=state.calls.filter(call=>call.action==='ui_ready').length;
     await restartDocument();await account().locator('#login-form').waitFor();await page.locator('#connection-status').waitFor({state:'visible'});

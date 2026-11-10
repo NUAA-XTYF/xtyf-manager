@@ -34,7 +34,7 @@ try:
     original_columns = {c[1] for c in db.execute("PRAGMA table_info(member_email)")}
     legacy_link = hasattr(mail_service, "verification_token")
     assert ("verify_attempts" not in original_columns) if legacy_link else ("verify_attempts" in original_columns)
-    Path(os.environ["XTYF_UPGRADE_CHALLENGE_KIND"]).write_text(
+    Path(os.environ["AURORA_UPGRADE_CHALLENGE_KIND"]).write_text(
         "legacy-link" if legacy_link else "numeric-code", encoding="utf-8")
     now = time.time()
     db.execute("UPDATE members SET must_change_password=0 WHERE id=1")
@@ -122,7 +122,7 @@ try:
     unverified = connection.execute("SELECT * FROM member_email WHERE member_id=2").fetchone()
     assert (unverified["address"], unverified["verified"], unverified["paused"], unverified["generation"]) == (
         "old-unverified@example.test", 0, 0, "legacy-link-pending")
-    old_is_link = Path(os.environ["XTYF_UPGRADE_CHALLENGE_KIND"]).read_text(encoding="utf-8") == "legacy-link"
+    old_is_link = Path(os.environ["AURORA_UPGRADE_CHALLENGE_KIND"]).read_text(encoding="utf-8") == "legacy-link"
     if old_is_link:
         # Legacy link hashes must be invalidated, not reinterpreted as OTP verifiers.
         assert unverified["token_hash"] is None and unverified["expires_at"] == 0
@@ -204,13 +204,13 @@ finally:
 
 class UpgradeFromMainTests(unittest.TestCase):
     def test_migrate_real_base_snapshot_with_existing_data_and_pending_link(self):
-        expected = os.environ.get("XTYF_UPGRADE_BASE_SHA", "")
+        expected = os.environ.get("AURORA_UPGRADE_BASE_SHA", "")
         self.assertRegex(expected, r"^[0-9a-f]{40}$", "CI must supply the PR base SHA")
         self.assertTrue((BASE / "app.py").is_file(), "CI did not checkout its main baseline")
         actual = subprocess.check_output(
             ["git", "-C", str(BASE), "rev-parse", "HEAD"], text=True).strip()
         self.assertEqual(actual, expected, "Upgrade baseline must be the exact PR base commit")
-        with tempfile.TemporaryDirectory(prefix="xtyf-upgrade-main-") as temp:
+        with tempfile.TemporaryDirectory(prefix="aurora-upgrade-main-") as temp:
             root = Path(temp)
             env = os.environ.copy()
             env.pop("PYTHONPATH", None)
@@ -223,7 +223,7 @@ class UpgradeFromMainTests(unittest.TestCase):
                 "TASK_ATTACHMENTS_DIR": str(root / "attachments"),
                 "MAIL_MODE": "preview",
                 "PUBLIC_BASE_URL": "https://team.example.test",
-                "XTYF_UPGRADE_CHALLENGE_KIND": str(root / "challenge-kind.txt"),
+                "AURORA_UPGRADE_CHALLENGE_KIND": str(root / "challenge-kind.txt"),
             })
             for label, checkout, source in (
                 ("seed original main database", BASE, SEED_OLD_DATABASE),

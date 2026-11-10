@@ -1,9 +1,9 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "巡天御风管理系统",
-  "mainBinaryName": "xtyf-manager",
+  "productName": "极光团队工作台",
+  "mainBinaryName": "aurora-manager",
   "version": "1.2.0",
-  "identifier": "online.skywalker.manager",
+  "identifier": "com.example.aurora",
   "build": {
     "frontendDist": "../frontend/dist"
   },
@@ -28,9 +28,9 @@
       "icons/256x256.png"
     ],
     "category": "Productivity",
-    "publisher": "巡天御风",
-    "homepage": "http://manager.skywalker-rm.online",
-    "shortDescription": "巡天御风管理系统",
+    "publisher": "极光",
+    "homepage": "http://workspace.example.com",
+    "shortDescription": "极光团队工作台",
     "resources": {
       "../frontend/dist/asset-manifest.json": "asset-manifest.json"
     },

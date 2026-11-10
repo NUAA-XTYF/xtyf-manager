@@ -21,7 +21,7 @@
 | `python -m unittest test_asset_catalog_paging test_asset_pdf_resources -v` | Windows Python 3.11，`PYTHONPATH=.;tests`，8 项通过 |
 | `python clients/frontend/test_frontend.py` | Windows Python 3.11，7 项通过；27 模板/291 资源构建 |
 | `node --test tests/js/*.test.cjs` | 140 项通过 |
-| `XTYF_UPGRADE_BASE_SHA=c6db089e2d6ae71987441843e8fff169de2f0af3 python tests/upgrade_from_main.py` | 隔离 Linux Python 3.13；基准工作区 HEAD 校对一致，1 项通过 |
+| `AURORA_UPGRADE_BASE_SHA=c6db089e2d6ae71987441843e8fff169de2f0af3 python tests/upgrade_from_main.py` | 隔离 Linux Python 3.13；基准工作区 HEAD 校对一致，1 项通过 |
 | 修改脚本 `node --check`、`git diff --check` | 通过 |
 
 新增测试首次发现夹具问题：空选择时点击已禁用的清空按钮；通过业务 fetch 读取 Blob 被客户端正确拒绝；

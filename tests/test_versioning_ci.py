@@ -37,7 +37,7 @@ class SelectionTests(unittest.TestCase):
             (root/"clients/config.json").write_text(json.dumps({
                 "version": "1.2.0" if intent else "1.1.0",
                 "versionCode": 102009999 if intent else 14,
-                "name": "XTYF", "serverUrl":"http://localhost",
+                "name": "AURORA", "serverUrl":"http://localhost",
             }))
             (root/"clients/release-plan.json").write_text(json.dumps({
                 "nextVersion":"1.2.1" if intent else "1.2.0"
@@ -56,7 +56,7 @@ class SelectionTests(unittest.TestCase):
                 return CompletedProcess(args,0,stdout=json.dumps(existing),stderr="")
             output=root/"metadata.txt"
             with patch.object(ci,"ROOT",root),patch("sys.argv",["cli","select","--output",str(output)]),\
-                 patch.dict(os.environ,{"GITHUB_SHA":self.SHA,"GITHUB_REPOSITORY":"SHM-white/xtyf-manager"}),\
+                 patch.dict(os.environ,{"GITHUB_SHA":self.SHA,"GITHUB_REPOSITORY":"example-org/aurora-manager"}),\
                  patch.object(ci.subprocess,"check_output",side_effect=command),\
                  patch.object(ci.subprocess,"run",side_effect=release):
                 ci.main()
