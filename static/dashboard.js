@@ -26,7 +26,7 @@ function dashboardTaskRow(task) {
       </span>`
     : '<span class="ws-task-activity-empty">暂无进度动态</span>';
   return `<button type="button" class="ws-task-row ${taskHighlightClasses(task)}"
-      data-dashboard-task="${Number(task.id)}" aria-label="查看任务 ${esc(task.title)} 的只读详情">
+      data-dashboard-task="${Number(task.id)}" aria-label="查看任务 ${esc(task.title)} 的详情">
     <span class="ws-task-row-main">
       <span class="ws-task-row-top">
         <span class="prio prio-${task.priority === "高" ? "high" : task.priority === "低" ? "low" : "mid"}"><i class="dot"></i></span>
@@ -50,15 +50,16 @@ function renderWorkspaceDashboard() {
   const dueSoon = active.filter((task) => Number.isInteger(task.days_left) && task.days_left >= 0 && task.days_left <= 7);
   const overdue = active.filter(isOverdue);
   const metrics = [
-    ["我的待办", mine.length, "含负责人及参与任务"],
-    ["进行中任务", active.filter((task) => task.status === "进行中").length, "团队实时数据"],
-    ["7 天内到期", dueSoon.length, "请及时确认进度"],
-    ["逾期任务", overdue.length, overdue.length ? "需要优先处理" : "当前无逾期"],
+    ["我的待办", mine.length, "含负责人及参与任务", "mine"],
+    ["进行中任务", active.filter((task) => task.status === "进行中").length, "团队实时数据", "ongoing"],
+    ["7 天内到期", dueSoon.length, "请及时确认进度", "due7"],
+    ["逾期任务", overdue.length, overdue.length ? "需要优先处理" : "当前无逾期", "overdue"],
   ];
   const stats = document.getElementById("dashboard-stats");
   if (stats)
-    stats.innerHTML = metrics.map(([label, value, note]) =>
-      `<div class="ws-dashboard-stat"><span class="ws-label">${esc(label)}</span><strong class="ws-value">${value}</strong><span class="ws-footnote">${esc(note)}</span></div>`).join("");
+    stats.innerHTML = metrics.map(([label, value, note, focus]) =>
+      `<a class="ws-dashboard-stat" href="/tasks?type=vehicle&focus=${focus}" aria-label="查看${esc(label)}任务">
+        <span class="ws-label">${esc(label)}</span><strong class="ws-value">${value}</strong><span class="ws-footnote">${esc(note)}</span></a>`).join("");
   const ranked = rankDashboardTasks(active, state.me.id);
   const target = document.getElementById("dashboard-task-list");
   if (target) target.innerHTML = ranked.map(dashboardTaskRow).join("") || '<p class="empty">当前没有待处理任务</p>';

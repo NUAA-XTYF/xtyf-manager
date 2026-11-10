@@ -38,6 +38,12 @@ function taskGroupNames(task) {
 }
 function taskMatches(task) {
   const filter = state.filters;
+  if (filter.focus === "mine" &&
+      (isFinishedTask(task) || !state.me || !taskParticipants(task).includes(Number(state.me.id)))) return false;
+  if (filter.focus === "ongoing" && task.status !== "进行中") return false;
+  if (filter.focus === "due7" &&
+      (isFinishedTask(task) || !Number.isInteger(task.days_left) || task.days_left < 0 || task.days_left > 7)) return false;
+  if (filter.focus === "overdue" && !isOverdue(task)) return false;
   if (filter.project && Number(task.project_id) !== Number(filter.project) && taskProjectName(task) !== filter.project) return false;
   if (filter.status && task.status !== filter.status) return false;
   if (filter.mine && (!state.me || !taskParticipants(task).includes(Number(state.me.id)))) return false;
@@ -262,6 +268,16 @@ function renderBoard() {
 function bindBoard() {
   const target = document.getElementById("board");
   if (!target) return;
+  const focus = new URLSearchParams(location.search).get("focus");
+  const labels = {mine: "我的待办", ongoing: "进行中任务", due7: "7 天内到期", overdue: "逾期任务"};
+  if (Object.hasOwn(labels, focus)) {
+    state.filters.focus = focus;
+    const hint = document.getElementById("task-focus-summary");
+    if (hint) {
+      hint.hidden = false;
+      document.getElementById("task-focus-label").textContent = "工作台快捷筛选：" + labels[focus];
+    }
+  }
   [
     ["f-project", "project", "change"],
     ["f-status", "status", "change"],

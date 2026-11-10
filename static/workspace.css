@@ -56,7 +56,12 @@ body.ws-app { margin:0 !important; min-width:0 !important; background:#f3f6fb !i
 .ws-app .ws-section-lead{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px}
 .ws-app .ws-section-lead h2{margin:0 !important}.ws-app .ws-section-lead a{font-size:13px}
 .ws-dashboard-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;margin:0 0 20px}
-.ws-dashboard-stat{padding:20px;border:1px solid #e1e9f4;border-radius:16px;background:#fff;min-height:125px}
+.ws-dashboard-stat{display:block;padding:20px;border:1px solid #e1e9f4;border-radius:16px;background:#fff;min-height:125px;color:inherit;text-decoration:none}
+.ws-dashboard-stat:hover{border-color:#8eaee0;background:var(--surface-inset,#f8fbff);text-decoration:none;color:inherit}
+.ws-dashboard-stat:focus-visible{outline:3px solid var(--focus,#3979d5);outline-offset:3px}
+.task-focus-summary{display:flex;align-items:center;gap:12px;margin:10px 0;color:var(--muted);font-size:13px;flex-wrap:wrap}
+.task-focus-summary[hidden]{display:none}
+.task-focus-summary a{font-weight:600}
 .ws-dashboard-stat .ws-label{font-size:12px;color:#7185a0;font-weight:600}
 .ws-dashboard-stat .ws-value{display:block;font-size:32px;font-weight:800;color:#152942;line-height:1.4;font-variant-numeric:tabular-nums}
 .ws-dashboard-stat .ws-footnote{font-size:11px;color:#14826d}
@@ -120,3 +125,5 @@ button.ws-signout{background:none;border:0;width:100%;cursor:pointer;font:inheri
 .modal.task-preview .task-progress-heading{margin-top:0}
 .modal.task-preview .progress-timeline{max-height:260px}
 @media(max-width:560px){.ws-task-row-top{align-items:flex-start}.ws-task-row-title{min-width:120px}}
+
+.task-preview-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}

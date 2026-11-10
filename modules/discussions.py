@@ -125,8 +125,13 @@ def _attachments_by_message(db, message_ids):
 
 def message_payload(db, row, topic, user, now, attachments=None):
     withdrawn = bool(row['withdrawn_at'] or topic['withdrawn_at'])
+    # Retracted replies remain in the author's history, but other members,
+    # including non-author administrators, must never receive their original data.
+    # A whole-topic withdrawal still hides the entire thread for everyone.
+    show_original = not topic['withdrawn_at'] and (
+        not row['withdrawn_at'] or row['author_id'] == user['id'])
     files = []
-    if not withdrawn:
+    if show_original:
         rows = (attachments.get(int(row['id']), []) if attachments is not None
                 else db.execute('SELECT * FROM collaboration_attachments WHERE message_id=? ORDER BY id', (row['id'],)))
         files = [dict(id=a['id'], name=a['original_name'], size=a['size_bytes'],
@@ -134,7 +139,7 @@ def message_payload(db, row, topic, user, now, attachments=None):
                       thumbnail_url=f'/discussions/api/attachments/{a["id"]}/thumbnail' if a['thumbnail_name'] else None)
                  for a in rows]
     return dict(id=row['id'], topic_id=row['topic_id'], author_id=row['author_id'], author_name=row['author_name'],
-                created_at=row['created_at'], body='' if withdrawn else row['body'], withdrawn=withdrawn,
+                created_at=row['created_at'], body=row['body'] if show_original else '', withdrawn=withdrawn,
                 can_withdraw=not withdrawn and can_withdraw(row, user, now), attachments=files)
 
 
@@ -438,7 +443,9 @@ def attachment(aid, thumbnail=False):
     integer(aid, '附件 ID')
     row = get_db().execute('''SELECT a.* FROM collaboration_attachments a
       JOIN collaboration_messages m ON m.id=a.message_id JOIN collaboration_topics t ON t.id=m.topic_id
-      WHERE a.id=? AND m.withdrawn_at IS NULL AND t.withdrawn_at IS NULL''', (aid,)).fetchone()
+      WHERE a.id=? AND t.withdrawn_at IS NULL
+        AND (m.withdrawn_at IS NULL OR m.author_id=?)''',
+        (aid, current_user()['id'])).fetchone()
     if not row or (thumbnail and not row['thumbnail_name']):
         return fail('附件不存在或已撤回', 404)
     path = attachment_path(root(), row['thumbnail_name'] if thumbnail else row['stored_name'])

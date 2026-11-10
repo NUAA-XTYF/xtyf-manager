@@ -26,6 +26,7 @@
 {% include '_daily_projects_content.html' %}
 {% else %}
 <section class="stats" id="stats" aria-label="任务统计"></section>
+<p id="task-focus-summary" class="task-focus-summary" hidden><span id="task-focus-label"></span> <a href="{{ url_for('tasks', type='vehicle') }}">清除快捷筛选</a></p>
 <section class="toolbar">
   <div class="seg" id="view-seg">
     <button type="button" data-view="person" class="active" aria-pressed="true">按人</button>
