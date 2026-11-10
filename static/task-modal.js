@@ -284,14 +284,18 @@ async function openTaskModal(id, navigation = {}) {
   await Promise.all([loadTaskProgress(task, generation), loadAttachments(task, generation), loadRevisions(task, generation), loadLogs(task, generation), loadTaskBlockers(task, generation)]);
 }
 
-/** Dashboard preview deliberately contains no task mutation actions or forms. */
+/** Keep the dashboard preview compact; offer the existing editor only to authorized users. */
+function canEditFromDashboard(task) {
+  return canEdit(task) ||
+    (Number(task.created_by) === Number(state.me?.id) && !isFinishedTask(task));
+}
 function taskPreviewShell(task) {
   const percent = Math.max(0, Math.min(100, Number(task.progress) || 0));
   const people = taskParticipants(task)
     .map((id) => memberById(id)?.name || `成员 #${id}`).join("、") || "未分配";
   return `<div class="modal-head">
     <div><p class="ux-eyebrow">TASK #${Number(task.id)} / 只读预览</p><h2>${esc(task.title)}</h2></div>
-    <button class="btn ghost sm" type="button" data-close>关闭</button>
+    <div class="task-preview-actions">${canEditFromDashboard(task) ? '<button class="btn sm" type="button" data-dashboard-edit>编辑</button>' : ""}<button class="btn ghost sm" type="button" data-close>关闭</button></div>
   </div>
   <div class="modal-info">
     ${badge(task.status, STATUS_CLASS[task.status] || "gray")}
@@ -330,6 +334,7 @@ async function openTaskPreview(id) {
   modal.dataset.taskId = String(task.id);
   modal.dataset.generation = String(generation);
   modal.querySelector("[data-close]")?.addEventListener("click", hideModal);
+  modal.querySelector("[data-dashboard-edit]")?.addEventListener("click", () => openTaskModal(task.id));
   document.dispatchEvent(new CustomEvent('task:rendered', {detail: {task, host: modal}}));
   await Promise.all([loadTaskProgress(task, generation), loadLogs(task, generation)]);
 }
