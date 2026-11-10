@@ -192,3 +192,7 @@ body.collab-dialog-open { overflow:hidden; }
   .collab-topic-fields { padding:16px; flex:1; align-content:start; }
   .collab-topic-dialog footer { padding:12px 16px calc(12px + env(safe-area-inset-bottom)); justify-content:flex-end; }
 }
+
+/* Only an author sees their own withdrawn reply, with an unmistakable status. */
+.collab-withdrawn-label{font-size:12px;font-weight:650;color:var(--muted);margin-left:auto}
+.collab-message.is-withdrawn{opacity:.82}
