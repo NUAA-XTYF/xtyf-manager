@@ -25,10 +25,10 @@
 </dialog>
 {% endif %}
 <div class="ws-dashboard-stats" id="dashboard-stats" aria-label="实时任务概览">
-  <div class="ws-dashboard-stat"><span class="ws-label">我的待办</span><strong class="ws-value">—</strong></div>
-  <div class="ws-dashboard-stat"><span class="ws-label">进行中任务</span><strong class="ws-value">—</strong></div>
-  <div class="ws-dashboard-stat"><span class="ws-label">7 天内到期</span><strong class="ws-value">—</strong></div>
-  <div class="ws-dashboard-stat"><span class="ws-label">逾期任务</span><strong class="ws-value">—</strong></div>
+  <a class="ws-dashboard-stat" href="{{ url_for('tasks', type='vehicle', focus='mine') }}"><span class="ws-label">我的待办</span><strong class="ws-value">—</strong></a>
+  <a class="ws-dashboard-stat" href="{{ url_for('tasks', type='vehicle', focus='ongoing') }}"><span class="ws-label">进行中任务</span><strong class="ws-value">—</strong></a>
+  <a class="ws-dashboard-stat" href="{{ url_for('tasks', type='vehicle', focus='due7') }}"><span class="ws-label">7 天内到期</span><strong class="ws-value">—</strong></a>
+  <a class="ws-dashboard-stat" href="{{ url_for('tasks', type='vehicle', focus='overdue') }}"><span class="ws-label">逾期任务</span><strong class="ws-value">—</strong></a>
 </div>
 <div class="ws-dashboard-grid">
   <section class="ws-dashboard-card" aria-label="近期任务">
