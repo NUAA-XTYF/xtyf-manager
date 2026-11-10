@@ -198,8 +198,11 @@ async function openTopic(page, base, topic) {
     await page.locator(`[data-message-id="${additional.message_id}"]`).waitFor({state: 'attached', timeout: 15000});
     assert.equal(await focusedAttachment.evaluate(el => el === document.activeElement), true);
     await page.locator(`[data-message-id="${additional.message_id}"] [data-withdraw-message]`).click();
-    await page.locator(`[data-message-id="${additional.message_id}"]`).filter({hasText: '这条消息已撤回'}).waitFor({timeout: 15000});
-    checks.push('attachment focus survives new replies, management withdrawal arrives through change cursor');
+    await page.locator(`[data-message-id="${additional.message_id}"]`).waitFor({state:'detached',timeout:15000});
+    const authorWithdrawn=peer.locator(`[data-message-id="${additional.message_id}"]`);
+    await authorWithdrawn.filter({hasText:'已撤回 · 仅自己可见'}).waitFor({timeout:15000});
+    assert.match(await authorWithdrawn.innerText(),/更新后保持附件键盘焦点/);
+    checks.push('management withdrawal removes the non-author card while preserving the sender\'s marked original');
 
     for (let i = 0; i < 20; i++) await api(page, '/discussions/api/topics', {
       submission_id: 'pagination-browser-' + i, title: '分页话题 ' + i, body: '分页测试消息'});
