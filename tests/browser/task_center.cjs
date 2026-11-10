@@ -192,6 +192,7 @@ async function ready(page) { await page.locator('#task-create-panel[open][aria-b
     await page.waitForURL('**/tasks?type=vehicle');
     assert.equal(await page.locator('#task-focus-summary').isVisible(),false);
     checks.push('dashboard preview reuses task edit and refreshes its card; stat links preserve and clear scope');
+    await page.goto(base+'/');
 
     // Personal work comes first; each group retains composite urgency ranking.
     // Daily cards load independently; wait for the task/account snapshot as well.
