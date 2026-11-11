@@ -459,8 +459,8 @@ tbody tr:hover td { background: var(--surface-inset); }
 .login-password-toggle svg[hidden] { display: none; }
 .login-card .btn { min-height: 48px; margin-top: 4px; }
 .login-footer { margin: 2px 0 0; text-align: center; font-size: 11px; color: var(--muted); }
-@media (max-width: 767px), (pointer: coarse) {
-  /* Keep mobile login fields readable, including when the password is revealed. */
+@media (max-width: 1024px), (pointer: coarse) {
+  /* Cover landscape phones even when desktop-hosted mobile emulation reports a fine pointer. */
   .login-card input[name][autocomplete] { font-size: 16px; }
 }
 
