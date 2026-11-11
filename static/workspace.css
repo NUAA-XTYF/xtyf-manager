@@ -29,14 +29,14 @@ body.ws-app { margin:0 !important; min-width:0 !important; background:#f3f6fb !i
 .ws-avatar{width:35px;height:35px}.ws-user-info{display:grid;gap:2px;min-width:0}.ws-user-info strong{font-size:12px}.ws-user-info small{color:#8fa7c8;font-size:11px}
 .account-avatar{position:relative;overflow:hidden;flex:none}.account-avatar [data-avatar-image]{display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit}.account-avatar [hidden]{display:none!important}
 .ws-signout{display:flex;gap:11px;align-items:center;color:#a8bbd6 !important;font-size:12px;padding:10px 9px;border-radius:10px;text-decoration:none}
-.workspace-main{margin-left:242px;min-width:0;min-height:100vh}
+.workspace-main{margin-left:242px;min-width:0;min-height:100vh;display:flex;flex-direction:column}
 .workspace-topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;position:sticky;top:0;z-index:70;background:#fff;border-bottom:1px solid #e3eaf3;padding:0 32px;min-height:69px}
 .ws-breadcrumb{display:flex;gap:13px;align-items:center;font-size:13px;color:#8798b1}.ws-breadcrumb a{color:#8798b1}.ws-breadcrumb strong{font-weight:700;color:#1b304d}.ws-breadcrumb-sep{color:#c0c9d6}
 .ws-top-user{display:flex;align-items:center;gap:11px;text-decoration:none;color:#657895 !important;font-size:12px}.ws-top-avatar{width:33px;height:33px;border-radius:50%}
 .ws-menu-toggle{display:none;flex-direction:column;gap:4px;justify-content:center;align-items:center;background:#fff;border:1px solid #dfe7f4;border-radius:9px;width:38px;height:38px;cursor:pointer}
 .ws-menu-toggle span{width:17px;height:2px;background:#274463;border-radius:2px}
 .ws-sidebar-overlay{display:none}
-.ws-app .workspace-content{min-width:0;padding-bottom:36px}
+.ws-app .workspace-content{min-width:0;flex:1 0 auto;padding-bottom:36px}
 .ws-app .workspace-main > .container,.ws-app .workspace-main > .container-fluid {max-width:none !important;width:100%;margin:0 !important;padding:28px 32px !important;}
 .ws-app .workspace-main .page-head{max-width:none !important;padding:27px 32px 0 !important;background:transparent !important;border:0 !important}
 .ws-app .workspace-main .page-head h1,.ws-app .workspace-main .ux-page-head h1 {font-size:clamp(23px,2.4vw,31px) !important;color:#182a44}
