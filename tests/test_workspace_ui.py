@@ -23,6 +23,21 @@ class TestWorkspaceNavigation(unittest.TestCase):
                 self.assertIn('workspace.js', text)
                 self.assertIn(page_label, text)
 
+    def test_icp_footer_on_public_and_authenticated_pages(self):
+        for client, url in (
+            (app_module.app.test_client(), '/login'),
+            (self.admin, '/'),
+            (self.admin, '/tasks'),
+        ):
+            with self.subTest(url=url):
+                response = client.get(url)
+                self.assertEqual(response.status_code, 200)
+                html = response.get_data(as_text=True)
+                self.assertIn('class="site-icp-footer"', html)
+                self.assertEqual(html.count('苏ICP备2026059121号-1'), 1)
+                self.assertIn('href="https://beian.miit.gov.cn/"', html)
+                self.assertIn('target="_blank" rel="noopener noreferrer"', html)
+
     def test_member_exports_csv_without_credentials(self):
         response = self.admin.get('/api/members/export.csv')
         self.assertEqual(response.status_code, 200)
